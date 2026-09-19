@@ -1,0 +1,1092 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <!-- Auth Guard (Must load first) -->
+  <script src="auth.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Offer Letter Generator & PDF Exporter | Dilshaj Infotech</title>
+
+  <!-- Google Fonts for UI Header Bar -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+
+  <!-- html2canvas and jsPDF for razor-sharp page-by-page rendering (deferred to avoid render blocking) -->
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <!-- Consolidated Design System & Theme Stylesheet -->
+  <link rel="stylesheet" href="shared.css?v=4.4">
+  <!-- Centralized Header Engine & HR Profile Manager -->
+  <script src="header.js?v=4.4"></script>
+
+  <style>
+    /* Document-Specific Styles */
+    /* Annexure Table Styling */
+    .annexure-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      margin-bottom: 12px;
+      font-size: 9.5pt;
+    }
+
+    .annexure-table th,
+    .annexure-table td {
+      border: 1px solid var(--doc-table-border);
+      padding: 7px 10px;
+    }
+
+    .annexure-table th {
+      background-color: var(--doc-table-th-bg);
+      font-weight: 700;
+      color: var(--doc-text);
+      text-align: left;
+    }
+
+    .annexure-table tr.category-header {
+      background-color: var(--doc-table-alt-bg);
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .annexure-table tr.total-row {
+      background-color: var(--doc-table-th-bg);
+      font-weight: 700;
+    }
+
+    .annexure-table tr.subtotal-row {
+      background-color: #f8fafc;
+    }
+
+    .annexure-table tr.subtotal-row td {
+      border-top: 1px solid #cbd5e1;
+    }
+
+    .annexure-table tr.subtotal-row td:first-child {
+      font-weight: bold;
+      text-transform: none;
+    }
+
+    .annexure-table tr.subtotal-row td.text-right {
+      font-weight: bold;
+    }
+
+    .annexure-table tr.ctc-row td {
+      padding: 10px 10px;
+    }
+
+    .text-right {
+      text-align: right;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Centralized Top Navigation Bar (Injected by header.js) -->
+  <div id="header-placeholder"></div>
+
+  <!-- App Layout Grid -->
+  <div class="app-layout">
+
+    <!-- Left Column: Sidebar Form -->
+    <aside class="form-sidebar">
+
+      <!-- 0. Company & Legal Entity -->
+      <div class="section-card">
+        <div class="section-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm10 12h-8v-2h2v-2h-2v-2h2v-2h-2V9h8v10zm-2-8h-2v2h2v-2zm0 4h-2v2h2v-2z" />
+          </svg>
+          Company & Legal Entity
+        </div>
+        <div class="form-grid">
+          <div class="form-group full-width">
+            <label for="companyName">Legal Company Name</label>
+            <div class="field-toggle-wrapper">
+              <input type="text" id="companyName" value="Dilshaj Infotech Private Limited" oninput="updatePreview()">
+              <button type="button" class="field-toggle-btn active" title="Field visible in document page" onclick="toggleFieldVisibility('companyName', '#prev_companyName, #prev_compName, #prev_sigCompName_annex', this)" aria-label="Toggle visibility">
+                <svg class="eye-icon eye-open" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                <svg class="eye-icon eye-off" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+              </button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="companyCin">CIN / Registration No.</label>
+            <div class="field-toggle-wrapper">
+              <input type="text" id="companyCin" value="U85499AP2025PTC121826" oninput="updatePreview()">
+              <button type="button" class="field-toggle-btn active" title="Field visible in document page" onclick="toggleFieldVisibility('companyCin', '#prev_companyCin', this)" aria-label="Toggle visibility">
+                <svg class="eye-icon eye-open" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                <svg class="eye-icon eye-off" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+              </button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="companyType">Entity Classification</label>
+            <div class="field-toggle-wrapper">
+              <input type="text" id="companyType" value="Private Limited Company" oninput="updatePreview()">
+              <button type="button" class="field-toggle-btn active" title="Field visible in document page" onclick="toggleFieldVisibility('companyType', '#prev_companyType', this)" aria-label="Toggle visibility">
+                <svg class="eye-icon eye-open" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                <svg class="eye-icon eye-off" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+              </button>
+            </div>
+          </div>
+          <div class="form-group full-width">
+            <label for="companyAddress">Registered Office Address</label>
+            <div class="field-toggle-wrapper">
+              <textarea id="companyAddress" rows="2"
+                oninput="updatePreview()">Survey No: 225-2A, Narsipatnam, Visakhapatnam, Andhra Pradesh 531114</textarea>
+              <button type="button" class="field-toggle-btn active" title="Field visible in document page" onclick="toggleFieldVisibility('companyAddress', '#prev_companyAddress', this)" aria-label="Toggle visibility">
+                <svg class="eye-icon eye-open" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                <svg class="eye-icon eye-off" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 1. Candidate Info -->
+      <div class="section-card">
+        <div class="section-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+          </svg>
+          Candidate Information
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="offerDate">Offer Release Date</label>
+            <div class="date-input-wrapper">
+              <input type="text" id="offerDate" value="25 May 2026" oninput="updatePreview()"
+                onclick="openUniversalDatePicker(this, this.nextElementSibling)">
+              <button type="button" class="date-picker-btn" title="Choose date from calendar"
+                onclick="openUniversalDatePicker(document.getElementById('offerDate'), this)">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                  <line x1="16" y1="2" x2="16" y2="6"></line>
+                  <line x1="8" y1="2" x2="8" y2="6"></line>
+                  <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="empPrefix">Salutation Prefix</label>
+            <select id="empPrefix" onchange="updatePreview()">
+              <option value="Mr." selected>Mr.</option>
+              <option value="Ms.">Ms.</option>
+              <option value="Mrs.">Mrs.</option>
+              <option value="Dr.">Dr.</option>
+            </select>
+          </div>
+          <div class="form-group full-width">
+            <label for="employeeName">Employee Full Name</label>
+            <input type="text" id="employeeName" value="Employe Name" oninput="updatePreview()">
+          </div>
+          <div class="form-group full-width">
+            <label for="employeeAddress">Employee Full Address</label>
+            <textarea id="employeeAddress" rows="2"
+              oninput="updatePreview()">Rolugunta, Anakapalle Andhra Pradesh, 531114</textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Employment Details -->
+      <div class="section-card">
+        <div class="section-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M20 6h-4V4c0-1.11-.89-2-2-2h-4c-1.11 0-2 .89-2 2v2H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-6 0h-4V4h4v2z" />
+          </svg>
+          Employment Details
+        </div>
+        <div class="form-grid">
+          <div class="form-group full-width">
+            <label for="rolePresetSelect">Select Role / Designation Preset</label>
+            <select id="rolePresetSelect" onchange="onRoleSelectChange()"></select>
+          </div>
+          <div class="form-group">
+            <label for="designation">Designation</label>
+            <input type="text" id="designation" value="Software Engineer" oninput="onCustomDesignationInput()">
+          </div>
+          <div class="form-group">
+            <label for="department">Department</label>
+            <input type="text" id="department" value="Engineering" oninput="updatePreview()">
+          </div>
+          <div class="form-group">
+            <label for="reportingTo">Reporting To</label>
+            <input type="text" id="reportingTo" value="Dilshaj Shaik" oninput="updatePreview()">
+          </div>
+          <div class="form-group">
+            <label for="employmentType">Employment Type</label>
+            <input type="text" id="employmentType" value="Full-Time" oninput="updatePreview()">
+          </div>
+          <div class="form-group">
+            <label for="dateOfJoining">Date of Joining</label>
+            <div class="date-input-wrapper">
+              <input type="text" id="dateOfJoining" value="25 May 2026" oninput="updatePreview()"
+                onclick="openUniversalDatePicker(this, this.nextElementSibling)">
+              <button type="button" class="date-picker-btn" title="Choose date from calendar"
+                onclick="openUniversalDatePicker(document.getElementById('dateOfJoining'), this)">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                  <line x1="16" y1="2" x2="16" y2="6"></line>
+                  <line x1="8" y1="2" x2="8" y2="6"></line>
+                  <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="workLocation">Primary Location</label>
+            <input type="text" id="workLocation" value="Rolugunta" oninput="updatePreview()">
+          </div>
+          <div class="form-group full-width">
+            <label for="workMode">Work Mode</label>
+            <input type="text" id="workMode" value="Onsite (Office)" oninput="updatePreview()">
+          </div>
+          <div class="form-group full-width">
+            <label for="dutiesTextarea">Duties & Responsibilities Paragraph</label>
+            <textarea id="dutiesTextarea" rows="4" oninput="updatePreview()"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. Compensation & Terms -->
+      <div class="section-card">
+        <div class="section-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z" />
+          </svg>
+          Compensation & Terms
+        </div>
+        <div class="form-group">
+          <label for="annualCTC">Total Annual CTC (INR)</label>
+          <input type="text" id="annualCTC" value="2,00,000" oninput="handleCTCChange()">
+          <button class="btn-calc" onclick="autoCalculateSalary()">🖥️ Auto-Calculate Annexure A</button>
+        </div>
+        <div class="form-group">
+          <label for="ctcInWords">CTC in Words</label>
+          <input type="text" id="ctcInWords" value="Rupees Two Lakh only" oninput="updatePreview()">
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="probationMonths">Probation (Months)</label>
+            <input type="text" id="probationMonths" value="3" oninput="updatePreview()">
+          </div>
+          <div class="form-group">
+            <label for="probationNotice">Probation Notice (Days)</label>
+            <input type="text" id="probationNotice" value="15" oninput="updatePreview()">
+          </div>
+          <div class="form-group">
+            <label for="confirmedNotice">Confirmed Notice (Days)</label>
+            <input type="text" id="confirmedNotice" value="30" oninput="updatePreview()">
+          </div>
+          <!--
+          <div class="form-group">
+            <label for="exitDocDays">Exit Doc Timeline (Days)</label>
+            <input type="text" id="exitDocDays" value="______" oninput="updatePreview()">
+          </div>
+          -->
+          <div class="form-group">
+            <label for="sickLeaves">Sick Leave (Days/Yr)</label>
+            <input type="text" id="sickLeaves" value="12" oninput="updatePreview()">
+          </div>
+          <div class="form-group">
+            <label for="monthlyLeaves">Monthly PTO Accrual (Days/Mo)</label>
+            <input type="text" id="monthlyLeaves" value="2" oninput="updatePreview()">
+          </div>
+          <div class="form-group full-width">
+            <label for="leaveBulkMonths">Bulk Leave Interval (Months)</label>
+            <input type="text" id="leaveBulkMonths" value="3" oninput="updatePreview()">
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. HR Contact & Signatory -->
+      <div class="section-card">
+        <div class="section-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
+          </svg>
+          HR Contact & Signatory
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="grievanceName">HR Contact Person</label>
+            <div class="field-toggle-wrapper">
+              <input type="text" id="grievanceName" value="Dilshaj Shaik" oninput="updatePreview()">
+              <button type="button" class="field-toggle-btn active" title="Field visible in document page" onclick="toggleFieldVisibility('grievanceName', '#prev_grievanceName, #prev_hrContactName', this)" aria-label="Toggle visibility">
+                <svg class="eye-icon eye-open" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                <svg class="eye-icon eye-off" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+              </button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="grievanceDesignation">HR Designation</label>
+            <div class="field-toggle-wrapper">
+              <input type="text" id="grievanceDesignation" value="Chief Executive Officer" oninput="updatePreview()">
+              <button type="button" class="field-toggle-btn active" title="Field visible in document page" onclick="toggleFieldVisibility('grievanceDesignation', '#prev_grievanceDesignation, #prev_hrContactDesig, #prev_signatoryDesig, #prev_signatoryDesig_annex', this)" aria-label="Toggle visibility">
+                <svg class="eye-icon eye-open" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                <svg class="eye-icon eye-off" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+              </button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="grievanceEmail">HR Contact Email</label>
+            <div class="field-toggle-wrapper">
+              <input type="text" id="grievanceEmail" value="dilshajceo@dilshajinfotech.tech" oninput="updatePreview()">
+              <button type="button" class="field-toggle-btn active" title="Field visible in document page" onclick="toggleFieldVisibility('grievanceEmail', '#prev_grievanceEmail, #prev_hrContactEmail', this)" aria-label="Toggle visibility">
+                <svg class="eye-icon eye-open" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                <svg class="eye-icon eye-off" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+              </button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="grievancePhone">HR Contact Phone</label>
+            <div class="field-toggle-wrapper">
+              <input type="text" id="grievancePhone" value="+91-8977272783" oninput="updatePreview()">
+              <button type="button" class="field-toggle-btn active" title="Field visible in document page" onclick="toggleFieldVisibility('grievancePhone', '#prev_grievancePhone, #prev_hrContactPhone', this)" aria-label="Toggle visibility">
+                <svg class="eye-icon eye-open" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                <svg class="eye-icon eye-off" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+              </button>
+            </div>
+          </div>
+          <div class="form-group full-width">
+            <label for="signatoryName">Company Signatory Name</label>
+            <div class="field-toggle-wrapper">
+              <input type="text" id="signatoryName" value="Dilshaj Shaik" oninput="updatePreview()">
+              <button type="button" class="field-toggle-btn active" title="Field visible in document page" onclick="toggleFieldVisibility('signatoryName', '#prev_signatoryName, #prev_signatoryName_annex', this)" aria-label="Toggle visibility">
+                <svg class="eye-icon eye-open" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                <svg class="eye-icon eye-off" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </aside>
+
+    <!-- Right Column: Document Preview Workspace -->
+    <main class="preview-workspace">
+
+      <!-- Other Document Placeholder Container -->
+      <div id="other-doc-placeholder"
+        style="display: none; flex-direction: column; align-items: center; justify-content: center; min-height: 420px; color: var(--text-muted); text-align: center; background: rgba(255,255,255,0.02); border: 2px dashed var(--border-color); border-radius: 16px; padding: 60px 40px; margin-top: 40px; width: 100%; max-width: 650px;">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary)" stroke-width="1.5"
+          style="margin-bottom: 16px;">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+          <line x1="16" y1="13" x2="8" y2="13"></line>
+          <line x1="16" y1="17" x2="8" y2="17"></line>
+        </svg>
+        <h3 id="placeholder-title"
+          style="font-family: 'Outfit', sans-serif; font-size: 20px; font-weight: 700; color: white; margin-bottom: 8px;">
+          Relieving Letter Workspace</h3>
+        <p id="placeholder-desc" style="font-size: 14px; max-width: 450px; line-height: 1.5; color: var(--text-muted);">
+          Generate and customize official Relieving Letters for departing employees.</p>
+      </div>
+
+      <div id="pdf-export-container">
+
+        <!-- PAGE 1 (Aptos font, generous spacing, 0 bottom clipping) -->
+        <div class="a4-page" id="page-1">
+
+          <div class="meta-block">
+            <div class="meta-line"><strong>Date:</strong> <span id="prev_offerDate">25 May 2026</span></div>
+            <div class="meta-line"><strong id="prev_employeeName">Employe Name</strong></div>
+            <div class="meta-line" id="prev_employeeAddress">Rolugunta, Anakapalle Andhra Pradesh, 531114</div>
+          </div>
+
+          <div class="doc-title-bar">
+            <div class="subject-title">SUBJECT: OFFER OF EMPLOYMENT</div>
+          </div>
+
+          <div class="doc-paragraph">
+            Dear <span id="prev_salutationName">Employe Name</span>,
+          </div>
+
+          <div class="doc-paragraph">
+            We are pleased to offer you employment with <strong><span id="prev_companyLegalName">Dilshaj Infotech
+                Private Limited</span></strong> (a <span id="prev_companyType">Private Limited Company</span>
+            incorporated under the Companies Act, 2013, CIN: <span id="prev_companyCin">U72900AP2024PTC123456</span>),
+            having its registered office at <span id="prev_companyRegOffice">Survey No: 225-2A, Narsipatnam,
+              Visakhapatnam, Andhra Pradesh 531114</span>. In this letter, Dilshaj Infotech Private Limited is referred
+            to as the “Company.” This offer is for the position stated below and is subject to the terms and conditions
+            of this letter and the applicable Company policies.
+          </div>
+
+          <!-- 1. Employment Details -->
+          <div class="section-heading">1. Employment Details</div>
+          <table class="details-table">
+            <tr>
+              <td class="label-col">Designation:</td>
+              <td id="prev_designation">Software Engineer</td>
+              <td class="label-col">Department:</td>
+              <td id="prev_department">Development</td>
+            </tr>
+            <tr>
+              <td class="label-col">Reporting To:</td>
+              <td id="prev_reportingTo">Dilshaj Shaik</td>
+              <td class="label-col">Employment :</td>
+              <td id="prev_employmentType">Full-Time</td>
+            </tr>
+            <tr>
+              <td class="label-col">Date of Joining:</td>
+              <td id="prev_dateOfJoining">25 May 2026</td>
+              <td class="label-col">Work Location:</td>
+              <td id="prev_workLocation">Rolugunta</td>
+            </tr>
+            <tr>
+              <td class="label-col">Work Mode:</td>
+              <td id="prev_workMode" colspan="3">Onsite (Office)</td>
+            </tr>
+          </table>
+
+          <!-- 2. Duties and Responsibilities -->
+          <div class="section-heading">2. Duties and Responsibilities</div>
+          <div class="doc-paragraph" id="prev_dutiesParagraph"></div>
+
+          <!-- 3. Compensation and Benefits -->
+          <div class="section-heading">3. Compensation and Benefits</div>
+          <div class="doc-paragraph">
+            Your Total annual Cost to Company will be <strong>Rs. <span id="prev_ctcAmount">2,00,000</span> (<span
+                id="prev_ctcWords">Rupees Two Lakh only</span>)</strong>. The detailed salary structure,
+            employee
+            deductions and employer contributions are set out in Annexure A which is attached to and forms an integral
+            part of this Offer Letter.
+          </div>
+
+          <!-- 4. Salary Payment -->
+          <div class="section-heading">4. Salary Payment</div>
+          <div class="doc-paragraph">
+            Salary for each month will be credited to your bank account on or before the 7th day of the subsequent
+            calendar month. An itemized salary slip detailing gross earnings and deductions will be issued monthly.
+          </div>
+
+          <!-- 5. Probation and Confirmation -->
+          <div class="section-heading">5. Probation and Confirmation</div>
+          <div class="doc-paragraph">
+            You will be on probation for a period of <strong><span id="prev_probationMonths">3</span> months</strong>
+            from your Date of Joining. Upon satisfactory completion of your probation, your employment will be confirmed
+            in writing.
+          </div>
+
+          <!-- Page 1 Footer -->
+          <div class="doc-page-footer">
+            <span>Page 1 of 4</span>
+          </div>
+
+        </div>
+
+        <!-- PAGE 2 (Sections 6 to 10 - Structured HR Clauses) -->
+        <div class="a4-page" id="page-2">
+
+          <!-- 6. Working Hours and Leave -->
+          <div class="section-heading" style="margin-top: 0;">6. Working Hours and Leave</div>
+          <div class="doc-paragraph" style="margin-bottom: 5px;">
+            <strong>a) Working Hours:</strong> Your normal working hours will be from 9:30 AM to 5:30 PM, Monday to
+            Saturday. You may occasionally be required to work beyond normal hours, on a weekly off, holiday or in
+            shifts based on business requirements. Overtime or compensatory off, where applicable, will be governed by
+            applicable law and Company policy.
+          </div>
+          <div class="doc-paragraph" style="margin-bottom: 5px;">
+            <strong>b) Flexible Work:</strong> Work from home or flexible working hours may be permitted based on the
+            nature of your role, business requirements and management approval.
+          </div>
+          <div class="doc-paragraph" style="margin-bottom: 8px;">
+            <strong>c) Leave Entitlement:</strong> You will be entitled to <span id="prev_totalPto">24</span> days of
+            Paid Time Off (PTO) per calendar year (covering both Casual and Medical Leave needs, accruing at <span
+              id="prev_monthlyLeaves">2</span> days per completed month) plus Earned Leave entitlements as per statutory
+            regulations. Leave requests are subject to prior manager approval, and official holidays will be governed by
+            statutory regulations and the Company's leave policy.
+          </div>
+
+          <!-- 7. Performance Review and Increment -->
+          <div class="section-heading">7. Performance Review and Increment</div>
+          <div class="doc-paragraph">
+            Performance and compensation will be reviewed periodically in accordance with Company policy. Any increment,
+            bonus or incentive will depend on performance and business requirements.
+          </div>
+
+          <!-- 8. Code of Conduct -->
+          <div class="section-heading">8. Code of Conduct</div>
+          <div class="doc-paragraph">
+            You are expected to maintain professional conduct and comply with the Company's code of conduct,
+            information security, data protection and other applicable workplace policies. You shall
+            not enter into contracts, commitments or representations on behalf of the Company unless expressly
+            authorised to do so.
+          </div>
+
+          <!-- 9. Confidentiality and Intellectual Property -->
+          <div class="section-heading">9. Confidentiality and Intellectual Property</div>
+          <div class="doc-paragraph">
+            Confidential information relating to the Company, its customers, employees, business, technology and
+            operations must be protected during and after employment and must not be disclosed or misused except where
+            authorised or required by law. Subject to applicable law, work, software, code, documentation, designs,
+            inventions or other intellectual property created by you in the course of your assigned employment duties
+            will belong to the Company.
+          </div>
+
+          <!-- 10. Background Verification -->
+          <div class="section-heading">10. Background Verification</div>
+          <div class="doc-paragraph">
+            Your appointment is subject to satisfactory verification of the information and documents provided by you,
+            including your identity, qualifications, employment history and references.
+          </div>
+
+          <!-- 11. Employee Declarations -->
+          <div class="section-heading">11. Employee Declarations</div>
+          <div class="doc-paragraph">
+            You confirm that the information provided during recruitment is true and complete and that no obligation to
+            a previous employer prevents you from accepting this employment. Any material misrepresentation or
+            concealment may result in appropriate action in accordance with Company policy and applicable law.
+          </div>
+
+          <!-- Page 2 Footer -->
+          <div class="doc-page-footer">
+            <span>Page 2 of 4</span>
+          </div>
+
+        </div>
+
+        <!-- PAGE 3 (Sections 12 to 15 + Signatures) -->
+        <div class="a4-page" id="page-3">
+
+          <!-- 12. Transfer and Assignment -->
+          <div class="section-heading" style="margin-top: 0;">12. Transfer and Assignment</div>
+          <div class="doc-paragraph">
+            Based on business requirements, you may be transferred or assigned to another project, office,
+            group entity or customer location in India or abroad, subject to applicable law and Company policy. During
+            such assignment, you will continue to remain an employee of <span id="prev_companyShortName">Dilshaj
+              Infotech Private Limited</span> and will be required to comply
+            with applicable workplace, security and confidentiality requirements.
+          </div>
+
+          <!-- 13. Notice Period and Separation -->
+          <div class="section-heading">13. Notice Period and Separation</div>
+          <div class="doc-paragraph" style="margin-bottom: 5px;">
+            <strong>a) Notice Period:</strong> During probation, either party may terminate employment by giving <span
+              id="prev_probationNotice">15</span> days written notice. After confirmation, either party may terminate
+            employment by giving <span id="prev_confirmedNotice">30</span> days written notice.
+          </div>
+          <div class="doc-paragraph" style="margin-bottom: 5px;">
+            <strong>b) Salary in Lieu of Notice:</strong> If the Company terminates employment without requiring the
+            notice period to be served, the Company shall pay salary in lieu of notice for the unserved period. If an
+            employee resigns without serving the required notice period, the employee shall pay or forfeit salary in
+            lieu of notice for the unserved period, unless waived in writing by the Company.
+          </div>
+          <div class="doc-paragraph" style="margin-bottom: 5px;">
+            <strong>c) Notice Pay Calculation:</strong> Salary in lieu of notice shall be calculated strictly on your
+            monthly Gross Salary (excluding employer statutory contributions, benefits, reimbursements, and variable
+            pay).
+          </div>
+          <div class="doc-paragraph" style="margin-bottom: 8px;">
+            <strong>d) Separation &amp; F&amp;F Settlement:</strong> Upon separation, earned wages for work performed up
+            to the last working day shall be paid within 2 working days of separation, as prescribed under statutory
+            wage regulations. All remaining Full-and-Final (F&amp;F) settlement components (including leave encashment
+            and statutory adjustments) and exit documentation shall be processed within 30 days of the last working day,
+            subject to completion of applicable exit clearance formalities.
+          </div>
+
+          <!-- 14. Inquiries and HR Support -->
+          <div class="section-heading">14. Inquiries and HR Support</div>
+          <div class="doc-paragraph">
+            If you have any questions or require clarifications regarding the terms of this offer letter, onboarding
+            documentation, or your joining process, please reach out to our HR point of contact, <strong><span
+                id="prev_hrContactName">Dilshaj Shaik</span></strong> (<span id="prev_hrContactDesig">CEO, Dilshaj
+              Infotech</span>) at <span id="prev_hrContactEmail">dilshajceo@dilshajinfotech.tech</span> or <span
+              id="prev_hrContactPhone">+91-8977272783</span>.
+          </div>
+
+          <!-- 15. Acceptance -->
+          <div class="section-heading">15. Acceptance</div>
+          <div class="doc-paragraph">
+            Please sign and return a copy of this letter within 15 days to confirm that you have read, understood and
+            accepted the terms and conditions of employment stated in this letter.
+          </div>
+
+          <div class="doc-paragraph" style="margin-top: 18px;">
+            We are excited to welcome you to <strong><span id="prev_welcomeCompName">Dilshaj Infotech Private
+                Limited</span></strong> and look forward to your valuable
+            contributions toward our mission of empowering intelligence and building the future.
+          </div>
+
+          <!-- Signatures -->
+          <div class="signature-container">
+            <div class="signature-box" style="position: relative;">
+              <div>For <strong><span id="prev_sigCompName">Dilshaj Infotech Private Limited</span></strong></div>
+              <div class="sig-seal-wrap"
+                style="position: absolute; top: 0; left: 0; right: 0; height: 0; pointer-events: none; z-index: 10;">
+                <img src="Signature.svg" alt="Authorized Signature" class="doc-signature-img"
+                  style="height: 44px; width: auto; position: absolute; left: 0; top: 20px; z-index: 2;">
+                <img src="Stamp.svg" alt="Company Stamp" class="doc-stamp-img"
+                  style="height: 108px; width: auto; position: absolute; left: 168px; top: 30px; opacity: 0.88; z-index: 1;">
+              </div>
+              <div class="signature-line" style="margin-top: 46px;">
+                <strong id="prev_signatoryName">Dilshaj Shaik</strong><br>
+                <span id="prev_signatoryDesig">CEO, Dilshaj Infotech</span><br>
+                Date: <span id="prev_signatoryDate">25 May 2026</span>
+              </div>
+            </div>
+            <div class="signature-box">
+              <div>Accepted by:</div>
+              <div class="signature-line" style="margin-top: 46px;">
+                <strong id="prev_acceptedName">Employe Name</strong><br>
+                Date:
+              </div>
+            </div>
+          </div>
+
+          <!-- Page 3 Footer -->
+          <div class="doc-page-footer">
+            <span>Page 3 of 4</span>
+          </div>
+
+        </div>
+
+        <!-- PAGE 4 (Annexure A - Perfect Page Fill) -->
+        <div class="a4-page" id="page-4">
+
+          <div class="doc-title-bar" style="margin-top: 0;">
+            <div class="subject-title" style="font-size: 13.5pt;">ANNEXURE A</div>
+            <div style="font-size: 11pt; font-weight: 700; color: #0f172a; margin-top: 6px;">COMPENSATION STRUCTURE
+            </div>
+          </div>
+
+          <table class="details-table" style="margin-bottom: 8px; margin-top: 4px;">
+            <tr>
+              <td class="label-col">Employee:</td>
+              <td id="prev_annexureEmployee">Employe Name</td>
+              <td class="label-col">Effective Date:</td>
+              <td id="prev_annexureEffective">25 May 2026</td>
+            </tr>
+            <tr>
+              <td class="label-col">Designation:</td>
+              <td id="prev_annexureDesignation" colspan="3">Software Engineer</td>
+            </tr>
+          </table>
+
+          <!-- Salary Breakdown Table -->
+          <table class="annexure-table" style="margin-top: 6px; margin-bottom: 8px;">
+            <thead>
+              <tr>
+                <th>Compensation Component</th>
+                <th class="text-right">Monthly (₹)</th>
+                <th class="text-right">Annual (₹)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- SECTION A -->
+              <tr class="category-header">
+                <td colspan="3">A. GROSS SALARY</td>
+              </tr>
+              <tr>
+                <td style="padding-left: 20px;">Basic Salary</td>
+                <td class="text-right" id="val_basic_m">7,628</td>
+                <td class="text-right" id="val_basic_a">91,533</td>
+              </tr>
+              <tr>
+                <td style="padding-left: 20px;">House Rent Allowance (HRA)</td>
+                <td class="text-right" id="val_hra_m">3,051</td>
+                <td class="text-right" id="val_hra_a">36,613</td>
+              </tr>
+              <tr>
+                <td style="padding-left: 20px;">Special Allowance</td>
+                <td class="text-right" id="val_sa_m">4,577</td>
+                <td class="text-right" id="val_sa_a">54,920</td>
+              </tr>
+              <tr class="subtotal-row">
+                <td>Total Gross Salary</td>
+                <td class="text-right" id="val_gross_m">15,256</td>
+                <td class="text-right" id="val_gross_a">1,83,066</td>
+              </tr>
+
+              <!-- SECTION B -->
+              <tr class="category-header">
+                <td colspan="3">B. STATUTORY BENEFITS</td>
+              </tr>
+              <tr>
+                <td style="padding-left: 20px;">Employer PF Contribution</td>
+                <td class="text-right" id="val_epf_m">915</td>
+                <td class="text-right" id="val_epf_a">10,984</td>
+              </tr>
+              <tr>
+                <td style="padding-left: 20px;">Employer ESI Contribution</td>
+                <td class="text-right" id="val_eesi_m">496</td>
+                <td class="text-right" id="val_eesi_a">5,950</td>
+              </tr>
+              <tr class="subtotal-row">
+                <td>Total Benefits</td>
+                <td class="text-right" id="val_emp_contrib_m">1,411</td>
+                <td class="text-right" id="val_emp_contrib_a">16,934</td>
+              </tr>
+
+              <!-- TOTAL CTC -->
+              <tr class="total-row ctc-row" style="background-color: #e2e8f0; font-weight: bold;">
+                <td>TOTAL COST TO COMPANY</td>
+                <td class="text-right" id="val_ctc_m">16,667</td>
+                <td class="text-right" id="val_ctc_a">2,00,000</td>
+              </tr>
+
+              <!-- SECTION C -->
+              <tr class="category-header">
+                <td colspan="3">C. DEDUCTIONS</td>
+              </tr>
+              <tr>
+                <td style="padding-left: 20px;">Employee PF Contribution</td>
+                <td class="text-right" id="val_emp_pf_m">915</td>
+                <td class="text-right" id="val_emp_pf_a">10,984</td>
+              </tr>
+              <tr>
+                <td style="padding-left: 20px;">Employee ESI Contribution</td>
+                <td class="text-right" id="val_emp_esi_m">114</td>
+                <td class="text-right" id="val_emp_esi_a">1,373</td>
+              </tr>
+              <tr class="subtotal-row">
+                <td>Total Deductions</td>
+                <td class="text-right" id="val_ded_m">1,029</td>
+                <td class="text-right" id="val_ded_a">12,357</td>
+              </tr>
+
+              <!-- NET SALARY -->
+              <tr class="total-row" style="background-color: #e2e8f0; font-weight: bold;">
+                <td>Estimated Net Pay </td>
+                <td class="text-right" id="val_net_m">14,227</td>
+                <td class="text-right" id="val_net_a">1,70,709</td>
+              </tr>
+            </tbody>
+          </table>
+
+
+
+          <!-- Annexure A Declaration & Signatures -->
+          <div style="margin-top: 12px; font-size: 8.5pt; color: var(--doc-text); line-height: 1.35;">
+            <strong>Declaration & Acknowledgment:</strong> I have read, understood, and accept the compensation
+            breakdown, statutory deductions, and terms specified in this Annexure A.
+          </div>
+
+          <div class="signature-container" style="margin-top: 14px;">
+            <div class="signature-box" style="position: relative;">
+              <div>For <strong><span id="prev_sigCompName_annex">Dilshaj Infotech Private Limited</span></strong></div>
+              <div class="sig-seal-wrap"
+                style="position: absolute; top: 0; left: 0; right: 0; height: 0; pointer-events: none; z-index: 10;">
+                <img src="Signature.svg" alt="Authorized Signature" class="doc-signature-img"
+                  style="height: 44px; width: auto; position: absolute; left: 0; top: 20px; z-index: 2;">
+                <img src="Stamp.svg" alt="Company Stamp" class="doc-stamp-img"
+                  style="height: 108px; width: auto; position: absolute; left: 168px; top: 30px; opacity: 0.88; z-index: 1;">
+              </div>
+              <div class="signature-line" style="margin-top: 46px;">
+                <strong id="prev_signatoryName_annex">Dilshaj Shaik</strong><br>
+                <span id="prev_signatoryDesig_annex">CEO, Dilshaj Infotech</span><br>
+                Date: <span id="prev_signatoryDate_annex">25 May 2026</span>
+              </div>
+            </div>
+            <div class="signature-box">
+              <div>Accepted by:</div>
+              <div class="signature-line" style="margin-top: 46px;">
+                <strong id="prev_acceptedName_annex">Employe Name</strong><br>
+                Date:
+              </div>
+            </div>
+          </div>
+
+          <!-- Page 4 Footer -->
+          <div class="doc-page-footer">
+            <span>Page 4 of 4</span>
+          </div>
+
+        </div>
+
+      </div>
+
+    </main>
+
+  </div>
+
+  <!-- Toast Element -->
+  <div id="toast" class="toast">Document generating...</div>
+
+  <script>
+    // Document tab switching helper
+    function switchDocTab(type, btn) {
+      document.querySelectorAll('.doc-tab').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      const offerContainer = document.getElementById('pdf-export-container');
+      const placeholderContainer = document.getElementById('other-doc-placeholder');
+
+      if (type === 'offer') {
+        offerContainer.style.display = 'flex';
+        placeholderContainer.style.display = 'none';
+        showToast('Switched to Offer Letter mode');
+      } else if (type === 'relieving') {
+        offerContainer.style.display = 'none';
+        placeholderContainer.style.display = 'flex';
+        document.getElementById('placeholder-title').innerText = 'Relieving Letter Workspace';
+        document.getElementById('placeholder-desc').innerText = 'Generate and customize official Relieving Letters for departing employees.';
+        showToast('Switched to Relieving Letter mode');
+      } else if (type === 'experience') {
+        offerContainer.style.display = 'none';
+        placeholderContainer.style.display = 'flex';
+        document.getElementById('placeholder-title').innerText = 'Experience Letter Workspace';
+        document.getElementById('placeholder-desc').innerText = 'Generate and customize official Experience & Service Certificates.';
+        showToast('Switched to Experience Letter mode');
+      }
+    }
+
+    // Dynamic Page Size Change Handler
+    function changePageSize() {
+      const pageSize = document.getElementById('pageSizeSelect').value;
+      if (pageSize === 'letter') {
+        document.body.classList.add('mode-letter');
+        showToast('Page mode changed to US Letter (8.5 × 11 in)');
+      } else {
+        document.body.classList.remove('mode-letter');
+        showToast('Page mode changed to A4 (210 × 297 mm)');
+      }
+    }
+
+
+    // Live update preview function
+    function updatePreview() {
+      const getVal = id => {
+        const el = document.getElementById(id);
+        return el ? el.value.trim() : '';
+      };
+      const setPrevText = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.innerText = val;
+      };
+
+      const compName = getVal('companyName') || 'Dilshaj Infotech Private Limited';
+      const compCin = getVal('companyCin') || 'U72900AP2024PTC123456';
+      const compType = getVal('companyType') || 'Private Limited Company';
+      const compAddress = getVal('companyAddress') || 'Survey No: 225-2A, Narsipatnam, Visakhapatnam, Andhra Pradesh 531114';
+
+      const sickLeaves = getVal('sickLeaves') || '12';
+      const monthlyLeaves = getVal('monthlyLeaves') || '2';
+      const totalPto = String((parseInt(monthlyLeaves, 10) || 2) * 12);
+      const bulkMonths = getVal('leaveBulkMonths') || '3';
+
+      const name = getVal('employeeName') || 'Employe Name';
+      const address = getVal('employeeAddress') || 'Rolugunta, Anakapalle Andhra Pradesh, 531114';
+      const date = getVal('offerDate') || '25 May 2026';
+      const desig = getVal('designation') || 'Software Engineer';
+      const dept = getVal('department') || 'Engineering';
+      const rep = getVal('reportingTo') || 'Dilshaj Shaik';
+      const empType = getVal('employmentType') || 'Full-Time';
+      const doj = getVal('dateOfJoining') || '25 May 2026';
+      const loc = getVal('workLocation') || 'Rolugunta';
+      const mode = getVal('workMode') || 'Onsite (Office)';
+      const ctc = getVal('annualCTC') || '2,00,000';
+      const ctcWords = getVal('ctcInWords') || 'Rupees Two Lakh only';
+      const probation = getVal('probationMonths') || '3';
+      const probNotice = getVal('probationNotice') || '15';
+      const confNotice = getVal('confirmedNotice') || '30';
+      const exitDays = getVal('exitDocDays') || '______';
+      const gName = getVal('grievanceName') || 'Dilshaj Shaik';
+      const gDesig = getVal('grievanceDesignation') || 'CEO, Dilshaj Infotech';
+      const gEmail = getVal('grievanceEmail') || 'dilshajceo@dilshajinfotech.tech';
+      const gPhone = getVal('grievancePhone') || '+91-8977272783';
+      const sigName = getVal('signatoryName') || 'Dilshaj Shaik';
+      const dutiesText = getVal('dutiesTextarea') || (ROLE_PRESETS['Software Engineer'] ? ROLE_PRESETS['Software Engineer'].duties : '');
+
+      setPrevText('prev_companyLegalName', compName);
+      setPrevText('prev_companyCin', compCin);
+      setPrevText('prev_companyType', compType);
+      setPrevText('prev_companyRegOffice', compAddress);
+      setPrevText('prev_companyShortName', compName);
+      setPrevText('prev_welcomeCompName', compName);
+      setPrevText('prev_sigCompName', compName);
+
+      setPrevText('prev_sickLeaves', sickLeaves);
+      setPrevText('prev_monthlyLeaves', monthlyLeaves);
+      setPrevText('prev_totalPto', totalPto);
+      setPrevText('prev_bulkLeaveMonths', bulkMonths);
+
+      setPrevText('prev_offerDate', date);
+      setPrevText('prev_employeeName', name);
+      setPrevText('prev_employeeAddress', address);
+      setPrevText('prev_salutationName', name);
+
+      setPrevText('prev_designation', desig);
+      setPrevText('prev_department', dept);
+      setPrevText('prev_reportingTo', rep);
+      setPrevText('prev_employmentType', empType);
+      setPrevText('prev_dateOfJoining', doj);
+      setPrevText('prev_workLocation', loc);
+      setPrevText('prev_workMode', mode);
+
+      const prevDutiesEl = document.getElementById('prev_dutiesParagraph');
+      if (prevDutiesEl) {
+        prevDutiesEl.innerText = dutiesText;
+      }
+
+      setPrevText('prev_ctcAmount', ctc);
+      setPrevText('prev_ctcWords', ctcWords);
+      setPrevText('prev_probationMonths', probation);
+
+      setPrevText('prev_probationNotice', probNotice);
+      setPrevText('prev_confirmedNotice', confNotice);
+      setPrevText('prev_exitDocDays', exitDays);
+
+      setPrevText('prev_hrContactName', gName);
+      setPrevText('prev_hrContactDesig', gDesig);
+      setPrevText('prev_hrContactEmail', gEmail);
+      setPrevText('prev_hrContactPhone', gPhone);
+
+      setPrevText('prev_grievanceName', gName);
+      setPrevText('prev_grievanceDesignation', gDesig);
+      setPrevText('prev_grievanceEmail', gEmail);
+      setPrevText('prev_grievancePhone', gPhone);
+
+      setPrevText('prev_signatoryName', sigName);
+      setPrevText('prev_signatoryDesig', gDesig);
+      setPrevText('prev_signatoryDate', date);
+      setPrevText('prev_acceptedName', name);
+
+      setPrevText('prev_sigCompName_annex', compName);
+      setPrevText('prev_signatoryName_annex', sigName);
+      setPrevText('prev_signatoryDesig_annex', gDesig);
+      setPrevText('prev_signatoryDate_annex', date);
+      setPrevText('prev_acceptedName_annex', name);
+
+      setPrevText('prev_annexureEmployee', name);
+      setPrevText('prev_annexureEffective', doj);
+      setPrevText('prev_annexureDesignation', desig);
+      if (window.refreshHiddenFields) refreshHiddenFields();
+    }
+
+
+    // Salary Auto-calculation function (Corporate Whole-Rupee Standard - 0 Rounding Discrepancy)
+    function autoCalculateSalary() {
+      const rawCTC = document.getElementById('annualCTC').value.replace(/[^0-9.]/g, '');
+      const annualCTC = Math.round(parseFloat(rawCTC) || 200000);
+      const monthlyCTC = Math.round(annualCTC / 12); // 16,667
+
+      document.getElementById('ctcInWords').value = numberToWordsINR(annualCTC);
+
+      // 1. Determine ESI applicability (if Monthly Gross <= 21,000/mo)
+      const isEsiApplicable = (annualCTC / 12 / 1.0925) <= 21000;
+      const grossDivisor = isEsiApplicable ? 1.0925 : 1.06;
+
+      // 2. Calculate Annual Figures First (Guarantees Gross (A) + Employer Contrib (B) == Annual CTC exactly)
+      const annualGross = Math.round(annualCTC / grossDivisor);               // 1,83,066
+      const annualBasic = Math.round(annualGross * 0.50);                      // 91,533
+      const annualHra = Math.round(annualBasic * 0.40);                        // 36,613
+
+      const annualEpf = Math.round(annualBasic * 0.12);                        // 10,984
+      const annualEesi = isEsiApplicable ? Math.round(annualGross * 0.0325) : 0; // 5,950
+      const annualEmpContrib = annualEpf + annualEesi;                          // 16,934
+
+      // Special Allowance acts as the exact balancing component to hit CTC
+      const annualSpecial = annualCTC - annualBasic - annualHra - annualEmpContrib; // 54,920
+      const gross_a = annualBasic + annualHra + annualSpecial;                 // 1,83,066
+
+      // 3. Employee Deductions (Section C - Annual)
+      const annualEmpPf = annualEpf;                                            // 10,984
+      const annualEmpEsi = isEsiApplicable ? Math.round(annualGross * 0.0075) : 0; // 1,373
+      const annualDed = annualEmpPf + annualEmpEsi;                             // 12,357
+      const net_a = gross_a - annualDed;                                        // 1,70,709
+
+      // 4. Monthly Figures derived from Annual Components
+      const basic_m = Math.round(annualBasic / 12);                            // 7,628
+      const hra_m = Math.round(annualHra / 12);                                // 3,051
+      const sa_m = Math.round(annualSpecial / 12);                             // 4,577
+      const gross_m = basic_m + hra_m + sa_m;                                  // 15,256
+
+      const empPF_m = Math.round(annualEpf / 12);                              // 915
+      const empESI_m = Math.round(annualEesi / 12);                            // 496
+      const empContrib_m = empPF_m + empESI_m;                                 // 1,411
+
+      const employeePF_m = empPF_m;                                             // 915
+      const employeeESI_m = Math.round(annualEmpEsi / 12);                       // 114
+      const totalDed_m = employeePF_m + employeeESI_m;                          // 1,029
+      const net_m = gross_m - totalDed_m;                                       // 14,227
+
+      const fmt = num => Math.round(num).toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+
+      const setTxt = (id, num) => {
+        const el = document.getElementById(id);
+        if (el) el.innerText = fmt(num);
+      };
+
+      setTxt('val_basic_m', basic_m);
+      setTxt('val_basic_a', annualBasic);
+
+      setTxt('val_hra_m', hra_m);
+      setTxt('val_hra_a', annualHra);
+
+      setTxt('val_sa_m', sa_m);
+      setTxt('val_sa_a', annualSpecial);
+
+      setTxt('val_gross_m', gross_m);
+      setTxt('val_gross_a', gross_a);
+
+      setTxt('val_epf_m', empPF_m);
+      setTxt('val_epf_a', annualEpf);
+
+      setTxt('val_eesi_m', empESI_m);
+      setTxt('val_eesi_a', annualEesi);
+
+      setTxt('val_emp_contrib_m', empContrib_m);
+      setTxt('val_emp_contrib_a', annualEmpContrib);
+
+      setTxt('val_ctc_m', monthlyCTC);
+      setTxt('val_ctc_a', annualCTC);
+
+      setTxt('val_emp_pf_m', employeePF_m);
+      setTxt('val_emp_pf_a', annualEmpPf);
+
+      setTxt('val_emp_esi_m', employeeESI_m);
+      setTxt('val_emp_esi_a', annualEmpEsi);
+
+      setTxt('val_ded_m', totalDed_m);
+      setTxt('val_ded_a', annualDed);
+
+      setTxt('val_net_m', net_m);
+      setTxt('val_net_a', net_a);
+
+      updatePreview();
+    }
+
+    function handleCTCChange() {
+      autoCalculateSalary();
+    }
+
+
+    // Initialize preview on DOM load
+    window.addEventListener('DOMContentLoaded', () => {
+      loadSharedProfile({
+        'companyName': 'companyName',
+        'employeeName': 'empName',
+        'designation': 'designation',
+        'department': 'department',
+        'workLocation': 'location',
+        'offerDate': 'docDate',
+        'dateOfJoining': 'doj',
+        'signatoryName': 'sigName'
+      });
+      const dutiesBox = document.getElementById('dutiesTextarea');
+      if (dutiesBox && !dutiesBox.value) {
+        dutiesBox.value = ROLE_PRESETS['Software Engineer'].duties;
+      }
+      autoCalculateSalary();
+      updatePreview();
+    });
+  </script>
+</body>
+
+</html>

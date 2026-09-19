@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <!-- Auth Guard (Must load first) -->
+  <script src="auth.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NOC & Exit NDA Agreement Generator | Dilshaj Infotech</title>
+
+  <!-- Google Fonts for UI Header Bar -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+
+  <!-- html2canvas and jsPDF for razor-sharp rendering (deferred) -->
+
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <!-- Consolidated Design System & Theme Stylesheet -->
+  <link rel="stylesheet" href="shared.css?v=4.3">
+  <!-- Centralized Header Navigation & Shared HR Profile Manager -->
+  <script src="header.js?v=4.3"></script>
+</head>
+
+<body>
+
+  <!-- Centralized Top Navigation Bar (Injected by header.js) -->
+  <div id="header-placeholder"></div>
+
+  <!-- App Layout Grid -->
+  <div class="app-layout">
+    <!-- Left Column: Form Sidebar -->
+    <aside class="form-sidebar">
+      <div class="section-card">
+        <div class="section-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+          </svg>
+          Employee & Exit Info
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="docDate">Document Date</label>
+            <div class="date-input-wrapper">
+              <input type="text" id="docDate" value="01 Oct 2026" oninput="updatePreview()"
+                onclick="openUniversalDatePicker(this, this.nextElementSibling)">
+              <button type="button" class="date-picker-btn" title="Choose date from calendar"
+                onclick="openUniversalDatePicker(document.getElementById('docDate'), this)">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                  <line x1="16" y1="2" x2="16" y2="6"></line>
+                  <line x1="8" y1="2" x2="8" y2="6"></line>
+                  <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="empPrefix">Salutation Prefix</label>
+            <select id="empPrefix" onchange="updatePreview()">
+              <option value="Mr." selected>Mr.</option>
+              <option value="Ms.">Ms.</option>
+              <option value="Mrs.">Mrs.</option>
+              <option value="Dr.">Dr.</option>
+            </select>
+          </div>
+          <div class="form-group full-width">
+            <label for="empName">Employee Full Name</label>
+            <input type="text" id="empName" value="Sampath Kumar" oninput="updatePreview()">
+          </div>
+          <div class="form-group full-width">
+            <label for="rolePresetSelect">Select Role / Designation Preset</label>
+            <select id="rolePresetSelect" onchange="onRoleSelectChange()"></select>
+          </div>
+          <div class="form-group">
+            <label for="empId">Employee No / ID</label>
+            <input type="text" id="empId" value="2028001" oninput="updatePreview()">
+          </div>
+          <div class="form-group">
+            <label for="designation">Designation</label>
+            <input type="text" id="designation" value="Software Engineer" oninput="onCustomDesignationInput()">
+          </div>
+          <div class="form-group full-width">
+            <label for="relieveDate">Relieving Date</label>
+            <div class="date-input-wrapper">
+              <input type="text" id="relieveDate" value="01 Oct 2026" oninput="updatePreview()"
+                onclick="openUniversalDatePicker(this, this.nextElementSibling)">
+              <button type="button" class="date-picker-btn" title="Choose date from calendar"
+                onclick="openUniversalDatePicker(document.getElementById('relieveDate'), this)">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                  <line x1="16" y1="2" x2="16" y2="6"></line>
+                  <line x1="8" y1="2" x2="8" y2="6"></line>
+                  <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-card">
+        <div class="section-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
+          </svg>
+          Company & Signatory
+        </div>
+        <div class="form-grid">
+          <div class="form-group full-width">
+            <label for="companyName">Company Name</label>
+            <div class="field-toggle-wrapper">
+              <input type="text" id="companyName" value="Dilshaj Infotech Private Limited" oninput="updatePreview()">
+              <button type="button" class="field-toggle-btn active" title="Field visible in document page" onclick="toggleFieldVisibility('companyName', '#prev_sigComp', this)" aria-label="Toggle visibility">
+                <svg class="eye-icon eye-open" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                <svg class="eye-icon eye-off" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+              </button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="sigName">Signatory Name</label>
+            <div class="field-toggle-wrapper">
+              <input type="text" id="sigName" value="Dilshaj Shaik" oninput="updatePreview()">
+              <button type="button" class="field-toggle-btn active" title="Field visible in document page" onclick="toggleFieldVisibility('sigName', '#prev_signatory', this)" aria-label="Toggle visibility">
+                <svg class="eye-icon eye-open" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                <svg class="eye-icon eye-off" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+              </button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="sigDesig">Signatory Designation</label>
+            <div class="field-toggle-wrapper">
+              <input type="text" id="sigDesig" value="Chief Executive Officer" oninput="updatePreview()">
+              <button type="button" class="field-toggle-btn active" title="Field visible in document page" onclick="toggleFieldVisibility('sigDesig', '#prev_signatoryDesig', this)" aria-label="Toggle visibility">
+                <svg class="eye-icon eye-open" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                <svg class="eye-icon eye-off" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Right Column: Document Workspace Preview -->
+    <main class="preview-workspace">
+      <div id="pdf-export-container">
+        <div class="a4-page" id="page-1">
+
+          <div class="doc-title-bar" style="margin-top: 5px;">
+            <div class="subject-title" style="margin-bottom: 25px;">NO OBJECTION CERTIFICATE & EXIT UNDERTAKING (NDA)
+            </div>
+          </div>
+
+          <div class="meta-block">
+            <div class="meta-line"><strong>Date:</strong> <span id="prev_date">01 Oct 2026</span></div>
+            <div class="meta-line"><strong>Employee Name:</strong> <span id="prev_prefixName">Mr. Sampath Kumar</span>
+            </div>
+            <div class="meta-line"><strong>Employee ID:</strong> <span id="prev_empId">2028001</span></div>
+            <div class="meta-line"><strong>Designation:</strong> <span id="prev_desig">Software Engineer</span></div>
+          </div>
+
+          <!-- Section 1: NOC -->
+          <div class="section-heading">PART I: NO OBJECTION CERTIFICATE (NOC)</div>
+          <div class="doc-paragraph">
+            This is to certify that <strong>Dilshaj Infotech Private Limited</strong> has <strong>No Objection</strong>
+            to <span id="prev_nocName">Mr. Sampath Kumar</span> taking up employment with any other organization,
+            pursuing higher education, or exploring professional opportunities following <span id="prev_poss">his</span>
+            relieving on <strong><span id="prev_relieveDate">01 Oct 2026</span></strong>.
+          </div>
+          <div class="doc-paragraph">
+            It is confirmed that <span id="prev_prefixName2">Mr. Sampath Kumar</span> has completed all handover
+            formalities, returned all Company property and assets, and settled all accounts satisfactorily.
+          </div>
+
+          <!-- Section 2: Exit NDA -->
+          <div class="section-heading">PART II: EXIT CONFIDENTIALITY & NON-DISCLOSURE (NDA)</div>
+          <div class="doc-paragraph">
+            The employee confirms that all confidential information, client data, source code, and intellectual property
+            developed during tenure remain the exclusive property of <strong>Dilshaj Infotech Private Limited</strong>,
+            and undertakes not to disclose or misuse any proprietary information post-employment.
+          </div>
+
+          <!-- Signatures -->
+          <div style="display: flex; justify-content: space-between; margin-top: 40px;">
+            <div class="signature-box" style="position: relative; width: 46%;">
+              <div>For <strong><span id="prev_sigComp">Dilshaj Infotech Private Limited</span></strong></div>
+              <div class="sig-seal-wrap"
+                style="position: absolute; top: 0; left: 0; right: 0; height: 0; pointer-events: none; z-index: 10;">
+                <img src="Signature.svg" alt="Authorized Signature" class="doc-signature-img"
+                  style="height: 44px; width: auto; position: absolute; left: 0; top: 20px; z-index: 2;">
+                <img src="Stamp.svg" alt="Company Stamp" class="doc-stamp-img"
+                  style="height: 108px; width: auto; position: absolute; left: 168px; top: 30px; opacity: 0.88; z-index: 1;">
+              </div>
+              <div class="signature-line" style="margin-top: 46px;">
+                <strong id="prev_signatory">Dilshaj Shaik</strong><br>
+                <span id="prev_signatoryDesig">Chief Executive Officer</span><br>
+                Date: <span id="prev_signatoryDate">01 Oct 2026</span>
+              </div>
+            </div>
+            <div style="width: 46%; margin-top: 23px;">
+              <div>Employee Undertaking & Signature:</div>
+              <div class="signature-line" style="margin-top: 46px;">
+                <strong><span id="prev_ackName">Sampath Kumar</span></strong><br>
+                Date: ________________________
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div id="toast" class="toast">Document generating...</div>
+
+  <script>
+    function saveSettings() {
+      saveSharedProfile();
+    }
+
+    function loadSettings() {
+      loadSharedProfile({
+        'empPrefix': 'empPrefix',
+        'empName': 'empName',
+        'empId': 'empId',
+        'designation': 'designation',
+        'relieveDate': 'dol',
+        'companyName': 'companyName',
+        'sigName': 'sigName',
+        'sigDesig': 'sigDesig'
+      });
+    }
+
+    function updatePreview() {
+      const getVal = id => document.getElementById(id).value.trim();
+
+      const date = getVal('docDate') || '01 Oct 2026';
+      const prefix = document.getElementById('empPrefix').value;
+      const name = getVal('empName') || 'Sampath Kumar';
+      const fullNameWithPrefix = `${prefix} ${name}`;
+      const empId = getVal('empId') || '2028001';
+      const desig = getVal('designation') || 'Software Engineer';
+      const relieveDate = getVal('relieveDate') || '01 Oct 2026';
+      const company = getVal('companyName') || 'Dilshaj Infotech Private Limited';
+      const sigName = getVal('sigName') || 'Dilshaj Shaik';
+      const sigDesig = getVal('sigDesig') || 'Chief Executive Officer';
+
+      const isFemale = prefix === 'Ms.' || prefix === 'Mrs.';
+      const poss = isFemale ? 'her' : 'his';
+
+      document.getElementById('prev_date').innerText = date;
+      document.getElementById('prev_prefixName').innerText = fullNameWithPrefix;
+      document.getElementById('prev_prefixName2').innerText = fullNameWithPrefix;
+      document.getElementById('prev_nocName').innerText = fullNameWithPrefix;
+      document.getElementById('prev_empId').innerText = empId;
+      document.getElementById('prev_desig').innerText = desig;
+      document.getElementById('prev_relieveDate').innerText = relieveDate;
+      document.getElementById('prev_poss').innerText = poss;
+
+      document.getElementById('prev_signatory').innerText = sigName;
+      document.getElementById('prev_signatoryDesig').innerText = sigDesig;
+      const sigCompEl = document.getElementById('prev_sigComp');
+      if (sigCompEl) sigCompEl.innerText = company;
+      const sigDateEl = document.getElementById('prev_signatoryDate');
+      if (sigDateEl) sigDateEl.innerText = date;
+      document.getElementById('prev_ackName').innerText = name;
+      if (window.refreshHiddenFields) refreshHiddenFields();
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      loadSettings();
+      updatePreview();
+    });
+  </script>
+</body>
+
+</html>

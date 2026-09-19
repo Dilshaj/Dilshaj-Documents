@@ -1,0 +1,1484 @@
+/**
+ * shared.css - Consolidated Design System & Theme Tokens
+ * Dilshaj Infotech HR Document Automation Suite
+ */
+
+/* ==========================================================================
+   1. Typography & Web Font Definitions
+   ========================================================================== */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
+
+@font-face {
+  font-family: 'Aptos';
+  src: local('Aptos'), local('Aptos Display'), local('Aptos-Regular');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Aptos';
+  src: local('Aptos Bold'), local('Aptos-Bold');
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ==========================================================================
+   2. Design Tokens & Color Theme Variables
+   ========================================================================== */
+:root {
+  /* UI Shell Theme (01 Architectural Slate - Studio Drafting Table) */
+  --bg-color: #dde4ee;
+  --panel-bg: #ebf0f7;
+  --panel-card-bg: #ffffff;
+  --panel-card-hover: #ffffff;
+  --preview-bg: #b9c7d7;
+  --input-bg: #ffffff;
+  --input-bg-focus: #ffffff;
+
+  /* Borders (Architectural Cool Slate) */
+  --border-color: #cbd7e4;
+  --border-color-light: #b8c7d8;
+  --border-color-subtle: #dbe4ee;
+
+  /* Accents: Architectural Royal Azure */
+  --accent-primary: #1d6bf3;
+  --accent-hover: #1557c0;
+  --accent-light: #3b82f6;
+  --accent-subtle: rgba(29, 107, 243, 0.09);
+  --accent-gradient: linear-gradient(180deg, #1d6bf3 0%, #1557c0 100%);
+
+  /* UI Text Colors (Deep Graphite & Architectural Slate) */
+  --text-bright: #0f172a;
+  --text-muted: #334155;
+  --text-dim: #64748b;
+
+  /* Document Sheet Colors (Print & Vector Layout) */
+  --doc-text: #0f172a;
+  --doc-table-border: #cbd5e1;
+  --doc-table-th-bg: #f1f5f9;
+  --doc-table-alt-bg: #f8fafc;
+  --doc-sig-line: #475569;
+}
+
+/* ==========================================================================
+   3. Global Reset & Base Styles
+   ========================================================================== */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  height: 100vh;
+  max-height: 100vh;
+  overflow: hidden;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-bright);
+  display: flex;
+  flex-direction: column;
+}
+
+/* ==========================================================================
+   4. Top Navigation Bar & Browser-Style Document Tabs
+   ========================================================================== */
+.top-nav-suite {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.08), 0 1px 2px rgba(15, 23, 42, 0.04);
+  display: flex;
+  flex-direction: column;
+}
+
+.top-bar {
+  background: #e2e8f1;
+  border-bottom: 1px solid var(--border-color);
+  padding: 6px 16px;
+  min-height: 48px;
+  height: auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.brand-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  padding: 0;
+  border: none;
+  box-shadow: none;
+  flex-shrink: 0;
+}
+
+/* Browser-Style Document Tabs Bar */
+.doc-tabs-bar {
+  background: #d8e2ed;
+  border-bottom: 1px solid var(--border-color);
+  padding: 0 16px;
+  height: 40px;
+  min-height: 40px;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  overflow-x: auto;
+  white-space: nowrap;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.doc-tabs-bar::-webkit-scrollbar {
+  display: none;
+}
+
+.doc-tab-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  height: 28px;
+  border-radius: 6px;
+  font-family: 'Inter', sans-serif;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.doc-tab-item svg {
+  color: #64748b;
+  transition: color 0.18s ease;
+  flex-shrink: 0;
+}
+
+.doc-tab-num {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: #64748b;
+  transition: color 0.18s ease;
+}
+
+.doc-tab-label {
+  letter-spacing: 0.1px;
+}
+
+.doc-tab-item:hover {
+  background: #cdd9e6;
+  color: #0f172a;
+  border-color: #b8c7d8;
+}
+
+.doc-tab-item:hover svg,
+.doc-tab-item:hover .doc-tab-num {
+  color: #0f172a;
+}
+
+.doc-tab-item.active {
+  background: #0d62f2;
+  border-color: #0d62f2;
+  color: #ffffff;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(13, 98, 242, 0.35);
+  transform: translateY(-1px);
+}
+
+.doc-tab-item.active svg {
+  color: #ffffff;
+  filter: none;
+}
+
+.doc-tab-item.active .doc-tab-num {
+  color: #dbeafe;
+  font-weight: 700;
+}
+
+.top-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #ffffff;
+  padding: 4px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  height: 34px;
+  box-sizing: border-box;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.top-toggle-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #334155;
+  white-space: nowrap;
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 32px;
+  height: 16px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #cbd5e1;
+  transition: .25s ease;
+  border-radius: 16px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 10px;
+  width: 10px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: .25s ease;
+  border-radius: 50%;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.2);
+}
+
+input:checked+.slider {
+  background: #1d6bf3;
+}
+
+input:checked+.slider:before {
+  transform: translateX(16px);
+}
+
+.page-size-picker,
+.date-format-picker {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #334155;
+  white-space: nowrap;
+}
+
+.page-size-picker select,
+.date-format-picker select {
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  color: #0f172a;
+  padding: 3px 8px;
+  border-radius: 5px;
+  font-size: 11.5px;
+  font-weight: 500;
+  cursor: pointer;
+  height: 24px;
+  outline: none;
+  font-family: 'Inter', sans-serif;
+}
+
+.page-size-picker select:focus,
+.date-format-picker select:focus {
+  border-color: #1d6bf3;
+}
+
+/* ==========================================================================
+   5. Buttons
+   ========================================================================== */
+.btn-sm {
+  padding: 6px 13px;
+  height: 34px;
+  border-radius: 8px;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 600;
+  font-size: 12.5px;
+  cursor: pointer;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-icon-secondary {
+  background: #ffffff;
+  color: #1e293b;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.btn-icon-secondary:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+  color: #0f172a;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 5px rgba(15, 23, 42, 0.08);
+}
+
+.btn-icon-secondary:active {
+  transform: translateY(0);
+  background: #e2e8f0;
+}
+
+.btn-action-docx {
+  background: #ffffff;
+  color: #1e3a8a;
+  border: 1px solid #bfdbfe;
+  box-shadow: 0 1px 2px rgba(30, 58, 138, 0.05);
+}
+
+.btn-action-docx svg {
+  color: #2563eb;
+}
+
+.btn-action-docx:hover {
+  background: #eff6ff;
+  border-color: #3b82f6;
+  color: #1d4ed8;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.18);
+}
+
+.btn-action-docx:active {
+  transform: translateY(0);
+  background: #dbeafe;
+}
+
+.btn-action-primary {
+  background: linear-gradient(180deg, #1d6bf3 0%, #1557c0 100%);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 2px 8px rgba(21, 87, 192, 0.35);
+}
+
+.btn-action-primary:hover {
+  background: linear-gradient(180deg, #3b82f6 0%, #1d6bf3 100%);
+  transform: translateY(-1px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3), 0 4px 14px rgba(29, 107, 243, 0.45);
+}
+
+.btn-action-primary:active {
+  transform: translateY(0);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2), 0 1px 3px rgba(29, 107, 243, 0.3);
+}
+
+.btn {
+  padding: 9px 18px;
+  border-radius: 8px;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 600;
+  font-size: 13.5px;
+  cursor: pointer;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-primary {
+  background: linear-gradient(180deg, #1d6bf3 0%, #1557c0 100%);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 2px 8px rgba(21, 87, 192, 0.35);
+}
+
+.btn-primary:hover {
+  background: linear-gradient(180deg, #3b82f6 0%, #1d6bf3 100%);
+  transform: translateY(-1px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3), 0 4px 14px rgba(29, 107, 243, 0.45);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2), 0 1px 3px rgba(29, 107, 243, 0.3);
+}
+
+.btn-secondary {
+  background: #ffffff;
+  color: #1e293b;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.btn-secondary:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+  color: #0f172a;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-calc {
+  background: #eff6ff;
+  color: #1d6bf3;
+  border: 1px solid #bfdbfe;
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 6px;
+  width: fit-content;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.btn-calc:hover {
+  background: #dbeafe;
+  border-color: #93c5fd;
+  color: #1557c0;
+}
+
+/* ==========================================================================
+   6. Main App Layout Grid
+   ========================================================================== */
+.app-layout {
+  display: grid;
+  grid-template-columns: 1fr 420px;
+  flex: 1;
+  height: calc(100vh - 90px);
+  overflow: hidden;
+}
+
+/* Right Sidebar Form (Inspector Panel) */
+.form-sidebar {
+  order: 2;
+  height: 100%;
+  max-height: 100%;
+  background: var(--panel-bg);
+  border-left: 1px solid var(--border-color);
+  border-right: none;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  scrollbar-width: thin;
+  scrollbar-color: #b8c7d8 transparent;
+}
+
+.section-card {
+  background: var(--panel-card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04), 0 1px 2px rgba(15, 23, 42, 0.02);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.section-card:hover {
+  background: var(--panel-card-hover);
+  border-color: var(--border-color-light);
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.07);
+}
+
+.section-title {
+  font-family: 'Outfit', sans-serif;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.section-title svg {
+  color: #1d6bf3;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-bottom: 8px;
+}
+
+.form-group.full-width {
+  grid-column: span 2;
+}
+
+label {
+  font-size: 11.5px;
+  font-weight: 500;
+  color: #334155;
+  letter-spacing: 0.2px;
+}
+
+input,
+select,
+textarea {
+  width: 100%;
+  background: var(--input-bg);
+  border: 1px solid #cbd5e1;
+  border-radius: 7px;
+  padding: 8px 11px;
+  color: #0f172a;
+  font-size: 12.5px;
+  font-family: 'Inter', sans-serif;
+  transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: #1d6bf3;
+  background: var(--input-bg-focus);
+  box-shadow: 0 0 0 3px rgba(29, 107, 243, 0.15);
+}
+
+select option {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  padding: 8px 12px;
+}
+
+input:disabled,
+input[readonly],
+select:disabled,
+textarea:disabled {
+  background-color: #f1f5f9 !important;
+  color: #64748b !important;
+  cursor: not-allowed;
+  border-color: var(--border-color);
+}
+
+/* In-Input Field Toggle Wrapper & Button */
+.field-toggle-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.field-toggle-wrapper input,
+.field-toggle-wrapper textarea,
+.field-toggle-wrapper select {
+  padding-right: 36px !important;
+}
+
+.field-toggle-btn {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #0d62f2;
+  transition: all 0.2s ease;
+  z-index: 5;
+}
+
+.field-toggle-btn:hover {
+  background: rgba(13, 98, 242, 0.12);
+}
+
+.field-toggle-btn.off {
+  color: #94a3b8;
+}
+
+.field-toggle-btn.off:hover {
+  background: rgba(148, 163, 184, 0.2);
+  color: #475569;
+}
+
+.field-toggle-wrapper.is-hidden-field input,
+.field-toggle-wrapper.is-hidden-field textarea,
+.field-toggle-wrapper.is-hidden-field select {
+  opacity: 0.55;
+  background-color: #f1f5f9;
+  text-decoration: line-through;
+  text-decoration-color: #94a3b8;
+}
+
+/* Date Input Wrapper with Custom Calendar Trigger */
+.date-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.date-input-wrapper input {
+  padding-right: 34px !important;
+}
+
+.date-picker-btn {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: #eef4fc;
+  border: 1px solid #c9daf4;
+  color: #1d6bf3;
+  cursor: pointer;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  z-index: 5;
+}
+
+.date-picker-btn:hover {
+  color: #1557c0;
+  background: #dbeafe;
+  border-color: #93c5fd;
+  box-shadow: 0 1px 4px rgba(29, 107, 243, 0.2);
+}
+
+.date-picker-btn:active {
+  transform: translateY(-50%) scale(0.92);
+}
+
+/* Custom Executive Light Calendar Popover (Zero Dependencies) */
+.universal-datepicker-popover {
+  position: absolute;
+  z-index: 10000;
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  box-shadow: 0 16px 40px -4px rgba(15, 23, 42, 0.18), 0 4px 14px -2px rgba(15, 23, 42, 0.08);
+  padding: 14px;
+  width: 275px;
+  font-family: 'Inter', sans-serif;
+  user-select: none;
+  animation: datepickerSlideIn 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes datepickerSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.datepicker-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.datepicker-title-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.datepicker-select {
+  background: #f8fafc;
+  border: 1px solid var(--border-color);
+  color: #0f172a;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 6px;
+  padding: 4px 6px;
+  cursor: pointer;
+  outline: none;
+  font-family: 'Inter', sans-serif;
+}
+
+.datepicker-select:focus {
+  border-color: #1d6bf3;
+}
+
+.datepicker-nav-btn {
+  background: #f8fafc;
+  border: 1px solid var(--border-color);
+  color: #475569;
+  cursor: pointer;
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.datepicker-nav-btn:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+  border-color: var(--border-color-light);
+}
+
+.datepicker-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  text-align: center;
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748b;
+  margin-bottom: 6px;
+}
+
+.datepicker-days-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 3px;
+}
+
+.datepicker-day {
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 500;
+  color: #1e293b;
+  border-radius: 6px;
+  cursor: pointer;
+  background: transparent;
+  border: 1px solid transparent;
+  transition: all 0.15s ease;
+}
+
+.datepicker-day:hover:not(.empty):not(.disabled) {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+.datepicker-day.today {
+  border-color: #1d6bf3;
+  color: #1d6bf3;
+  font-weight: 600;
+}
+
+.datepicker-day.selected {
+  background: #0d62f2 !important;
+  color: #ffffff !important;
+  font-weight: 700;
+  box-shadow: 0 2px 6px rgba(13, 98, 242, 0.35);
+}
+
+.datepicker-day.empty {
+  cursor: default;
+}
+
+.datepicker-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border-color);
+}
+
+.datepicker-footer-btn {
+  background: transparent;
+  border: none;
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 3px 8px;
+  border-radius: 4px;
+  transition: all 0.15s ease;
+}
+
+.datepicker-footer-btn:hover {
+  color: #1d6bf3;
+  background: #eff6ff;
+}
+
+/* Left/Center Column - Document Preview Workspace */
+.preview-workspace {
+  order: 1;
+  height: 100%;
+  max-height: 100%;
+  background-color: var(--preview-bg);
+  background-image: radial-gradient(ellipse at 50% 12%, rgba(255, 255, 255, 0.25) 0%, transparent 65%);
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 36px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  scrollbar-width: thin;
+  scrollbar-color: #94a3b8 transparent;
+}
+
+/* Custom Sleek Scrollbars for Both Independent Panes */
+.preview-workspace::-webkit-scrollbar,
+.form-sidebar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.preview-workspace::-webkit-scrollbar-track,
+.form-sidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.preview-workspace::-webkit-scrollbar-thumb {
+  background: #94a3b8;
+  border-radius: 4px;
+}
+
+.form-sidebar::-webkit-scrollbar-thumb {
+  background: #b8c7d8;
+  border-radius: 4px;
+}
+
+.preview-workspace::-webkit-scrollbar-thumb:hover,
+.form-sidebar::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+}
+
+#pdf-export-container {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+/* ==========================================================================
+   7. Printable Document Base Styles (A4 & US Letter)
+   ========================================================================== */
+.a4-page {
+  width: 210mm;
+  height: 297mm;
+  min-height: 297mm;
+  max-height: 297mm;
+  background-color: #ffffff;
+  background-image: none;
+  background-size: 100% 100%;
+  background-position: top center;
+  background-repeat: no-repeat;
+  image-rendering: auto;
+  image-rendering: smooth;
+  color: var(--doc-text);
+  box-shadow: 0 14px 38px -4px rgba(15, 23, 42, 0.22), 0 4px 14px -2px rgba(15, 23, 42, 0.12), 0 0 0 1px rgba(15, 23, 42, 0.08);
+  border-radius: 2px;
+  padding: 50mm 20mm 10mm 20mm;
+  font-family: 'Aptos', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Calibri, sans-serif !important;
+  font-size: 10.5pt;
+  line-height: 1.35;
+  box-sizing: border-box;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+body.show-letterhead-bg .a4-page {
+  background-image: url('New Offer Letter.png');
+}
+
+body.mode-letter .a4-page {
+  width: 215.9mm;
+  height: 279.4mm;
+  min-height: 279.4mm;
+  max-height: 279.4mm;
+  background-size: 100% 100%;
+  padding: 38mm 20mm 10mm 20mm;
+  font-size: 10pt;
+  line-height: 1.34;
+}
+
+.a4-page * {
+  font-family: 'Aptos', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Calibri, sans-serif !important;
+}
+
+/* Common Document Typography & Blocks */
+.doc-title-bar {
+  text-align: center;
+  margin: 14px 0;
+}
+
+.subject-title {
+  font-size: 12pt;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--doc-text);
+  display: inline-block;
+  padding-bottom: 2px;
+}
+
+.meta-block {
+  margin-bottom: 12px;
+  max-width: 400px;
+}
+
+.meta-line {
+  margin-bottom: 3px;
+  word-break: normal;
+  overflow-wrap: break-word;
+  white-space: normal;
+}
+
+.meta-line strong {
+  color: var(--doc-text);
+}
+
+.doc-paragraph {
+  margin-bottom: 7px;
+  text-align: justify;
+}
+
+.doc-subclause {
+  margin-bottom: 6px;
+  text-align: justify;
+  line-height: 1.38;
+}
+
+.section-heading {
+  font-size: 11pt;
+  font-weight: 700;
+  color: var(--doc-text);
+  margin-top: 12px;
+  margin-bottom: 4px;
+}
+
+#page-2 .section-heading {
+  margin-top: 14px;
+  margin-bottom: 4px;
+  font-size: 11pt;
+}
+
+#page-2 .doc-paragraph,
+#page-2 .doc-subclause {
+  margin-bottom: 8px;
+  line-height: 1.36;
+}
+
+#page-3 .signature-container {
+  margin-top: 24px;
+}
+
+#page-3 .signature-line {
+  margin-top: 8px;
+  border-top: none !important;
+}
+
+#page-4 {
+  padding-top: 44mm;
+}
+
+.bullet-list {
+  margin-left: 20px;
+  margin-bottom: 6px;
+}
+
+.bullet-list li {
+  margin-bottom: 2.5px;
+}
+
+.details-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 5px 0 10px 0;
+}
+
+.details-table td {
+  padding: 5px 7px;
+  vertical-align: top;
+  font-size: 10pt;
+}
+
+.details-table td.label-col {
+  font-weight: 700;
+  width: 30%;
+  color: var(--doc-text);
+}
+
+.signature-container {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 22px;
+}
+
+.signature-box {
+  width: 46%;
+  margin-top: 20px;
+}
+
+.signature-line {
+  border-top: none !important;
+  margin-top: 8px;
+  padding-top: 0;
+}
+
+.doc-page-footer {
+  position: absolute;
+  bottom: 8mm;
+  right: 20mm;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  font-size: 8.5pt;
+  color: #64748b;
+  border-top: none;
+  padding-top: 0;
+  pointer-events: none;
+  font-family: 'Aptos', 'Inter', sans-serif !important;
+}
+
+/* ==========================================================================
+   8. Toast Notifications
+   ========================================================================== */
+.toast {
+  position: fixed;
+  bottom: 25px;
+  right: 25px;
+  background: #0f172a;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 12px 20px;
+  color: white;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.3s ease;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ==========================================================================
+   10. Native Print Engine & Multi-Page Pagination
+   ========================================================================== */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 0mm;
+  }
+
+  html,
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    height: auto !important;
+    min-height: 100% !important;
+    max-height: none !important;
+    overflow: visible !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .top-bar,
+  .doc-tabs-bar,
+  .top-nav-suite,
+  .form-sidebar,
+  .toast,
+  #toast,
+  .doc-selector-group,
+  .top-actions,
+  .universal-datepicker-popover {
+    display: none !important;
+  }
+
+  .app-layout {
+    display: block !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    grid-template-columns: 1fr !important;
+  }
+
+  .preview-workspace {
+    display: block !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: none !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  #pdf-export-container {
+    display: block !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: none !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    box-shadow: none !important;
+    gap: 0 !important;
+  }
+
+  .a4-page {
+    margin: 0 auto !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    box-sizing: border-box !important;
+    height: 297mm !important;
+    min-height: 297mm !important;
+    max-height: 297mm !important;
+    overflow: hidden !important;
+    background-size: 100% 100% !important;
+    background-position: top center !important;
+    background-repeat: no-repeat !important;
+    page-break-after: auto !important;
+    break-after: auto !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  body.mode-letter .a4-page {
+    height: 279.4mm !important;
+    min-height: 279.4mm !important;
+    max-height: 279.4mm !important;
+    padding: 38mm 20mm 10mm 20mm !important;
+    line-height: 1.34 !important;
+    background-size: 100% 100% !important;
+  }
+
+  /* Force page breaks ONLY between pages, never after the last page */
+  .a4-page+.a4-page {
+    page-break-before: always !important;
+    break-before: page !important;
+  }
+}
+
+/* ==========================================================================
+   Preview-Only Mode Restrictions & Content Protection
+   ========================================================================== */
+/* Keep sidebar visible in Preview Mode, but style locked & editable fields */
+.mode-preview .form-sidebar {
+  display: flex !important;
+}
+
+.mode-preview .top-actions .btn-action,
+.mode-preview .btn-print,
+.mode-preview .btn-download,
+.mode-preview #btn-save-profile,
+.mode-preview #btn-reset-profile {
+  display: none !important;
+}
+
+/* Allow interaction with input fields in Preview Mode */
+.mode-preview input,
+.mode-preview select,
+.mode-preview textarea,
+.mode-preview .form-sidebar,
+.mode-preview .form-sidebar * {
+  -webkit-user-select: auto !important;
+  -moz-user-select: auto !important;
+  -ms-user-select: auto !important;
+  user-select: auto !important;
+}
+
+/* Locked non-financial inputs in Preview Mode */
+.input-locked-preview {
+  background-color: #f1f5f9 !important;
+  color: #64748b !important;
+  cursor: not-allowed !important;
+  border-color: #cbd5e1 !important;
+  opacity: 0.85 !important;
+}
+
+/* Highlighted editable amount/financial inputs in Preview Mode */
+.input-editable-preview {
+  background-color: #eff6ff !important;
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15) !important;
+}
+
+/* Prevent Text Selection & Copying in Document View in Preview Mode */
+.mode-preview .preview-workspace,
+.mode-preview .preview-workspace * {
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+  user-select: none !important;
+}
+
+/* Hide Signatures and Stamps in Preview Mode */
+.mode-preview .doc-signature-img,
+.mode-preview .doc-stamp-img,
+.mode-preview img[src*="Signature"],
+.mode-preview img[src*="Stamp"] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+}
+
+/* Diagonal Semi-Transparent Watermark on Document Pages in Preview Mode */
+.mode-preview .a4-page {
+  position: relative !important;
+}
+
+.mode-preview .a4-page::before {
+  content: "Preview Only";
+  position: absolute;
+  top: 45%;
+  left: 5%;
+  right: 5%;
+  transform: translateY(-50%) rotate(-30deg);
+  font-family: 'Outfit', sans-serif;
+  font-size: 42pt;
+  font-weight: 800;
+  color: rgba(220, 38, 38, 0.12);
+  text-align: center;
+  pointer-events: none;
+  z-index: 999;
+  letter-spacing: 0.08em;
+  text-transform: capitalize;
+}
+
+/* Hard Anti-Print Protection: Blanks out document if user forces print dialog */
+@media print {
+  body.mode-preview #pdf-export-container,
+  body.mode-preview .a4-page,
+  body.mode-preview .preview-workspace,
+  body.mode-preview .app-layout {
+    display: none !important;
+  }
+
+  body.mode-preview::before {
+    content: "DOCUMENT PRINTING AND EXPORTING IS DISABLED IN PREVIEW MODE.";
+    display: block !important;
+    padding: 60px 20px;
+    font-size: 20pt;
+    font-weight: bold;
+    color: #dc2626;
+    text-align: center;
+    font-family: sans-serif;
+  }
+}
+
+/* ==========================================================================
+   Responsive Design System (Mobile, Tablet, Laptop, & Desktop)
+   ========================================================================== */
+
+/* 1. Large Tablets & Small Laptops (<= 1024px) */
+@media screen and (max-width: 1024px) {
+  .app-layout {
+    grid-template-columns: 1fr !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  .form-sidebar {
+    order: 2 !important;
+    height: auto !important;
+    max-height: none !important;
+    border-left: none !important;
+    border-top: 1px solid var(--border-color) !important;
+    padding: 16px !important;
+  }
+
+  .preview-workspace {
+    order: 1 !important;
+    height: auto !important;
+    max-height: none !important;
+    padding: 24px 16px !important;
+    overflow-x: auto !important;
+  }
+
+  .top-bar {
+    padding: 8px 16px !important;
+    flex-wrap: wrap !important;
+    gap: 12px !important;
+  }
+
+  .top-actions {
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+  }
+}
+
+/* 2. Tablets & Mobile Devices (<= 768px) */
+@media screen and (max-width: 768px) {
+  .top-nav-suite {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 1000 !important;
+  }
+
+  .top-bar {
+    justify-content: space-between !important;
+  }
+
+  .toolbar-group {
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+  }
+
+  .doc-tabs-bar {
+    overflow-x: auto !important;
+    white-space: nowrap !important;
+    -webkit-overflow-scrolling: touch !important;
+    padding: 6px 12px !important;
+    gap: 4px !important;
+    scroll-behavior: smooth !important;
+  }
+
+  .doc-tab-item {
+    flex-shrink: 0 !important;
+    padding: 6px 10px !important;
+    font-size: 11px !important;
+  }
+
+  .preview-workspace {
+    padding: 16px 8px !important;
+    overflow-x: auto !important;
+  }
+
+  /* Responsive A4 document container scaling for mobile viewports */
+  .a4-page {
+    width: 210mm !important;
+    min-width: 210mm !important;
+    flex-shrink: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  #pdf-export-container {
+    transform-origin: top center;
+    transition: transform 0.1s ease-out;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .form-group.full-width {
+    grid-column: span 1 !important;
+  }
+}
+
+/* 3. Small Mobile Phones (<= 480px / 320px) */
+@media screen and (max-width: 480px) {
+  .top-bar {
+    padding: 6px 10px !important;
+    gap: 6px !important;
+    min-height: auto !important;
+  }
+
+  .brand-title img {
+    height: 22px !important;
+  }
+
+  .top-actions {
+    gap: 4px !important;
+    flex-wrap: wrap !important;
+    justify-content: flex-end !important;
+  }
+
+  .toolbar-group {
+    padding: 2px 6px !important;
+    height: 30px !important;
+    gap: 6px !important;
+  }
+
+  .top-actions .btn-sm {
+    padding: 3px 8px !important;
+    font-size: 10.5px !important;
+    height: 30px !important;
+  }
+
+  .page-size-picker,
+  .date-format-picker,
+  .top-toggle-item {
+    font-size: 10.5px !important;
+  }
+
+  .page-size-picker select,
+  .date-format-picker select {
+    font-size: 10.5px !important;
+    padding: 1px 4px !important;
+    height: 22px !important;
+  }
+
+  .doc-tabs-bar {
+    height: 36px !important;
+    min-height: 36px !important;
+    padding: 0 8px !important;
+  }
+
+  .doc-tab-item {
+    height: 26px !important;
+    padding: 3px 8px !important;
+    font-size: 10.5px !important;
+  }
+
+  .preview-workspace {
+    padding: 8px 2px !important;
+    align-items: center !important;
+  }
+
+  .mode-preview .a4-page::before {
+    font-size: 24pt !important;
+  }
+}

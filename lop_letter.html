@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <!-- Auth Guard (Must load first) -->
+  <script src="auth.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Loss of Pay (LOP) Letter Generator | Dilshaj Infotech</title>
+
+  <!-- Google Fonts for UI Header Bar -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+
+  <!-- html2canvas and jsPDF for razor-sharp rendering -->
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <!-- Consolidated Design System & Theme Stylesheet -->
+  <link rel="stylesheet" href="shared.css?v=4.4">
+  <!-- Centralized Header Navigation & Shared HR Profile Manager -->
+  <script src="header.js?v=4.4"></script>
+</head>
+
+<body>
+
+  <!-- Centralized Top Navigation Bar (Injected by header.js) -->
+  <div id="header-placeholder"></div>
+
+  <!-- App Layout Grid -->
+  <div class="app-layout">
+    <!-- Left Column: Form Sidebar -->
+    <aside class="form-sidebar">
+
+      <!-- 1. LOP Letter Details -->
+      <div class="section-card">
+        <div class="section-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z" />
+          </svg>
+          LOP Intimation Details
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="letterDate">Letter Date</label>
+            <div class="date-input-wrapper">
+              <input type="text" id="letterDate" value="14 Sep 2026" oninput="updatePreview()"
+                onclick="openUniversalDatePicker(this, this.nextElementSibling)">
+              <button type="button" class="date-picker-btn" title="Choose date from calendar"
+                onclick="openUniversalDatePicker(document.getElementById('letterDate'), this)">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                  <line x1="16" y1="2" x2="16" y2="6"></line>
+                  <line x1="8" y1="2" x2="8" y2="6"></line>
+                  <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="empPrefix">Salutation Prefix</label>
+            <select id="empPrefix" onchange="updatePreview()">
+              <option value="Mr." selected>Mr.</option>
+              <option value="Ms.">Ms.</option>
+              <option value="Mrs.">Mrs.</option>
+              <option value="Dr.">Dr.</option>
+            </select>
+          </div>
+          <div class="form-group full-width">
+            <label for="empName">Employee Name</label>
+            <input type="text" id="empName" value="Sa Sa" oninput="updatePreview()">
+          </div>
+          <div class="form-group">
+            <label for="empId">Employee No / ID</label>
+            <input type="text" id="empId" value="2028001" oninput="updatePreview()">
+          </div>
+          <div class="form-group">
+            <label for="location">Location</label>
+            <input type="text" id="location" value="Rolugunta" oninput="updatePreview()">
+          </div>
+          <div class="form-group full-width">
+            <label for="designation">Designation</label>
+            <input type="text" id="designation" value="Data Analyst" oninput="updatePreview()">
+          </div>
+          <div class="form-group full-width">
+            <label for="department">Department</label>
+            <input type="text" id="department" value="Data & Analytics" oninput="updatePreview()">
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Absence & LOP Parameters -->
+      <div class="section-card">
+        <div class="section-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
+          </svg>
+          Absence & Deduction Parameters
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="lopMonth">Payroll Month</label>
+            <input type="text" id="lopMonth" value="September 2026" oninput="updatePreview()">
+          </div>
+          <div class="form-group">
+            <label for="lopDays">Total LOP Days</label>
+            <input type="number" id="lopDays" value="2" min="1" oninput="updatePreview()">
+          </div>
+          <div class="form-group full-width">
+            <label for="absencePeriod">Absence Period / Dates</label>
+            <input type="text" id="absencePeriod" value="08 Sep 2026 to 09 Sep 2026" oninput="updatePreview()">
+          </div>
+          <div class="form-group full-width">
+            <label for="lopReason">Reason for LOP</label>
+            <input type="text" id="lopReason" value="Exhaustion of paid leave balance / Unapproved absence"
+              oninput="updatePreview()">
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. Company & Signatory Details -->
+      <div class="section-card">
+        <div class="section-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm10 12h-8v-2h2v-2h-2v-2h2v-2h-2V9h8v10zm-2-8h-2v2h2v-2zm0 4h-2v2h2v-2z" />
+          </svg>
+          Company & Signatory
+        </div>
+        <div class="form-grid">
+          <div class="form-group full-width">
+            <label for="companyName">Company Name</label>
+            <div class="field-toggle-wrapper">
+              <input type="text" id="companyName" value="Dilshaj Infotech Private Limited" oninput="updatePreview()">
+              <button type="button" class="field-toggle-btn active" title="Field visible in document page" onclick="toggleFieldVisibility('companyName', '#prev_sigComp', this)" aria-label="Toggle visibility">
+                <svg class="eye-icon eye-open" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                <svg class="eye-icon eye-off" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+              </button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="sigName">Signatory Name</label>
+            <div class="field-toggle-wrapper">
+              <input type="text" id="sigName" value="Dilshaj Shaik" oninput="updatePreview()">
+              <button type="button" class="field-toggle-btn active" title="Field visible in document page" onclick="toggleFieldVisibility('sigName', '#prev_signatory', this)" aria-label="Toggle visibility">
+                <svg class="eye-icon eye-open" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                <svg class="eye-icon eye-off" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+              </button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="sigDesig">Signatory Designation</label>
+            <div class="field-toggle-wrapper">
+              <input type="text" id="sigDesig" value="Chief Executive Officer" oninput="updatePreview()">
+              <button type="button" class="field-toggle-btn active" title="Field visible in document page" onclick="toggleFieldVisibility('sigDesig', '#prev_signatoryDesig', this)" aria-label="Toggle visibility">
+                <svg class="eye-icon eye-open" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                <svg class="eye-icon eye-off" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </aside>
+
+    <!-- Right Column: Document Workspace Preview -->
+    <main class="preview-workspace">
+      <div id="pdf-export-container">
+        <div class="a4-page" id="page-1">
+
+          <div class="doc-title-bar" style="margin-top: 10px;">
+            <div class="subject-title">INTIMATION OF LOSS OF PAY (LOP)</div>
+          </div>
+
+          <div class="meta-block">
+            <div class="meta-line"><strong>Date:</strong> <span id="prev_date">14 Sep 2026</span></div>
+            <div class="meta-line"><strong>Name:</strong> <span id="prev_empNameWithPrefix">Mr. Sa Sa</span></div>
+            <div class="meta-line"><strong>Employee No:</strong> <span id="prev_empId">2028001</span></div>
+            <div class="meta-line"><strong>Department:</strong> <span id="prev_dept">Data & Analytics</span></div>
+            <div class="meta-line"><strong>Location:</strong> <span id="prev_location">Rolugunta</span></div>
+          </div>
+
+          <div class="doc-paragraph" style="margin-top: 15px;">
+            Dear <span id="prev_salutation">Mr. Sa Sa</span>,
+          </div>
+
+          <div class="doc-paragraph">
+            This letter serves as formal notification regarding your absence during the payroll cycle of
+            <strong id="prev_lopMonth">September 2026</strong>. As per the Company's attendance and leave records, you
+            were absent from duty without credited paid leave balance or prior approved leave authorization.
+          </div>
+
+          <div class="doc-paragraph">
+            The details of the Loss of Pay (LOP) are summarized below:
+          </div>
+
+          <table class="details-table" style="margin: 15px 0; width: 90%;">
+            <tr>
+              <td style="font-weight: 700; width: 35%;">Employee Name</td>
+              <td style="width: 5%;">:</td>
+              <td id="prev_recName">Sa Sa</td>
+            </tr>
+            <tr>
+              <td style="font-weight: 700;">Designation</td>
+              <td>:</td>
+              <td id="prev_recDesig">Data Analyst</td>
+            </tr>
+            <tr>
+              <td style="font-weight: 700;">Absence Period</td>
+              <td>:</td>
+              <td id="prev_recPeriod">08 Sep 2026 to 09 Sep 2026</td>
+            </tr>
+            <tr>
+              <td style="font-weight: 700;">Total LOP Days</td>
+              <td>:</td>
+              <td><strong id="prev_recDays">2</strong> Day(s)</td>
+            </tr>
+            <tr>
+              <td style="font-weight: 700;">Reason for LOP</td>
+              <td>:</td>
+              <td id="prev_recReason">Exhaustion of paid leave balance / Unapproved absence</td>
+            </tr>
+            <tr>
+              <td style="font-weight: 700;">Payroll Adjustment</td>
+              <td>:</td>
+              <td>Pro-rata salary deduction in the payroll of <span id="prev_recMonth">September 2026</span></td>
+            </tr>
+          </table>
+
+          <div class="doc-paragraph">
+            Accordingly, a pro-rata salary deduction for the aforementioned <span id="prev_lopDaysText">2</span> day(s)
+            will be effected in your monthly salary processing. You are advised to strictly adhere to the Company's
+            leave application and attendance protocols for any future leaves.
+          </div>
+
+          <div class="doc-paragraph" style="margin-top: 15px;">
+            If you believe this record contains an error or if you have necessary supporting documentation, please submit
+            your clarification to the Human Resources Department within 3 working days.
+          </div>
+
+          <div class="signature-box" style="margin-top: 50px;">
+            <div>For <strong id="prev_sigComp">Dilshaj Infotech Private Limited</strong>,</div>
+            <div class="signature-line"
+              style="margin-top: 50px; border-top: 1px solid #475569; width: 240px; padding-top: 5px;">
+              <strong id="prev_signatory">Dilshaj Shaik</strong><br>
+              <span id="prev_signatoryDesig">CEO, Dilshaj Infotech</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div id="toast" class="toast">Document generating...</div>
+
+  <script>
+    function updatePreview() {
+      const getVal = id => {
+        const el = document.getElementById(id);
+        return el ? el.value.trim() : '';
+      };
+
+      const date = getVal('letterDate') || '14 Sep 2026';
+      const prefix = getVal('empPrefix') || 'Mr.';
+      const name = getVal('empName') || 'Sa Sa';
+      const empId = getVal('empId') || '2028001';
+      const desig = getVal('designation') || 'Data Analyst';
+      const dept = getVal('department') || 'Data & Analytics';
+      const location = getVal('location') || 'Rolugunta';
+
+      const month = getVal('lopMonth') || 'September 2026';
+      const lopDays = getVal('lopDays') || '2';
+      const period = getVal('absencePeriod') || '08 Sep 2026 to 09 Sep 2026';
+      const reason = getVal('lopReason') || 'Exhaustion of paid leave balance / Unapproved absence';
+
+      const compName = getVal('companyName') || 'Dilshaj Infotech Private Limited';
+      const sigName = getVal('sigName') || 'Dilshaj Shaik';
+      const sigDesig = getVal('sigDesig') || 'Chief Executive Officer';
+
+      document.getElementById('prev_date').innerText = date;
+      document.getElementById('prev_empNameWithPrefix').innerText = `${prefix} ${name}`;
+      document.getElementById('prev_empId').innerText = empId;
+      document.getElementById('prev_dept').innerText = dept;
+      document.getElementById('prev_location').innerText = location;
+
+      document.getElementById('prev_salutation').innerText = `${prefix} ${name}`;
+      document.getElementById('prev_lopMonth').innerText = month;
+
+      document.getElementById('prev_recName').innerText = name;
+      document.getElementById('prev_recDesig').innerText = desig;
+      document.getElementById('prev_recPeriod').innerText = period;
+      document.getElementById('prev_recDays').innerText = lopDays;
+      document.getElementById('prev_recReason').innerText = reason;
+      document.getElementById('prev_recMonth').innerText = month;
+      document.getElementById('prev_lopDaysText').innerText = lopDays;
+
+      document.getElementById('prev_sigComp').innerText = compName;
+      document.getElementById('prev_signatory').innerText = sigName;
+      document.getElementById('prev_signatoryDesig').innerText = sigDesig;
+      if (window.refreshHiddenFields) refreshHiddenFields();
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      loadSharedProfile({
+        'empPrefix': 'empPrefix',
+        'empName': 'empName',
+        'empId': 'empId',
+        'designation': 'designation',
+        'department': 'department',
+        'location': 'location',
+        'companyName': 'companyName',
+        'sigName': 'sigName',
+        'sigDesig': 'sigDesig'
+      });
+      updatePreview();
+    });
+  </script>
+</body>
+
+</html>

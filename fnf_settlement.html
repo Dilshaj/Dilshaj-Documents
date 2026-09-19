@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <!-- Auth Guard (Must load first) -->
+  <script src="auth.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Full & Final Settlement (F&F) Generator | Dilshaj Infotech</title>
+
+  <!-- Google Fonts for UI Header Bar -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+
+  <!-- html2canvas and jsPDF for razor-sharp rendering -->
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <!-- Consolidated Design System & Theme Stylesheet -->
+  <link rel="stylesheet" href="shared.css?v=4.3">
+  <!-- Centralized Header Navigation & Shared HR Profile Manager -->
+  <script src="header.js?v=4.3"></script>
+
+  <style>
+    /* Executive Single-Page F&F Styling with Increased Font Sizes */
+    .a4-page#page-1 {
+      padding: 34mm 16mm 10mm 16mm !important;
+      font-size: 9pt;
+      line-height: 1.35;
+      box-sizing: border-box;
+    }
+
+    .fnf-header-title {
+      border-bottom: 2px solid #0f172a;
+      padding-bottom: 4px;
+      margin-bottom: 8px;
+      text-align: center;
+    }
+
+    .fnf-header-title div {
+      font-size: 13.5pt;
+      font-weight: 800;
+      letter-spacing: 0.8px;
+      color: #0f172a;
+      text-transform: uppercase;
+    }
+
+    .fnf-section-heading {
+      font-weight: 700;
+      font-size: 9.5pt;
+      color: #0f172a;
+      margin-bottom: 5px;
+      text-transform: uppercase;
+      border-bottom: 1.5px solid #cbd5e1;
+      padding-bottom: 2px;
+      letter-spacing: 0.5px;
+    }
+
+    /* Executive Single Unified Metadata Container */
+    .fnf-meta-cards-container {
+      display: block;
+      margin-bottom: 12px;
+    }
+
+    .fnf-meta-card {
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      background-color: #f8fafc;
+      padding: 8px 14px;
+    }
+
+    .fnf-meta-card-title {
+      font-size: 9.5pt;
+      font-weight: 700;
+      color: #0f172a;
+      text-transform: uppercase;
+      border-bottom: 1.5px solid #cbd5e1;
+      padding-bottom: 4px;
+      margin-bottom: 8px;
+      letter-spacing: 0.5px;
+    }
+
+    .fnf-meta-card-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 9.5pt;
+    }
+
+    .fnf-meta-card-table td {
+      padding: 3.5px 4px;
+      vertical-align: top;
+    }
+
+    .fnf-meta-card-table td.lbl {
+      font-weight: 600;
+      color: #475569;
+      width: 21%;
+    }
+
+    .fnf-meta-card-table td.val {
+      color: #0f172a;
+      width: 29%;
+    }
+
+    /* Split Earnings & Deductions Table */
+    .fnf-split-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 4px 0 6px 0;
+      font-size: 8.5pt;
+    }
+
+    .fnf-split-table th,
+    .fnf-split-table td {
+      border: 1px solid #cbd5e1;
+      padding: 3.5px 6px;
+    }
+
+    .fnf-split-table th {
+      background-color: #f1f5f9;
+      font-weight: 700;
+      color: #0f172a;
+      text-transform: uppercase;
+      font-size: 8.5pt;
+      letter-spacing: 0.5px;
+    }
+
+    .fnf-split-table td.col-amount {
+      text-align: right;
+      font-family: 'Aptos', 'Inter', monospace;
+    }
+
+    .fnf-split-table tr.total-row {
+      background-color: #f8fafc;
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    /* Net Settlement Banner Box */
+    .net-banner-box {
+      border: 1.5px solid #0f172a;
+      background-color: #f8fafc;
+      padding: 7px 12px;
+      text-align: center;
+      margin: 8px 0;
+      border-radius: 4px;
+    }
+
+    .net-banner-title {
+      font-size: 11pt;
+      font-weight: 800;
+      color: #0f172a;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .net-banner-words {
+      font-size: 8.5pt;
+      font-weight: 600;
+      color: #334155;
+      margin-top: 2px;
+    }
+
+    /* Compliance & Declaration Block */
+    .fnf-declaration-block {
+      font-size: 8pt;
+      color: #334155;
+      line-height: 1.4;
+      margin-top: 6px;
+      padding-top: 5px;
+      border-top: 1px solid #e2e8f0;
+    }
+
+    .fnf-discrepancy-note {
+      font-size: 8pt;
+      font-weight: 600;
+      color: #334155;
+      margin-top: 4px;
+    }
+
+    .text-right {
+      text-align: right;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Centralized Top Navigation Bar (Injected by header.js) -->
+  <div id="header-placeholder"></div>
+
+  <!-- App Layout Grid -->
+  <div class="app-layout">
+    <!-- Left Column: Form Sidebar -->
+    <aside class="form-sidebar">
+
+      <!-- 1. Employee & Settlement Metadata -->
+      <div class="section-card">
+        <div class="section-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+          </svg>
+          Employee & Separation Details
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="fnfDate">Settlement Date</label>
+            <div class="date-input-wrapper">
+              <input type="text" id="fnfDate" value="05 Oct 2026" oninput="updatePreview()" onclick="openUniversalDatePicker(this, this.nextElementSibling)">
+              <button type="button" class="date-picker-btn" title="Choose date from calendar" onclick="openUniversalDatePicker(document.getElementById('fnfDate'), this)">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                  <line x1="16" y1="2" x2="16" y2="6"></line>
+                  <line x1="8" y1="2" x2="8" y2="6"></line>
+                  <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="settlementStartDate">Settlement Period Start</label>
+            <div class="date-input-wrapper">
+              <input type="text" id="settlementStartDate" value="01 Sep 2026" oninput="updatePreview()" onclick="openUniversalDatePicker(this, this.nextElementSibling)">
+              <button type="button" class="date-picker-btn" title="Choose date from calendar" onclick="openUniversalDatePicker(document.getElementById('settlementStartDate'), this)">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                  <line x1="16" y1="2" x2="16" y2="6"></line>
+                  <line x1="8" y1="2" x2="8" y2="6"></line>
+                  <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="settlementEndDate">Settlement Period End</label>
+            <div class="date-input-wrapper">
+              <input type="text" id="settlementEndDate" value="23 Sep 2026" oninput="updatePreview()" onclick="openUniversalDatePicker(this, this.nextElementSibling)">
+              <button type="button" class="date-picker-btn" title="Choose date from calendar" onclick="openUniversalDatePicker(document.getElementById('settlementEndDate'), this)">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                  <line x1="16" y1="2" x2="16" y2="6"></line>
+                  <line x1="8" y1="2" x2="8" y2="6"></line>
+                  <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="empId">Employee ID</label>
+            <input type="text" id="empId" value="2028001" oninput="updatePreview()">
+          </div>
+          <div class="form-group">
+            <label for="empName">Employee Full Name</label>
+            <input type="text" id="empName" value="Sampath Kumar" oninput="updatePreview()">
+          </div>
+          <div class="form-group full-width">
+            <label for="rolePresetSelect">Select Role / Designation Preset</label>
+            <select id="rolePresetSelect" onchange="onRoleSelectChange()"></select>
+          </div>
+          <div class="form-group">
+            <label for="designation">Designation</label>
+            <input type="text" id="designation" value="Software Engineer" oninput="onCustomDesignationInput()">
+          </div>
+          <div class="form-group">
+            <label for="department">Department</label>
+            <input type="text" id="department" value="Engineering" oninput="updatePreview()">
+          </div>
+          <div class="form-group">
+            <label for="separationType">Separation Reason</label>
+            <select id="separationType" onchange="updatePreview()">
+              <option value="Resignation" selected>Resignation</option>
+              <option value="Termination">Termination</option>
+              <option value="Retirement">Retirement</option>
+              <option value="Contract Completion">Contract Completion</option>
+              <option value="Retrenchment">Retrenchment</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="doj">Date of Joining</label>
+            <div class="date-input-wrapper">
+              <input type="text" id="doj" value="21 Sep 2023" oninput="updatePreview()" onclick="openUniversalDatePicker(this, this.nextElementSibling)">
+              <button type="button" class="date-picker-btn" title="Choose date from calendar" onclick="openUniversalDatePicker(document.getElementById('doj'), this)">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                  <line x1="16" y1="2" x2="16" y2="6"></line>
+                  <line x1="8" y1="2" x2="8" y2="6"></line>
+                  <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="dol">Last Working Day (Relieving)</label>
+            <div class="date-input-wrapper">
+              <input type="text" id="dol" value="23 Sep 2026" oninput="updatePreview()" onclick="openUniversalDatePicker(this, this.nextElementSibling)">
+              <button type="button" class="date-picker-btn" title="Choose date from calendar" onclick="openUniversalDatePicker(document.getElementById('dol'), this)">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                  <line x1="16" y1="2" x2="16" y2="6"></line>
+                  <line x1="8" y1="2" x2="8" y2="6"></line>
+                  <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="noticeServed">Notice Period Served / Req.</label>
+            <input type="text" id="noticeServed" value="30 of 30 Days" oninput="updatePreview()">
+          </div>
+          <div class="form-group">
+            <label for="stdDays">Standard Days (Month)</label>
+            <input type="number" id="stdDays" value="30" oninput="onAttendanceOrCtcChange()">
+          </div>
+          <div class="form-group">
+            <label for="workDays">Worked Days (Worked)</label>
+            <input type="number" id="workDays" value="20" oninput="onAttendanceOrCtcChange()">
+          </div>
+          <div class="form-group">
+            <label for="lopDays">Loss of Pay (LOP) Days</label>
+            <input type="number" id="lopDays" value="0" oninput="onLopInputChange()">
+          </div>
+          <div class="form-group">
+            <label for="uanNo">UAN Number</label>
+            <input type="text" id="uanNo" value="100912345678" oninput="updatePreview()">
+          </div>
+          <div class="form-group">
+            <label for="pfNo">PF Account Number</label>
+            <input type="text" id="pfNo" value="AP/VSP/0012345/000/0002028" oninput="updatePreview()">
+          </div>
+          <div class="form-group">
+            <label for="esiNo">ESI Number</label>
+            <input type="text" id="esiNo" value="3100123456" oninput="updatePreview()">
+          </div>
+          <div class="form-group">
+            <label for="panNo">PAN Number</label>
+            <input type="text" id="panNo" value="ABCDE1234F" oninput="updatePreview()">
+          </div>
+          <div class="form-group full-width">
+            <label for="bankAcc">Bank Account Details</label>
+            <input type="text" id="bankAcc" value="50100234567890 (HDFC Bank)" oninput="updatePreview()">
+          </div>
+          <div class="form-group full-width" style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
+            <input type="checkbox" id="maskSensitiveToggle" checked onchange="updatePreview()" style="width: auto; cursor: pointer;">
+            <label for="maskSensitiveToggle" style="margin: 0; cursor: pointer; font-size: 8.5pt; font-weight: 600; color: #0284c7;">
+              Mask Sensitive Personal Identifiers on Document
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Payment & Bank Transaction Info -->
+      <div class="section-card">
+        <div class="section-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/>
+          </svg>
+          Payment & Transaction Info
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="paymentMode">Payment Mode</label>
+            <select id="paymentMode" onchange="updatePreview()">
+              <option value="Bank Transfer (NEFT/RTGS)" selected>Bank Transfer (NEFT/RTGS)</option>
+              <option value="Direct Account Credit">Direct Account Credit</option>
+              <option value="Account Payee Cheque">Account Payee Cheque</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="paymentStatus">Payment Status</label>
+            <select id="paymentStatus" onchange="updatePreview()">
+              <option value="Scheduled" selected>Scheduled</option>
+              <option value="Paid">Paid</option>
+              <option value="Pending Processing">Pending Processing</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="utrRef">Transaction / UTR Ref</label>
+            <input type="text" id="utrRef" value="HDFC000987654321" oninput="updatePreview()">
+          </div>
+          <div class="form-group">
+            <label for="paymentDate">Payment Date</label>
+            <div class="date-input-wrapper">
+              <input type="text" id="paymentDate" value="05 Oct 2026" oninput="updatePreview()" onclick="openUniversalDatePicker(this, this.nextElementSibling)">
+              <button type="button" class="date-picker-btn" title="Choose date from calendar" onclick="openUniversalDatePicker(document.getElementById('paymentDate'), this)">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                  <line x1="16" y1="2" x2="16" y2="6"></line>
+                  <line x1="8" y1="2" x2="8" y2="6"></line>
+                  <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. Earnings & Auto-CTC Engine -->
+      <div class="section-card">
+        <div class="section-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z" />
+          </svg>
+          Earnings & Auto-CTC Engine (₹)
+        </div>
+        <div class="form-grid">
+          <div class="form-group full-width">
+            <label for="annualCtc" style="color: #0284c7; font-weight: 700;">Annual CTC (₹) [Auto-Fills Components]</label>
+            <input type="number" id="annualCtc" value="200000" oninput="onAttendanceOrCtcChange()" style="border: 1.5px solid #0284c7; font-weight: 700;">
+          </div>
+          <div class="form-group">
+            <label for="earnBasic">Earned Basic Salary</label>
+            <input type="number" id="earnBasic" value="5085" oninput="calcFnF()">
+          </div>
+          <div class="form-group">
+            <label for="earnHra">Earned HRA</label>
+            <input type="number" id="earnHra" value="2034" oninput="calcFnF()">
+          </div>
+          <div class="form-group">
+            <label for="earnSpecial">Special Allowance</label>
+            <input type="number" id="earnSpecial" value="3051" oninput="calcFnF()">
+          </div>
+          <div class="form-group">
+            <label for="earnLeave">Leave Encashment</label>
+            <input type="number" id="earnLeave" value="0" oninput="calcFnF()">
+          </div>
+          <div class="form-group">
+            <label for="earnBonus">Performance Bonus</label>
+            <input type="number" id="earnBonus" value="0" oninput="calcFnF()">
+          </div>
+          <div class="form-group">
+            <label for="earnGratuity">Statutory Gratuity</label>
+            <input type="number" id="earnGratuity" value="0" oninput="calcFnF()">
+          </div>
+          <div class="form-group">
+            <label for="earnNoticePay">Notice Pay Payable</label>
+            <input type="number" id="earnNoticePay" value="0" oninput="calcFnF()">
+          </div>
+          <div class="form-group">
+            <label for="earnArrears">Salary Arrears</label>
+            <input type="number" id="earnArrears" value="0" oninput="calcFnF()">
+          </div>
+          <div class="form-group">
+            <label for="earnReimburse">Reimbursements Pending</label>
+            <input type="number" id="earnReimburse" value="0" oninput="calcFnF()">
+          </div>
+          <div class="form-group">
+            <label for="earnStatBonus">Statutory Bonus / Ex-Gratia</label>
+            <input type="number" id="earnStatBonus" value="0" oninput="calcFnF()">
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. Deductions Components -->
+      <div class="section-card">
+        <div class="section-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M19 13H5v-2h14v2z" />
+          </svg>
+          Deductions & Recoveries (₹)
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="dedPf">Employee PF Contribution</label>
+            <input type="number" id="dedPf" value="610" oninput="calcFnF()">
+          </div>
+          <div class="form-group">
+            <label for="dedEsi">Employee ESI Contribution</label>
+            <input type="number" id="dedEsi" value="76" oninput="calcFnF()">
+          </div>
+          <div class="form-group">
+            <label for="dedPt">Professional Tax (PT)</label>
+            <input type="number" id="dedPt" value="0" oninput="calcFnF()">
+          </div>
+          <div class="form-group">
+            <label for="dedTds">Income Tax / TDS</label>
+            <input type="number" id="dedTds" value="0" oninput="calcFnF()">
+          </div>
+          <div class="form-group">
+            <label for="dedNotice">Notice Period Recovery</label>
+            <input type="number" id="dedNotice" value="0" oninput="calcFnF()">
+          </div>
+          <div class="form-group">
+            <label for="dedAsset">Asset Recovery</label>
+            <input type="number" id="dedAsset" value="0" oninput="calcFnF()">
+          </div>
+          <div class="form-group">
+            <label for="dedLoan">Salary Advance / Loan Rec.</label>
+            <input type="number" id="dedLoan" value="0" oninput="calcFnF()">
+          </div>
+          <div class="form-group">
+            <label for="dedExcess">Excess Payment Recovery</label>
+            <input type="number" id="dedExcess" value="0" oninput="calcFnF()">
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. Signatory Details -->
+      <div class="section-card">
+        <div class="section-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
+          </svg>
+          Company Signatory
+        </div>
+        <div class="form-grid">
+          <div class="form-group full-width">
+            <label for="companyName">Company Name</label>
+            <div class="field-toggle-wrapper">
+              <input type="text" id="companyName" value="Dilshaj Infotech Private Limited" oninput="updatePreview()">
+              <button type="button" class="field-toggle-btn active" title="Field visible in document page" onclick="toggleFieldVisibility('companyName', '#prev_companyName, #prev_sigComp', this)" aria-label="Toggle visibility">
+                <svg class="eye-icon eye-open" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                <svg class="eye-icon eye-off" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+              </button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="sigName">Signatory Name</label>
+            <div class="field-toggle-wrapper">
+              <input type="text" id="sigName" value="Dilshaj Shaik" oninput="updatePreview()">
+              <button type="button" class="field-toggle-btn active" title="Field visible in document page" onclick="toggleFieldVisibility('sigName', '#prev_signatory', this)" aria-label="Toggle visibility">
+                <svg class="eye-icon eye-open" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                <svg class="eye-icon eye-off" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+              </button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="sigDesig">Signatory Designation</label>
+            <div class="field-toggle-wrapper">
+              <input type="text" id="sigDesig" value="Chief Executive Officer" oninput="updatePreview()">
+              <button type="button" class="field-toggle-btn active" title="Field visible in document page" onclick="toggleFieldVisibility('sigDesig', '#prev_signatoryDesig', this)" aria-label="Toggle visibility">
+                <svg class="eye-icon eye-open" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                <svg class="eye-icon eye-off" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </aside>
+
+    <!-- Right Column: Document Workspace Preview -->
+    <main class="preview-workspace">
+      <div id="pdf-export-container">
+        <div class="a4-page" id="page-1">
+
+          <!-- Header Document Title -->
+          <div class="fnf-header-title">
+            <div>FULL AND FINAL SETTLEMENT STATEMENT</div>
+          </div>
+
+          <!-- EMPLOYEE & SEPARATION SUMMARY GRID -->
+          <div class="fnf-section-heading">EMPLOYEE & SEPARATION SUMMARY</div>
+
+          <!-- UNIFIED EXECUTIVE METADATA CONTAINER -->
+          <div class="fnf-meta-cards-container">
+            <div class="fnf-meta-card">
+              <div class="fnf-meta-card-title">EMPLOYEE, SEPARATION & STATUTORY DETAILS</div>
+              <table class="fnf-meta-card-table">
+                <tr>
+                  <td class="lbl">Employee Name</td>
+                  <td class="val">: <strong id="prev_empName">Sampath Kumar</strong></td>
+                  <td class="lbl">Settlement Period</td>
+                  <td class="val">: <span id="prev_settlePeriod">01 Sep 2026 to 23 Sep 2026</span></td>
+                </tr>
+                <tr>
+                  <td class="lbl">Employee ID</td>
+                  <td class="val">: <span id="prev_empId">2028001</span></td>
+                  <td class="lbl">Payable Days</td>
+                  <td class="val">: <span id="prev_workDays">20</span> of <span id="prev_stdDays">30</span> Days</td>
+                </tr>
+                <tr>
+                  <td class="lbl">Designation</td>
+                  <td class="val">: <span id="prev_desig">Software Engineer</span></td>
+                  <td class="lbl">Loss of Pay (LOP)</td>
+                  <td class="val">: <span id="prev_lopDays">0 Days</span></td>
+                </tr>
+                <tr>
+                  <td class="lbl">Department</td>
+                  <td class="val">: <span id="prev_dept">Engineering</span></td>
+                  <td class="lbl">Bank Account No</td>
+                  <td class="val">: <span id="prev_bankAcc">XXXX XXXX 7890 (HDFC Bank)</span></td>
+                </tr>
+                <tr>
+                  <td class="lbl">Date of Joining</td>
+                  <td class="val">: <span id="prev_doj">21 Sep 2023</span></td>
+                  <td class="lbl">PAN Number</td>
+                  <td class="val">: <span id="prev_pan">ABCDE****F</span></td>
+                </tr>
+                <tr>
+                  <td class="lbl">Last Working Day</td>
+                  <td class="val">: <span id="prev_dol">23 Sep 2026</span></td>
+                  <td class="lbl">PF Account No</td>
+                  <td class="val">: <span id="prev_pfNo">AP/VSP/0012345/000/****</span></td>
+                </tr>
+                <tr>
+                  <td class="lbl">Separation Reason</td>
+                  <td class="val">: <span id="prev_separation">Resignation</span></td>
+                  <td class="lbl">UAN Number</td>
+                  <td class="val">: <span id="prev_uan">XXXX XXXX 5678</span></td>
+                </tr>
+                <tr>
+                  <td class="lbl">Notice Period Served</td>
+                  <td class="val">: <span id="prev_notice">30 of 30 Days</span></td>
+                  <td class="lbl">ESI Number</td>
+                  <td class="val">: <span id="prev_esiNo">31XX XXXX 56</span></td>
+                </tr>
+                <tr>
+                  <td class="lbl">Settlement Date</td>
+                  <td class="val">: <span id="prev_date">05 Oct 2026</span></td>
+                  <td class="lbl">Payment Mode & Status</td>
+                  <td class="val">: <span id="prev_payMode">Bank Transfer</span> (<span id="prev_payStatus" style="font-weight:600;">Scheduled</span>)</td>
+                </tr>
+                <tr id="prev_utr_row" style="display: none;">
+                  <td class="lbl">Transaction Ref (UTR)</td>
+                  <td class="val" colspan="3">: <span id="prev_utr">HDFC000987654321</span></td>
+                </tr>
+              </table>
+            </div>
+          </div>
+
+          <!-- DYNAMIC SIDE-BY-SIDE SPLIT TABLE: EARNINGS vs DEDUCTIONS (Hides 0 rows) -->
+          <div class="fnf-section-heading">FULL AND FINAL SETTLEMENT DETAILS</div>
+
+          <table class="fnf-split-table">
+            <thead>
+              <tr>
+                <th style="width: 32%;">EARNINGS</th>
+                <th class="text-right" style="width: 18%;">AMOUNT (₹)</th>
+                <th style="width: 32%;">DEDUCTIONS</th>
+                <th class="text-right" style="width: 18%;">AMOUNT (₹)</th>
+              </tr>
+            </thead>
+            <tbody id="fnf_split_tbody">
+              <!-- Dynamically populated via calcFnF() - Zero value rows are hidden automatically -->
+            </tbody>
+          </table>
+
+          <!-- NET SETTLEMENT PAYABLE BANNER BOX -->
+          <div class="net-banner-box">
+            <div class="net-banner-title">
+              TOTAL NET SETTLEMENT PAYABLE: <span id="prev_netAmount">₹ 9,484.00</span>
+            </div>
+            <div class="net-banner-words" id="prev_netWords">
+              (Rupees Nine Thousand Four Hundred Eighty Four Only)
+            </div>
+          </div>
+
+          <!-- REVISED COMPLIANCE, ACKNOWLEDGMENT & DISCREPANCY BLOCK -->
+          <div class="fnf-declaration-block">
+            <strong>Statutory & Regulatory Note:</strong> The settlement has been prepared in accordance with applicable employment, wage, social-security and tax requirements. Statutory records and certificates will be updated or issued within applicable timelines.
+            <br><br>
+            <strong>Employee Acknowledgment:</strong><br>
+            I acknowledge that the above settlement statement has been provided to me following the cessation of my employment with the Company. Receipt of payment shall be subject to successful credit of the net payable amount to my registered bank account. This acknowledgment does not affect any statutory rights or obligations that cannot lawfully be waived.
+            <div class="fnf-discrepancy-note">
+              Notice: Any calculation discrepancy in this statement should be reported to HR within 7 working days.
+            </div>
+          </div>
+
+          <!-- SIGNATURES BLOCK (EXACT AUTHORIZED OVERLAY & EMPLOYEE RECEIVER) -->
+          <div style="display: flex; justify-content: space-between; margin-top: 10px;">
+            <div class="signature-box" style="position: relative; width: 46%;">
+              <div style="font-size: 8pt;">Authorised By:</div>
+              <div style="font-size: 8pt; margin-top: 2px;">For <strong><span id="prev_sigComp">Dilshaj Infotech Private Limited</span></strong></div>
+              <div class="sig-seal-wrap"
+                style="position: absolute; top: 10px; left: 0; right: 0; height: 0; pointer-events: none; z-index: 10;">
+                <img src="Signature.svg" alt="Authorized Signature" class="doc-signature-img"
+                  style="height: 40px; width: auto; position: absolute; left: 0; top: 16px; z-index: 2;">
+                <img src="Stamp.svg" alt="Company Stamp" class="doc-stamp-img"
+                  style="height: 95px; width: auto; position: absolute; left: 140px; top: 21px; opacity: 0.88; z-index: 1;">
+              </div>
+              <div class="signature-line" style="margin-top: 42px; font-size: 8pt;">
+                <strong id="prev_signatory">Dilshaj Shaik</strong><br>
+                <span id="prev_signatoryDesig">Chief Executive Officer</span>
+              </div>
+            </div>
+
+            <div style="width: 46%;">
+              <div style="font-size: 8pt;">Employee's Acknowledgment & Signature:</div>
+              <div class="signature-line" style="margin-top: 56px; font-size: 8pt;">
+                <strong><span id="prev_ackName">Sampath Kumar</span></strong><br>
+                Date: ________________________
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div id="toast" class="toast">Document generating...</div>
+
+  <script>
+    function saveSettings() {
+      saveSharedProfile();
+    }
+
+    function loadSettings() {
+      loadSharedProfile({
+        'empName': 'empName',
+        'empId': 'empId',
+        'designation': 'designation',
+        'department': 'department',
+        'doj': 'doj',
+        'dol': 'dol',
+        'uanNo': 'uanNo',
+        'pfNo': 'pfNo',
+        'esiNo': 'esiNo',
+        'panNo': 'panNo',
+        'bankAcc': 'bankAcc'
+      });
+    }
+
+    function fmt(val) {
+      return (parseFloat(val) || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function maskBankAcc(val) {
+      if (!val) return '';
+      const str = String(val).trim();
+      const parts = str.split('(');
+      const accNum = parts[0].trim();
+      const bankName = parts[1] ? ` (${parts[1]}` : '';
+      if (accNum.length <= 4) return str;
+      return 'XXXX XXXX ' + accNum.slice(-4) + bankName;
+    }
+
+    function maskPan(val) {
+      if (!val) return '';
+      const str = String(val).trim();
+      if (str.length === 10) {
+        return str.slice(0, 5) + '****' + str.slice(-1);
+      }
+      if (str.length <= 4) return str;
+      return str.slice(0, 3) + '****' + str.slice(-1);
+    }
+
+    function maskPf(val) {
+      if (!val) return '';
+      const parts = String(val).trim().split('/');
+      if (parts.length >= 5) {
+        parts[4] = '****';
+        return parts.join('/');
+      }
+      return val;
+    }
+
+    function maskUan(val) {
+      if (!val) return '';
+      const str = String(val).trim();
+      if (str.length <= 4) return str;
+      return 'XXXX XXXX ' + str.slice(-4);
+    }
+
+    function maskEsi(val) {
+      if (!val) return '';
+      const str = String(val).trim();
+      if (str.length <= 4) return str;
+      return str.slice(0, 2) + 'XXXX XXXX ' + str.slice(-2);
+    }
+
+    function onAttendanceOrCtcChange() {
+      const rawCTC = document.getElementById('annualCtc').value.replace(/[^0-9.]/g, '');
+      const annualCTC = Math.round(parseFloat(rawCTC) || 0);
+      const stdDays = Math.max(1, parseFloat(document.getElementById('stdDays').value) || 30);
+      const workDays = Math.max(0, parseFloat(document.getElementById('workDays').value) || 0);
+
+      if (annualCTC > 0) {
+        // 1. Determine ESI applicability (if Monthly Gross <= 21,000/mo as per Annexure A)
+        const isEsiApplicable = (annualCTC / 12 / 1.0925) <= 21000;
+        const grossDivisor = isEsiApplicable ? 1.0925 : 1.06;
+
+        // 2. Calculate Annual Figures (Annexure A Exact Logic)
+        const annualGross = Math.round(annualCTC / grossDivisor);
+        const annualBasic = Math.round(annualGross * 0.50);
+        const annualHra = Math.round(annualBasic * 0.40);
+
+        const annualEpf = Math.round(annualBasic * 0.12);
+        const annualEesi = isEsiApplicable ? Math.round(annualGross * 0.0325) : 0;
+        const annualEmpContrib = annualEpf + annualEesi;
+
+        const annualSpecial = annualCTC - annualBasic - annualHra - annualEmpContrib;
+
+        // Employee Deductions (Section C - Annual)
+        const annualEmpEsi = isEsiApplicable ? Math.round(annualGross * 0.0075) : 0;
+
+        // 3. Unprorated Monthly Component Figures
+        const basic_m = Math.round(annualBasic / 12);
+        const hra_m = Math.round(annualHra / 12);
+        const sa_m = Math.round(annualSpecial / 12);
+        const employeePF_m = Math.round(annualEpf / 12);
+        const employeeESI_m = Math.round(annualEmpEsi / 12);
+
+        // 4. Prorated Earned Figures for FnF Exit Month based on Worked Days
+        const ratio = workDays / stdDays;
+        const earnedBasic = Math.round(basic_m * ratio);
+        const earnedHra = Math.round(hra_m * ratio);
+        const earnedSpecial = Math.round(sa_m * ratio);
+        const earnedPf = Math.round(employeePF_m * ratio);
+        const earnedEsi = Math.round(employeeESI_m * ratio);
+
+        document.getElementById('earnBasic').value = earnedBasic;
+        document.getElementById('earnHra').value = earnedHra;
+        document.getElementById('earnSpecial').value = earnedSpecial;
+        document.getElementById('dedPf').value = earnedPf;
+        document.getElementById('dedEsi').value = earnedEsi;
+      }
+
+      calcFnF();
+    }
+
+    function onLopInputChange() {
+      // Loss of Pay (LOP) input field is independent of Worked Days
+      updatePreview();
+      calcFnF();
+    }
+
+    function calcFnF() {
+      const getNum = id => parseFloat(document.getElementById(id).value) || 0;
+
+      // Earnings Map
+      const earningsList = [
+        { label: 'Basic Salary', val: getNum('earnBasic') },
+        { label: 'House Rent Allowance (HRA)', val: getNum('earnHra') },
+        { label: 'Special Allowance', val: getNum('earnSpecial') },
+        { label: 'Leave Encashment', val: getNum('earnLeave') },
+        { label: 'Performance Bonus / Incentive', val: getNum('earnBonus') },
+        { label: 'Statutory Gratuity', val: getNum('earnGratuity') },
+        { label: 'Notice Pay Payable', val: getNum('earnNoticePay') },
+        { label: 'Salary Arrears', val: getNum('earnArrears') },
+        { label: 'Reimbursements Pending', val: getNum('earnReimburse') },
+        { label: 'Statutory Bonus / Ex-Gratia', val: getNum('earnStatBonus') }
+      ].filter(item => item.val > 0);
+
+      // Deductions Map
+      const deductionsList = [
+        { label: 'Employee PF Contribution', val: getNum('dedPf') },
+        { label: 'Employee ESI Contribution', val: getNum('dedEsi') },
+        { label: 'Professional Tax (PT)', val: getNum('dedPt') },
+        { label: 'Income Tax / TDS', val: getNum('dedTds') },
+        { label: 'Notice Period Recovery', val: getNum('dedNotice') },
+        { label: 'Asset Recovery', val: getNum('dedAsset') },
+        { label: 'Salary Advance / Loan Recovery', val: getNum('dedLoan') },
+        { label: 'Excess Payment Recovery', val: getNum('dedExcess') }
+      ].filter(item => item.val > 0);
+
+      const totalEarnings = earningsList.reduce((sum, item) => sum + item.val, 0);
+      const totalDeductions = deductionsList.reduce((sum, item) => sum + item.val, 0);
+      const netPayable = totalEarnings - totalDeductions;
+
+      // Build Dynamic Split Table Rows (Hides Zero-Value Rows completely)
+      const tbody = document.getElementById('fnf_split_tbody');
+      tbody.innerHTML = '';
+
+      const maxRows = Math.max(earningsList.length, deductionsList.length, 1);
+
+      for (let i = 0; i < maxRows; i++) {
+        const tr = document.createElement('tr');
+
+        const e = earningsList[i];
+        const d = deductionsList[i];
+
+        const eLabel = e ? e.label : '';
+        const eVal = e ? fmt(e.val) : '';
+
+        const dLabel = d ? d.label : '';
+        const dVal = d ? fmt(d.val) : '';
+
+        tr.innerHTML = `
+          <td>${eLabel}</td>
+          <td class="col-amount">${eVal}</td>
+          <td>${dLabel}</td>
+          <td class="col-amount">${dVal}</td>
+        `;
+        tbody.appendChild(tr);
+      }
+
+      // Total Row
+      const totalTr = document.createElement('tr');
+      totalTr.className = 'total-row';
+      totalTr.innerHTML = `
+        <td>Total Gross Earnings</td>
+        <td class="col-amount">₹ ${fmt(totalEarnings)}</td>
+        <td>Total Deductions</td>
+        <td class="col-amount">₹ ${fmt(totalDeductions)}</td>
+      `;
+      tbody.appendChild(totalTr);
+
+      // Update Net Banner Box
+      document.getElementById('prev_netAmount').innerText = `₹ ${fmt(netPayable)}`;
+      document.getElementById('prev_netWords').innerText = `(${numberToWordsINR(netPayable)})`;
+
+      updatePreview();
+    }
+
+    function updatePreview() {
+      const getVal = id => {
+        const el = document.getElementById(id);
+        return el ? el.value.trim() : '';
+      };
+
+      const mask = document.getElementById('maskSensitiveToggle').checked;
+
+      const date = getVal('fnfDate') || '05 Oct 2026';
+      const startDate = getVal('settlementStartDate') || '01 Sep 2026';
+      const endDate = getVal('settlementEndDate') || '23 Sep 2026';
+      const period = `${startDate} to ${endDate}`;
+      const name = getVal('empName') || 'Sampath Kumar';
+      const empId = getVal('empId') || '2028001';
+      const desig = getVal('designation') || 'Software Engineer';
+      const dept = getVal('department') || 'Engineering';
+      const separation = getVal('separationType') || 'Resignation';
+      const doj = getVal('doj') || '21 Sep 2023';
+      const dol = getVal('dol') || '23 Sep 2026';
+      const notice = getVal('noticeServed') || '30 of 30 Days';
+      const stdDays = getVal('stdDays') || '30';
+      const workDays = getVal('workDays') || '20';
+      const lopDays = getVal('lopDays') || '0';
+
+      const uanRaw = getVal('uanNo') || '100912345678';
+      const pfNoRaw = getVal('pfNo') || 'AP/VSP/0012345/000/0002028';
+      const esiNoRaw = getVal('esiNo') || '3100123456';
+      const panNoRaw = getVal('panNo') || 'ABCDE1234F';
+      const bankAccRaw = getVal('bankAcc') || '50100234567890 (HDFC Bank)';
+
+      const payMode = getVal('paymentMode') || 'Bank Transfer';
+      const payStatus = getVal('paymentStatus') || 'Scheduled';
+      const utr = getVal('utrRef') || 'HDFC000987654321';
+      const payDate = getVal('paymentDate') || '05 Oct 2026';
+
+      const company = getVal('companyName') || 'Dilshaj Infotech Private Limited';
+      const sigName = getVal('sigName') || 'Dilshaj Shaik';
+      const sigDesig = getVal('sigDesig') || 'Chief Executive Officer';
+
+      // Apply Contextual Privacy Masking
+      const bankAcc = mask ? maskBankAcc(bankAccRaw) : bankAccRaw;
+      const panNo = mask ? maskPan(panNoRaw) : panNoRaw;
+      const uan = mask ? maskUan(uanRaw) : uanRaw;
+      const esiNo = mask ? maskEsi(esiNoRaw) : esiNoRaw;
+      const pfNo = mask ? maskPf(pfNoRaw) : pfNoRaw;
+
+      document.getElementById('prev_date').innerText = date;
+      document.getElementById('prev_settlePeriod').innerText = period;
+      document.getElementById('prev_empName').innerText = name;
+      document.getElementById('prev_empId').innerText = empId;
+      document.getElementById('prev_desig').innerText = desig;
+      document.getElementById('prev_dept').innerText = dept;
+      document.getElementById('prev_separation').innerText = separation;
+      document.getElementById('prev_doj').innerText = doj;
+      document.getElementById('prev_dol').innerText = dol;
+      document.getElementById('prev_notice').innerText = notice;
+      document.getElementById('prev_stdDays').innerText = stdDays;
+      document.getElementById('prev_workDays').innerText = workDays;
+      document.getElementById('prev_lopDays').innerText = `${lopDays} Days`;
+      document.getElementById('prev_uan').innerText = uan;
+      document.getElementById('prev_pfNo').innerText = pfNo;
+      document.getElementById('prev_esiNo').innerText = esiNo;
+      document.getElementById('prev_pan').innerText = panNo;
+      document.getElementById('prev_bankAcc').innerText = bankAcc;
+
+      document.getElementById('prev_payMode').innerText = payMode;
+      document.getElementById('prev_payStatus').innerText = payStatus;
+
+      const utrRow = document.getElementById('prev_utr_row');
+      if (payStatus === 'Paid') {
+        if (utrRow) utrRow.style.display = 'table-row';
+        document.getElementById('prev_utr').innerText = utr;
+        document.getElementById('prev_payDate').innerText = payDate;
+      } else {
+        if (utrRow) utrRow.style.display = 'none';
+      }
+
+      document.getElementById('prev_ackName').innerText = name;
+
+      const sigCompEl = document.getElementById('prev_sigComp');
+      if (sigCompEl) sigCompEl.innerText = company;
+      const sigNameEl = document.getElementById('prev_signatory');
+      if (sigNameEl) sigNameEl.innerText = sigName;
+      const sigDesigEl = document.getElementById('prev_signatoryDesig');
+      if (sigDesigEl) sigDesigEl.innerText = sigDesig;
+      if (window.refreshHiddenFields) refreshHiddenFields();
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      loadSettings();
+      onAttendanceOrCtcChange();
+    });
+  </script>
+</body>
+
+</html>

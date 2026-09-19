@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <!-- Auth Guard (Must load first) -->
+  <script src="auth.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Monthly Payslip Generator | Dilshaj Infotech</title>
+
+  <!-- Google Fonts for UI Header Bar -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+
+  <!-- html2canvas and jsPDF for razor-sharp rendering (deferred to prevent render blocking) -->
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <!-- Consolidated Design System & Theme Stylesheet -->
+  <link rel="stylesheet" href="shared.css?v=4.3">
+  <!-- Centralized Header Navigation & Shared HR Profile Manager -->
+  <script src="header.js?v=4.3"></script>
+
+  <style>
+    /* Payslip-Specific Sheet Padding Overrides */
+    .a4-page {
+      padding: 18mm 18mm 18mm 18mm;
+      font-size: 11pt;
+      line-height: 1.4;
+    }
+
+    body.mode-letter .a4-page {
+      padding: 16mm 18mm 16mm 18mm;
+      font-size: 10.5pt;
+      line-height: 1.35;
+    }
+
+    /* Payslip Layout Components matching Image Sample */
+    .company-header-block {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 10px;
+      margin-top: 0;
+      text-align: center;
+      position: relative;
+      min-height: 42px;
+    }
+
+    .company-logo-img {
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 40px;
+      width: auto;
+      object-fit: contain;
+      display: block;
+    }
+
+    .company-main-name {
+      font-size: 16pt;
+      font-weight: 800;
+      color: #000000;
+      line-height: 1.2;
+    }
+
+    .company-address-lines {
+      font-size: 9.5pt;
+      color: #334155;
+      line-height: 1.3;
+      margin-top: 2px;
+    }
+
+    /* 1. Double spacing above and below period title */
+    .payslip-period-title {
+      font-size: 13.5pt;
+      font-weight: 700;
+      text-align: center;
+      margin: 28px 0 18px 0;
+      color: #0f172a;
+    }
+
+    /* Unified Single Payslip Box combining Employee Info, Earnings/Deductions, and Net Pay */
+    .payslip-unified-box {
+      width: 100%;
+      border: 1px solid #475569;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+      background-color: #ffffff;
+    }
+
+    /* 2. Employee Information Table (Top section of unified box) */
+    .employee-info-box {
+      width: 100%;
+      table-layout: fixed;
+      border: none;
+      border-bottom: 1px solid #475569;
+      border-collapse: collapse;
+      margin-bottom: 0;
+    }
+
+    .employee-info-box td {
+      padding: 5.5px 8px;
+      font-size: 11pt;
+      vertical-align: top;
+      border: none;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+    }
+
+    /* Vertical divider removed from Employee Info Box as requested */
+    .employee-info-box td:nth-child(2) {
+      border-right: none;
+    }
+
+    /* Typography matching Relieving Letter (Bold Labels, Regular Values) */
+    .employee-info-box td.label-col {
+      font-weight: 700;
+      color: #000000;
+    }
+
+    .employee-info-box td.val-col {
+      font-weight: 400;
+      color: #0f172a;
+    }
+
+    /* Earnings & Deductions Table with Exactly Centered 50% / 50% Divider */
+    .pay-table {
+      width: 100%;
+      table-layout: fixed;
+      border-collapse: collapse;
+      border: none;
+      border-bottom: 1px solid #475569;
+      margin-bottom: 0;
+    }
+
+    .pay-table th,
+    .pay-table td {
+      border: none;
+      padding: 6px 8px;
+      font-size: 11pt;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+    }
+
+    .pay-table th {
+      background-color: #ffffff;
+      color: #000000;
+      font-weight: 700;
+      border-bottom: 1px solid #475569;
+    }
+
+    /* Vertical divider line exactly centered at 50% */
+    .pay-table th:first-child,
+    .pay-table td:nth-child(2) {
+      border-right: 1px solid #475569;
+    }
+
+    .pay-table td:nth-child(1),
+    .pay-table td:nth-child(3) {
+      font-weight: 600;
+      color: #000000;
+    }
+
+    .pay-table td.amount-col {
+      text-align: right;
+      font-weight: 400;
+      color: #0f172a;
+    }
+
+    .pay-table tr.total-row td {
+      font-weight: 700;
+      color: #000000;
+      border-top: 1px solid #475569;
+    }
+
+    /* Net Pay Footer (Integrated directly inside unified box) */
+    .net-pay-footer-box {
+      width: 100%;
+      border: none;
+      padding: 10px 12px;
+      margin-bottom: 0;
+      box-sizing: border-box;
+    }
+
+    .net-pay-line {
+      font-size: 11pt;
+      font-weight: 500;
+      color: #000000;
+      margin-bottom: 4px;
+    }
+
+    .net-pay-line strong {
+      font-size: 12.5pt;
+      font-weight: 800;
+    }
+
+    .net-pay-words {
+      font-size: 10.5pt;
+      font-weight: 500;
+      color: #0f172a;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Centralized Top Navigation Bar (Injected by header.js) -->
+  <div id="header-placeholder"></div>
+
+  <!-- App Layout Grid -->
+  <div class="app-layout">
+    <!-- Left Column: Form Sidebar -->
+    <aside class="form-sidebar">
+      <!-- 1. Payslip Period & Working Days -->
+      <div class="section-card">
+        <div class="section-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11z" />
+          </svg>
+          Payslip Period & Working Days
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="payslipMonth">Payslip Month</label>
+            <select id="payslipMonth" onchange="onDateSelectionChange()">
+              <option value="January">January</option>
+              <option value="February">February</option>
+              <option value="March">March</option>
+              <option value="April">April</option>
+              <option value="May">May</option>
+              <option value="June">June</option>
+              <option value="July">July</option>
+              <option value="August">August</option>
+              <option value="September" selected>September</option>
+              <option value="October">October</option>
+              <option value="November">November</option>
+              <option value="December">December</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="payslipYear">Payslip Year</label>
+            <select id="payslipYear" onchange="onDateSelectionChange()">
+              <!-- Years 2020 through 2035 -->
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="effectiveWorkDays">Standard Days (Total)</label>
+            <input type="number" id="effectiveWorkDays" value="30" readonly
+              title="Auto-calculated total days in selected month & year (including leap years)">
+          </div>
+          <div class="form-group">
+            <label for="empWorkDays">Days Accounted</label>
+            <input type="number" id="empWorkDays" value="30" oninput="onWorkDaysChange()">
+          </div>
+          <div class="form-group">
+            <label for="lopDays">Loss of Pay </label>
+            <input type="number" id="lopDays" value="0" min="0" oninput="onLopDaysChange()">
+          </div>
+          <div class="form-group">
+            <label for="paymentDate">Payment Date</label>
+            <input type="text" id="paymentDate" value="30 Sep 2025" oninput="updatePreview()"
+              onclick="openUniversalDatePicker(this, this.nextElementSibling)">
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Employee Details -->
+      <div class="section-card">
+        <div class="section-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+          </svg>
+          Employee Details
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="empPrefix">Salutation Prefix</label>
+            <select id="empPrefix" onchange="updatePreview()">
+              <option value="Mr." selected>Mr.</option>
+              <option value="Ms.">Ms.</option>
+              <option value="Mrs.">Mrs.</option>
+              <option value="Dr.">Dr.</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="empId">Employee No</label>
+            <input type="text" id="empId" value="2028001" oninput="updatePreview()">
+          </div>
+          <div class="form-group full-width">
+            <label for="empName">Employee Full Name</label>
+            <input type="text" id="empName" value="Employe Name" oninput="updatePreview()">
+          </div>
+          <div class="form-group full-width">
+            <label for="rolePresetSelect">Select Role / Designation Preset</label>
+            <select id="rolePresetSelect" onchange="onRoleSelectChange()"></select>
+          </div>
+          <div class="form-group">
+            <label for="designation">Designation</label>
+            <input type="text" id="designation" value="Software Engineer" oninput="onCustomDesignationInput()">
+          </div>
+          <div class="form-group">
+            <label for="department">Department</label>
+            <input type="text" id="department" value="Engineering" oninput="updatePreview()">
+          </div>
+          <div class="form-group full-width">
+            <label for="location">Location</label>
+            <input type="text" id="location" value="Rolugunta, Anakapalle Andhra Pradesh, 531114"
+              oninput="updatePreview()">
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. Banking & Statutory Details -->
+      <div class="section-card">
+        <div class="section-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M4 10h16v2H4zm0-4h16v2H4zm0 8h16v2H4zm0 4h16v2H4z" />
+          </svg>
+          Bank & Statutory Accounts
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="bankName">Bank Name</label>
+            <input type="text" id="bankName" value="HDFC Bank" oninput="updatePreview()">
+          </div>
+          <div class="form-group">
+            <label for="bankAcc">Bank Account No</label>
+            <input type="text" id="bankAcc" value="50100234567890" oninput="updatePreview()">
+          </div>
+          <div class="form-group">
+            <label for="panNo">PAN Number</label>
+            <input type="text" id="panNo" value="ABCDE1234F" oninput="updatePreview()">
+          </div>
+          <div class="form-group">
+            <label for="pfNo">PF Number</label>
+            <input type="text" id="pfNo" value="AP/VSP/0012345/000/0001424" oninput="updatePreview()">
+          </div>
+          <div class="form-group full-width">
+            <label for="uanNo">PF UAN Number</label>
+            <input type="text" id="uanNo" value="100912345678" oninput="updatePreview()">
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. Salary Auto-Calculation & Breakup -->
+      <div class="section-card">
+        <div class="section-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z" />
+          </svg>
+          Earnings & Deductions (Rs.)
+        </div>
+        <div class="form-group full-width">
+          <label for="annualCTC">Annual CTC (Rs.)</label>
+          <input type="text" id="annualCTC" value="2,00,000" oninput="autoCalculatePayslip()">
+          <button type="button" class="btn-calc" onclick="autoCalculatePayslip()">Auto-Calculate Table</button>
+        </div>
+        <div class="form-grid" style="margin-top: 10px;">
+          <div class="form-group">
+            <label for="earnBasic">BASIC</label>
+            <input type="number" id="earnBasic" value="7628" oninput="updatePreview()">
+          </div>
+          <div class="form-group">
+            <label for="earnHra">HRA</label>
+            <input type="number" id="earnHra" value="3051" oninput="updatePreview()">
+          </div>
+          <div class="form-group">
+            <label for="earnSpecial">SPECIAL ALLOWANCE</label>
+            <input type="number" id="earnSpecial" value="4577" oninput="updatePreview()">
+          </div>
+          <div class="form-group">
+            <label for="dedPf">PF (Employee)</label>
+            <input type="number" id="dedPf" value="915" oninput="updatePreview()">
+          </div>
+          <div class="form-group">
+            <label for="dedEsi">ESI (Employee)</label>
+            <input type="number" id="dedEsi" value="114" oninput="updatePreview()">
+          </div>
+          <div class="form-group">
+            <label for="dedLop">Loss of Pay </label>
+            <input type="number" id="dedLop" value="0" oninput="updatePreview()">
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. Company Address Block -->
+      <div class="section-card">
+        <div class="section-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm10 12h-8v-2h2v-2h-2v-2h2v-2h-2V9h8v10zm-2-8h-2v2h2v-2zm0 4h-2v2h2v-2z" />
+          </svg>
+          Company Header Information
+        </div>
+        <div class="form-group">
+          <label for="companyName">Company Name</label>
+          <div class="field-toggle-wrapper">
+            <input type="text" id="companyName" value="Dilshaj Infotech Private Limited" oninput="updatePreview()">
+            <button type="button" class="field-toggle-btn active" title="Field visible in document page" onclick="toggleFieldVisibility('companyName', '#prev_companyName', this)" aria-label="Toggle visibility">
+              <svg class="eye-icon eye-open" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              <svg class="eye-icon eye-off" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+            </button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="companyAddress">Company Address</label>
+          <div class="field-toggle-wrapper">
+            <input type="text" id="companyAddress"
+              value="Survey No: 225-2A, Narsipatnam, Visakhapatnam, Andhra Pradesh 531114" oninput="updatePreview()">
+            <button type="button" class="field-toggle-btn active" title="Field visible in document page" onclick="toggleFieldVisibility('companyAddress', '#prev_companyAddress', this)" aria-label="Toggle visibility">
+              <svg class="eye-icon eye-open" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              <svg class="eye-icon eye-off" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Right Column: A4 Preview Workspace -->
+    <main class="preview-workspace">
+      <div id="pdf-export-container">
+        <div class="a4-page" id="page-1">
+          <!-- Top Header Block --->
+          <div class="company-header-block">
+            <img src="Logo.png" alt="Company Logo" class="company-logo-img">
+            <div class="company-main-name" id="prev_companyName">Dilshaj Infotech Private Limited</div>
+            <div class="company-address-lines" id="prev_companyAddress">
+              Survey No: 225-2A, Narsipatnam, Visakhapatnam, Andhra Pradesh 531114
+            </div>
+          </div>
+
+          <br><br><br>
+
+          <!-- Payslip Month Title -->
+          <div class="payslip-period-title">
+            Payslip for the month of <span id="prev_period">September - 2025</span>
+          </div>
+
+          <!-- Unified Single Payslip Box -->
+          <div class="payslip-unified-box">
+
+            <!-- 1. Employee Information Table (Top Section) -->
+            <table class="employee-info-box">
+              <colgroup>
+                <col style="width: 20%;">
+                <col style="width: 30%;">
+                <col style="width: 20%;">
+                <col style="width: 30%;">
+              </colgroup>
+              <tr>
+                <td class="label-col">Name:</td>
+                <td class="val-col" id="prev_name">Mr. Employe Name</td>
+                <td class="label-col">Employee No:</td>
+                <td class="val-col" id="prev_empId">2028001</td>
+              </tr>
+              <tr>
+                <td class="label-col">Designation:</td>
+                <td class="val-col" id="prev_desig">Software Engineer</td>
+                <td class="label-col">Bank Name:</td>
+                <td class="val-col" id="prev_bankName">HDFC Bank</td>
+              </tr>
+              <tr>
+                <td class="label-col">Department:</td>
+                <td class="val-col" id="prev_dept">Engineering</td>
+                <td class="label-col">Bank A/c No:</td>
+                <td class="val-col" id="prev_bankAcc">50100234567890</td>
+              </tr>
+              <tr>
+                <td class="label-col">Location:</td>
+                <td class="val-col" id="prev_location">Rolugunta, Anakapalle Andhra Pradesh, 531114</td>
+                <td class="label-col">PAN Number:</td>
+                <td class="val-col" id="prev_panNo">ABCDE1234F</td>
+              </tr>
+              <tr>
+                <td class="label-col">Standard Days:</td>
+                <td class="val-col" id="prev_workDays">30</td>
+                <td class="label-col">PF No:</td>
+                <td class="val-col" id="prev_pfNo">AP/VSP/0012345/000/0001424</td>
+              </tr>
+              <tr>
+                <td class="label-col">Work Days:</td>
+                <td class="val-col" id="prev_empWorkDays">30</td>
+                <td class="label-col">PF UAN:</td>
+                <td class="val-col" id="prev_uanNo">100912345678</td>
+              </tr>
+              <tr>
+                <td class="label-col">Loss of Pay :</td>
+                <td class="val-col"><span id="prev_lopDays">0</span> Day(s)</td>
+                <td class="label-col">Payment Mode:</td>
+                <td class="val-col" id="prev_payMode">Bank Transfer</td>
+              </tr>
+            </table>
+
+            <!-- 2. Earnings & Deductions Table (Middle Section - Centered 50% / 50% Split) -->
+            <table class="pay-table">
+              <colgroup>
+                <col style="width: 33%;">
+                <col style="width: 17%;">
+                <col style="width: 33%;">
+                <col style="width: 17%;">
+              </colgroup>
+              <thead>
+                <tr>
+                  <th colspan="2" style="width: 50%; text-align: center; font-weight: 700;">Earnings</th>
+                  <th colspan="2" style="width: 50%; text-align: center; font-weight: 700;">Deductions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>BASIC</td>
+                  <td class="amount-col" id="val_earnBasic">7,628</td>
+                  <td>PF</td>
+                  <td class="amount-col" id="val_dedPf">915</td>
+                </tr>
+                <tr>
+                  <td>HRA</td>
+                  <td class="amount-col" id="val_earnHra">3,051</td>
+                  <td>ESI</td>
+                  <td class="amount-col" id="val_dedEsi">114</td>
+                </tr>
+                <tr>
+                  <td>SPECIAL ALLOWANCE</td>
+                  <td class="amount-col" id="val_earnSpecial">4,577</td>
+                  <td>LOSS OF PAY </td>
+                  <td class="amount-col" id="val_dedLop">0</td>
+                </tr>
+                <tr class="total-row">
+                  <td>Total Earnings</td>
+                  <td class="amount-col" id="val_totalEarnings">15,256</td>
+                  <td>Total Deductions</td>
+                  <td class="amount-col" id="val_totalDeduction">1,029</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <!-- 3. Net Pay Footer Box (Bottom Section) -->
+            <div class="net-pay-footer-box">
+              <div class="net-pay-line">
+                Net Pay for the month : &nbsp;&nbsp;&nbsp;<strong id="prev_netAmount">14,227</strong>
+              </div>
+              <div class="net-pay-words" id="prev_netWords">
+                (Rupees Fourteen Thousand Two Hundred Twenty Seven Only)
+              </div>
+              <div
+                style="margin-top: 8px; font-size: 10pt; color: #334155; border-top: 1px dashed #cbd5e1; padding-top: 6px; display: flex; justify-content: space-between; align-items: center;">
+                <div><strong>Payment Date:</strong> <span id="prev_paymentDate">30 Sep 2025</span></div>
+                <div style="font-size: 8.5pt; color: #64748b; font-style: italic;">This is a computer-generated payslip.
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast" class="toast">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2">
+      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+      <polyline points="22 4 12 14.01 9 11.01"></polyline>
+    </svg>
+    <span id="toast-msg">Action performed successfully</span>
+  </div>
+
+  <script>
+    const MONTH_INDEXES = {
+      'January': 0, 'February': 1, 'March': 2, 'April': 3, 'May': 4, 'June': 5,
+      'July': 6, 'August': 7, 'September': 8, 'October': 9, 'November': 10, 'December': 11
+    };
+
+    function populateYearDropdown() {
+      const yearSelect = document.getElementById('payslipYear');
+      yearSelect.innerHTML = '';
+      const currentYear = new Date().getFullYear();
+      const startYear = 2020;
+      const endYear = 2035;
+
+      for (let y = startYear; y <= endYear; y++) {
+        const opt = document.createElement('option');
+        opt.value = y;
+        opt.innerText = y;
+        if (y === 2025) opt.selected = true; // default 2025 matching sample
+        yearSelect.appendChild(opt);
+      }
+    }
+
+    function getDaysInMonth(monthName, year) {
+      const mIndex = MONTH_INDEXES[monthName] !== undefined ? MONTH_INDEXES[monthName] : 8;
+      const y = parseInt(year, 10) || 2025;
+      // Exact calculation accounting for leap years naturally!
+      return new Date(y, mIndex + 1, 0).getDate();
+    }
+
+    function onDateSelectionChange() {
+      const month = document.getElementById('payslipMonth').value;
+      const year = document.getElementById('payslipYear').value;
+      const totalDays = getDaysInMonth(month, year);
+
+      document.getElementById('effectiveWorkDays').value = totalDays;
+      document.getElementById('empWorkDays').value = totalDays;
+      updatePreview();
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      const toastMsg = document.getElementById('toast-msg');
+      toastMsg.innerText = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3500);
+    }
+
+    function toggleBackground() {
+      const isChecked = document.getElementById('bgToggle').checked;
+      if (isChecked) {
+        document.body.classList.add('show-letterhead-bg');
+        showToast('Letterhead background enabled');
+      } else {
+        document.body.classList.remove('show-letterhead-bg');
+        showToast('Letterhead background disabled');
+      }
+    }
+
+    function changePageSize() {
+      const pageSize = document.getElementById('pageSizeSelect').value;
+      if (pageSize === 'letter') {
+        document.body.classList.add('mode-letter');
+        showToast('Page mode changed to US Letter');
+      } else {
+        document.body.classList.remove('mode-letter');
+        showToast('Page mode changed to A4');
+      }
+    }
+
+    function fmt(val) {
+      const rounded = Math.round(parseFloat(val) || 0);
+      return rounded.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+    }
+
+    function autoCalculatePayslip() {
+      const annualEl = document.getElementById('annualCTC');
+      const rawCTC = annualEl ? annualEl.value.replace(/[^0-9.]/g, '') : '200000';
+      const annualCTC = Math.round(parseFloat(rawCTC) || 200000);
+      const monthlyCTC = Math.round(annualCTC / 12);
+
+      // 1. Determine ESI applicability (if Monthly Gross <= 21,000/mo) - Base algorithm matching Offer Letter
+      const isEsiApplicable = (annualCTC / 12 / 1.0925) <= 21000;
+      const grossDivisor = isEsiApplicable ? 1.0925 : 1.06;
+
+      // 2. Calculate Annual Figures First (Guarantees Gross (A) + Employer Contrib (B) == Annual CTC exactly)
+      const annualGross = Math.round(annualCTC / grossDivisor);
+      const annualBasic = Math.round(annualGross * 0.50);
+      const annualHra = Math.round(annualBasic * 0.40);
+
+      const annualEpf = Math.round(annualBasic * 0.12);
+      const annualEesi = isEsiApplicable ? Math.round(annualGross * 0.0325) : 0;
+      const annualEmpContrib = annualEpf + annualEesi;
+
+      const annualSpecial = annualCTC - annualBasic - annualHra - annualEmpContrib;
+
+      // 3. Employee Deductions (Section C - Annual)
+      const annualEmpPf = annualEpf;
+      const annualEmpEsi = isEsiApplicable ? Math.round(annualGross * 0.0075) : 0;
+
+      // 4. Monthly Figures derived from Annual Components (Exact match with Offer Letter Annexure A)
+      const basic_m = Math.round(annualBasic / 12);
+      const hra_m = Math.round(annualHra / 12);
+      const special_m = Math.round(annualSpecial / 12);
+
+      const pf_m = Math.round(annualEpf / 12);
+      const esi_m = isEsiApplicable ? Math.round(annualEmpEsi / 12) : 0;
+
+      const setInput = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.value = val;
+      };
+
+      setInput('earnBasic', basic_m);
+      setInput('earnHra', hra_m);
+      setInput('earnSpecial', special_m);
+      setInput('dedPf', pf_m);
+      setInput('dedEsi', esi_m);
+
+      calculateLopAmount();
+      updatePreview();
+      if (typeof saveSharedProfile === 'function') {
+        saveSharedProfile();
+      }
+    }
+
+    function formatDisplayDate(dateStr) {
+      if (!dateStr) return '';
+      if (dateStr.includes('-') && dateStr.length === 10) {
+        const [y, m, d] = dateStr.split('-');
+        if (typeof formatByPattern === 'function') {
+          return formatByPattern(parseInt(d), parseInt(m) - 1, parseInt(y), typeof getActiveDateFormat === 'function' ? getActiveDateFormat() : 'DD Mon YYYY');
+        }
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        return `${String(d).padStart(2, '0')} ${months[parseInt(m) - 1]} ${y}`;
+      }
+      return dateStr;
+    }
+
+    function calculateLopAmount() {
+      const total = parseInt(document.getElementById('effectiveWorkDays').value, 10) || 30;
+      const lop = parseInt(document.getElementById('lopDays').value, 10) || 0;
+      const basic = parseFloat(document.getElementById('earnBasic').value) || 0;
+      const hra = parseFloat(document.getElementById('earnHra').value) || 0;
+      const special = parseFloat(document.getElementById('earnSpecial').value) || 0;
+      const totalGross = basic + hra + special;
+
+      const lopDeduction = lop > 0 ? Math.round((totalGross / total) * lop) : 0;
+      const dedLopEl = document.getElementById('dedLop');
+      if (dedLopEl) dedLopEl.value = lopDeduction;
+    }
+
+    function onWorkDaysChange() {
+      const total = parseInt(document.getElementById('effectiveWorkDays').value, 10) || 30;
+      const accounted = parseInt(document.getElementById('empWorkDays').value, 10) || 0;
+      const lop = Math.max(0, total - accounted);
+      const lopEl = document.getElementById('lopDays');
+      if (lopEl) lopEl.value = lop;
+      calculateLopAmount();
+      updatePreview();
+    }
+
+    function onLopDaysChange() {
+      const total = parseInt(document.getElementById('effectiveWorkDays').value, 10) || 30;
+      const lop = parseInt(document.getElementById('lopDays').value, 10) || 0;
+      const accounted = Math.max(0, total - lop);
+      const empWorkEl = document.getElementById('empWorkDays');
+      if (empWorkEl) empWorkEl.value = accounted;
+      calculateLopAmount();
+      updatePreview();
+    }
+
+    function updatePreview() {
+      const getVal = id => {
+        const el = document.getElementById(id);
+        return el ? el.value.trim() : '';
+      };
+      const getNum = id => {
+        const el = document.getElementById(id);
+        return el ? Math.round(parseFloat(el.value) || 0) : 0;
+      };
+      const setInner = (id, txt) => {
+        const el = document.getElementById(id);
+        if (el) el.innerText = txt;
+      };
+
+      const month = getVal('payslipMonth') || 'September';
+      const year = getVal('payslipYear') || '2025';
+      const periodStr = `${month} - ${year}`;
+
+      const totalDays = getDaysInMonth(month, year);
+      const effEl = document.getElementById('effectiveWorkDays');
+      if (effEl) effEl.value = totalDays;
+
+      const workDays = getVal('effectiveWorkDays') || totalDays;
+      const empWorkDays = getVal('empWorkDays') || totalDays;
+      const lopDays = getVal('lopDays') || '0';
+      const payMode = getVal('payMode') || 'Bank Transfer';
+      const prefix = getVal('empPrefix');
+      const name = getVal('empName') || 'Employe Name';
+      const empId = getVal('empId') || '2028001';
+      const desig = getVal('designation') || 'Software Engineer';
+      const dept = getVal('department') || 'Engineering';
+      const location = getVal('location') || 'Rolugunta, Anakapalle Andhra Pradesh, 531114';
+
+      const bankName = getVal('bankName') || 'HDFC Bank';
+      const bankAcc = getVal('bankAcc') || '50100234567890';
+      const panNo = getVal('panNo') || 'ABCDE1234F';
+      const pfNo = getVal('pfNo') || 'AP/VSP/0012345/000/0001424';
+      const uanNo = getVal('uanNo') || '100912345678';
+
+      const company = getVal('companyName') || 'Dilshaj Infotech Private Limited';
+      const address = getVal('companyAddress') || 'Survey No: 225-2A, Narsipatnam, Visakhapatnam, Andhra Pradesh 531114';
+
+      // Auto-set payment date if empty
+      const payDateEl = document.getElementById('paymentDate');
+      if (payDateEl && !payDateEl.value) {
+        payDateEl.value = '30 Sep 2025';
+      }
+      const paymentDateRaw = getVal('paymentDate');
+      setInner('prev_paymentDate', formatDisplayDate(paymentDateRaw));
+
+      // Meta values
+      setInner('prev_period', periodStr);
+      setInner('prev_name', prefix ? `${prefix} ${name}` : name);
+      setInner('prev_empId', empId);
+      setInner('prev_desig', desig);
+      setInner('prev_dept', dept);
+      setInner('prev_location', location);
+      setInner('prev_workDays', workDays);
+      setInner('prev_empWorkDays', empWorkDays);
+      setInner('prev_lopDays', lopDays);
+      setInner('prev_payMode', payMode);
+
+      setInner('prev_bankName', bankName);
+      setInner('prev_bankAcc', bankAcc);
+      setInner('prev_panNo', panNo);
+      setInner('prev_pfNo', pfNo);
+      setInner('prev_uanNo', uanNo);
+
+      setInner('prev_companyName', company);
+      setInner('prev_companyAddress', address);
+
+      // Earnings & Deductions (Rounded to whole Rupees)
+      const basic = getNum('earnBasic');
+      const hra = getNum('earnHra');
+      const special = getNum('earnSpecial');
+      const totalEarnings = basic + hra + special;
+
+      const pf = getNum('dedPf');
+      const esi = getNum('dedEsi');
+      const lopDeduction = getNum('dedLop');
+      const totalDeductions = pf + esi + lopDeduction;
+
+      const netPay = Math.max(0, totalEarnings - totalDeductions);
+
+      setInner('val_earnBasic', fmt(basic));
+      setInner('val_earnHra', fmt(hra));
+      setInner('val_earnSpecial', fmt(special));
+      setInner('val_totalEarnings', fmt(totalEarnings));
+
+      setInner('val_dedPf', fmt(pf));
+      setInner('val_dedEsi', fmt(esi));
+      setInner('val_dedLop', fmt(lopDeduction));
+      setInner('val_totalDeduction', fmt(totalDeductions));
+
+      setInner('prev_netAmount', fmt(netPay));
+
+      const wordFn = typeof window.numberToWordsINR === 'function' ? window.numberToWordsINR : (typeof numberToWordsINR === 'function' ? numberToWordsINR : null);
+      if (wordFn) {
+        setInner('prev_netWords', wordFn(netPay));
+      }
+      if (window.refreshHiddenFields) refreshHiddenFields();
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      populateYearDropdown();
+      loadSharedProfile({
+        'empPrefix': 'empPrefix',
+        'empName': 'empName',
+        'empId': 'empId',
+        'designation': 'designation',
+        'department': 'department',
+        'location': 'location',
+        'companyName': 'companyName',
+        'bankName': 'bankName',
+        'bankAcc': 'bankAcc',
+        'panNo': 'panNo',
+        'pfNo': 'pfNo',
+        'uanNo': 'uanNo',
+        'annualCTC': 'annualCTC'
+      });
+      autoCalculatePayslip();
+      onDateSelectionChange();
+    });
+  </script>
+</body>
+
+</html>

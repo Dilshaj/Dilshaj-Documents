@@ -1,0 +1,12 @@
+# Database Plans & Local Database Files
+db_plan.md
+db plan.md
+*.sqlite
+*.db
+*.sqlite3
+payroll_backup.sqlite
+
+# System & OS Files
+.DS_Store
+Thumbs.db
+security_guide.md

@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <!-- Auth Guard (Must load first) -->
+  <script src="auth.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Salary Increment Letter Generator | Dilshaj Infotech</title>
+
+  <!-- Google Fonts for UI Header Bar -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+
+  <!-- html2canvas and jsPDF for razor-sharp rendering (deferred) -->
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <!-- Consolidated Design System & Theme Stylesheet -->
+  <link rel="stylesheet" href="shared.css?v=4.3">
+  <!-- Centralized Header Navigation & Shared HR Profile Manager -->
+  <script src="header.js?v=4.3"></script>
+</head>
+
+<body>
+
+  <!-- Centralized Top Navigation Bar (Injected by header.js) -->
+  <div id="header-placeholder"></div>
+
+  <!-- App Layout Grid -->
+  <div class="app-layout">
+    <!-- Left Column: Form Sidebar -->
+    <aside class="form-sidebar">
+      <!-- 1. Employee Details -->
+      <div class="section-card">
+        <div class="section-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+          </svg>
+          Employee Details
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="letterDate">Letter Date</label>
+            <input type="text" id="letterDate" value="01 Oct 2026" oninput="updatePreview()">
+          </div>
+          <div class="form-group">
+            <label for="empPrefix">Salutation Prefix</label>
+            <select id="empPrefix" onchange="updatePreview()">
+              <option value="Mr." selected>Mr.</option>
+              <option value="Ms.">Ms.</option>
+              <option value="Mrs.">Mrs.</option>
+              <option value="Dr.">Dr.</option>
+            </select>
+          </div>
+          <div class="form-group full-width">
+            <label for="empName">Employee Full Name</label>
+            <input type="text" id="empName" value="Sampath Kumar" oninput="updatePreview()">
+          </div>
+          <div class="form-group">
+            <label for="empId">Employee No / ID</label>
+            <input type="text" id="empId" value="2028001" oninput="updatePreview()">
+          </div>
+          <div class="form-group">
+            <label for="tenure">Past Tenure (Period)</label>
+            <input type="text" id="tenure" value="1 year" oninput="updatePreview()">
+          </div>
+          <div class="form-group full-width">
+            <label for="rolePresetSelect">Select Role / Designation Preset</label>
+            <select id="rolePresetSelect" onchange="onRoleSelectChange()"></select>
+          </div>
+          <div class="form-group full-width">
+            <label for="designation">Designation</label>
+            <input type="text" id="designation" value="Software Engineer" oninput="onCustomDesignationInput()">
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Revised Compensation Details -->
+      <div class="section-card">
+        <div class="section-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z" />
+          </svg>
+          Compensation Revisions
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="currentCtcMonthly">Current Monthly CTC (₹)</label>
+            <input type="text" id="currentCtcMonthly" value="25,000" oninput="onMonthlyCurrentChange()">
+          </div>
+          <div class="form-group">
+            <label for="currentCtcAnnual">Current Annual CTC (₹)</label>
+            <input type="text" id="currentCtcAnnual" value="3,00,000" oninput="onAnnualCurrentChange()">
+          </div>
+          <div class="form-group">
+            <label for="hikePercent">Hike Percentage (%)</label>
+            <input type="number" id="hikePercent" value="40" step="0.1" oninput="onHikePercentChange()">
+          </div>
+          <div class="form-group">
+            <label for="revisedCtcMonthly">Revised Monthly CTC (₹)</label>
+            <input type="text" id="revisedCtcMonthly" value="35,000" oninput="onMonthlyRevisedChange()">
+          </div>
+          <div class="form-group full-width">
+            <label for="revisedCtcAnnual">Total New Annual CTC (₹)</label>
+            <input type="text" id="revisedCtcAnnual" value="4,20,000" oninput="onAnnualRevisedChange()">
+          </div>
+          <div class="form-group full-width">
+            <label for="effectiveDate">Effective Date</label>
+            <input type="text" id="effectiveDate" value="01 Nov 2026" oninput="updatePreview()">
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. Company & Signatory -->
+      <div class="section-card">
+        <div class="section-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
+          </svg>
+          Company & Signatory
+        </div>
+        <div class="form-grid">
+          <div class="form-group full-width">
+            <label for="companyName">Company Name</label>
+            <div class="field-toggle-wrapper">
+              <input type="text" id="companyName" value="Dilshaj Infotech Private Limited" oninput="updatePreview()">
+              <button type="button" class="field-toggle-btn active" title="Field visible in document page" onclick="toggleFieldVisibility('companyName', '#prev_compName, #prev_sigComp', this)" aria-label="Toggle visibility">
+                <svg class="eye-icon eye-open" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                <svg class="eye-icon eye-off" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+              </button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="sigName">Signatory Name</label>
+            <div class="field-toggle-wrapper">
+              <input type="text" id="sigName" value="Dilshaj Shaik" oninput="updatePreview()">
+              <button type="button" class="field-toggle-btn active" title="Field visible in document page" onclick="toggleFieldVisibility('sigName', '#prev_signatory', this)" aria-label="Toggle visibility">
+                <svg class="eye-icon eye-open" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                <svg class="eye-icon eye-off" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+              </button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="sigDesig">Signatory Designation</label>
+            <div class="field-toggle-wrapper">
+              <input type="text" id="sigDesig" value="Chief Executive Officer" oninput="updatePreview()">
+              <button type="button" class="field-toggle-btn active" title="Field visible in document page" onclick="toggleFieldVisibility('sigDesig', '#prev_signatoryDesig', this)" aria-label="Toggle visibility">
+                <svg class="eye-icon eye-open" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                <svg class="eye-icon eye-off" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Right Column: Document Workspace Preview -->
+    <main class="preview-workspace">
+      <div id="pdf-export-container">
+        <div class="a4-page" id="page-1">
+
+          <div class="meta-block" style="margin-top: 10px; margin-bottom: 22px; display: flex; justify-content: space-between; align-items: center;">
+            <div class="meta-line"><strong>Date:</strong> <span id="prev_date">01 Oct 2026</span></div>
+            <div class="meta-line" id="prev_empIdWrap"><strong>Emp ID:</strong> <span id="prev_empId">2028001</span></div>
+          </div>
+
+          <div class="doc-paragraph" style="margin-bottom: 20px;">
+            <strong>Subject: Revised compensation details</strong>
+          </div>
+
+          <div class="doc-paragraph" style="margin-bottom: 12px;">
+            Dear <span id="prev_salutation">Mr. Sampath Kumar</span>,
+          </div>
+
+          <div class="doc-paragraph" style="margin-bottom: 15px;">
+            Greetings!
+          </div>
+
+          <div class="doc-paragraph" style="margin-bottom: 18px; line-height: 1.6;">
+            After a discussion with your manager, we're delighted to share the details of your revised pay.
+          </div>
+
+          <!-- Compensation Revision Details Block -->
+          <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-left: 4px solid var(--accent-primary, #3b82f6); padding: 14px 18px; margin: 18px 0 22px 0; border-radius: 4px;">
+            <div style="margin-bottom: 7px; font-size: 10.5pt; color: #334155;">
+              <strong>Current CTC:</strong> <span id="prev_currentCtc">₹ 3,00,000 per annum (₹ 25,000 per month)</span>
+            </div>
+            <div style="margin-bottom: 7px; font-size: 11pt; color: #0f172a;">
+              <strong>Revised CTC:</strong> <strong id="prev_revisedCtcAnnual" style="color: #0f172a;">₹ 4,50,000 per annum</strong> (<span id="prev_revisedCtcMonthly">₹ 37,500 per month</span>)
+            </div>
+            <div style="margin-bottom: 7px; font-size: 10pt; color: #0284c7;">
+              <strong>Increment:</strong> <span id="prev_hikeDetails">50% hike (₹ 1,50,000 per annum)</span>
+            </div>
+            <div style="font-size: 10pt; color: #334155;">
+              <strong>Effective Date:</strong> <span id="prev_effectiveDate">23 Sep 2026</span>
+            </div>
+          </div>
+
+          <div class="doc-paragraph" style="margin-bottom: 16px; line-height: 1.6;">
+            Please note that all the other terms and conditions of your employment remain unaltered. Information related to performance and rewards should only be discussed with your manager or authorized HR personnel and must be treated with confidentiality.
+          </div>
+
+          <div class="doc-paragraph" style="margin-bottom: 25px; line-height: 1.6;">
+            We appreciate your hard work and commitment to <strong id="prev_compName">Dilshaj Infotech Private Limited</strong> over the past <span id="prev_tenure">1 year</span>. We look forward to your growth and success within our organization.
+          </div>
+
+          <div class="doc-paragraph" style="margin-bottom: 15px;">
+            Warm regards,
+          </div>
+
+          <div class="signature-box" style="position: relative; margin-top: 40px;">
+            <div>For <strong><span id="prev_sigComp">Dilshaj Infotech Private Limited</span></strong></div>
+            <div class="sig-seal-wrap"
+              style="position: absolute; top: 0; left: 0; right: 0; height: 0; pointer-events: none; z-index: 10;">
+              <img src="Signature.svg" alt="Authorized Signature" class="doc-signature-img"
+                style="height: 44px; width: auto; position: absolute; left: 0; top: 20px; z-index: 2;">
+              <img src="Stamp.svg" alt="Company Stamp" class="doc-stamp-img"
+                style="height: 108px; width: auto; position: absolute; left: 168px; top: 30px; opacity: 0.88; z-index: 1;">
+            </div>
+            <div class="signature-line" style="margin-top: 46px;">
+              <strong id="prev_signatory">Dilshaj Shaik</strong><br>
+              <span id="prev_signatoryDesig">HR Manager</span><br>
+              Date: <span id="prev_signatoryDate">01 Oct 2026</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div id="toast" class="toast">Document generating...</div>
+
+  <script>
+    function parseNum(val) {
+      if (!val) return 0;
+      const str = String(val).replace(/[^0-9.]/g, '');
+      return parseFloat(str) || 0;
+    }
+
+    function formatINR(num) {
+      if (isNaN(num) || num === 0) return '0';
+      return Math.round(num).toLocaleString('en-IN');
+    }
+
+    function onMonthlyCurrentChange() {
+      const monthly = parseNum(document.getElementById('currentCtcMonthly').value);
+      if (monthly > 0) {
+        document.getElementById('currentCtcAnnual').value = formatINR(monthly * 12);
+      }
+      recalcHike();
+      updatePreview();
+    }
+
+    function onAnnualCurrentChange() {
+      const annual = parseNum(document.getElementById('currentCtcAnnual').value);
+      if (annual > 0) {
+        document.getElementById('currentCtcMonthly').value = formatINR(annual / 12);
+      }
+      recalcHike();
+      updatePreview();
+    }
+
+    function onHikePercentChange() {
+      const currentMonthly = parseNum(document.getElementById('currentCtcMonthly').value);
+      const hikePct = parseNum(document.getElementById('hikePercent').value);
+      if (currentMonthly > 0) {
+        const revisedMonthly = currentMonthly * (1 + hikePct / 100);
+        document.getElementById('revisedCtcMonthly').value = formatINR(revisedMonthly);
+        document.getElementById('revisedCtcAnnual').value = formatINR(revisedMonthly * 12);
+      }
+      updatePreview();
+    }
+
+    function onMonthlyRevisedChange() {
+      const revisedMonthly = parseNum(document.getElementById('revisedCtcMonthly').value);
+      if (revisedMonthly > 0) {
+        document.getElementById('revisedCtcAnnual').value = formatINR(revisedMonthly * 12);
+      }
+      recalcHike();
+      updatePreview();
+    }
+
+    function onAnnualRevisedChange() {
+      const revisedAnnual = parseNum(document.getElementById('revisedCtcAnnual').value);
+      if (revisedAnnual > 0) {
+        document.getElementById('revisedCtcMonthly').value = formatINR(revisedAnnual / 12);
+      }
+      recalcHike();
+      updatePreview();
+    }
+
+    function recalcHike() {
+      const currentAnn = parseNum(document.getElementById('currentCtcAnnual').value);
+      const revisedAnn = parseNum(document.getElementById('revisedCtcAnnual').value);
+      if (currentAnn > 0 && revisedAnn > 0) {
+        const hikePct = ((revisedAnn - currentAnn) / currentAnn) * 100;
+        document.getElementById('hikePercent').value = hikePct.toFixed(2);
+      }
+    }
+
+    function updatePreview() {
+      const getVal = id => document.getElementById(id).value.trim();
+
+      const date = getVal('letterDate') || '01 Oct 2026';
+      const empId = getVal('empId');
+      const prefix = document.getElementById('empPrefix').value;
+      const name = getVal('empName') || 'Sampath Kumar';
+      const fullNameWithPrefix = `${prefix} ${name}`;
+      
+      const currentMonthlyNum = parseNum(getVal('currentCtcMonthly')) || 25000;
+      const currentAnnualNum = parseNum(getVal('currentCtcAnnual')) || (currentMonthlyNum * 12);
+      const revisedMonthlyNum = parseNum(getVal('revisedCtcMonthly')) || 35000;
+      const revisedAnnualNum = parseNum(getVal('revisedCtcAnnual')) || (revisedMonthlyNum * 12);
+      
+      const hikePct = currentAnnualNum > 0 ? (((revisedAnnualNum - currentAnnualNum) / currentAnnualNum) * 100).toFixed(2) : '0.00';
+      const annualDiff = revisedAnnualNum - currentAnnualNum;
+
+      const effectiveDate = getVal('effectiveDate') || '01 Nov 2026';
+      const tenure = getVal('tenure') || '1 year';
+      const company = getVal('companyName') || 'Dilshaj Infotech Private Limited';
+      const sigName = getVal('sigName') || 'Dilshaj Shaik';
+      const sigDesig = getVal('sigDesig') || 'Chief Executive Officer';
+
+      document.getElementById('prev_date').innerText = date;
+      const empIdWrap = document.getElementById('prev_empIdWrap');
+      if (empIdWrap) {
+        empIdWrap.style.display = empId ? 'block' : 'none';
+        document.getElementById('prev_empId').innerText = empId;
+      }
+      document.getElementById('prev_salutation').innerText = fullNameWithPrefix;
+      
+      document.getElementById('prev_currentCtc').innerText = `₹ ${formatINR(currentAnnualNum)} per annum (₹ ${formatINR(currentMonthlyNum)} per month)`;
+      document.getElementById('prev_hikeDetails').innerText = `${hikePct}% hike (₹ ${formatINR(annualDiff)} per annum)`;
+      document.getElementById('prev_revisedCtcAnnual').innerText = `₹ ${formatINR(revisedAnnualNum)} per annum`;
+      document.getElementById('prev_revisedCtcMonthly').innerText = `₹ ${formatINR(revisedMonthlyNum)} per month`;
+
+      document.getElementById('prev_effectiveDate').innerText = effectiveDate;
+      document.getElementById('prev_compName').innerText = company;
+      document.getElementById('prev_tenure').innerText = tenure;
+
+      document.getElementById('prev_signatory').innerText = sigName;
+      document.getElementById('prev_signatoryDesig').innerText = sigDesig;
+      document.getElementById('prev_sigComp').innerText = company;
+      const sigDateEl = document.getElementById('prev_signatoryDate');
+      if (sigDateEl) sigDateEl.innerText = date;
+      if (window.refreshHiddenFields) refreshHiddenFields();
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      updatePreview();
+    });
+  </script>
+</body>
+
+</html>
