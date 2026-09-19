@@ -6,14 +6,14 @@
   const ROLE_KEY = 'dilshaj_portal_user_role';
   const CUSTOM_HASH_KEY = 'dilshaj_portal_custom_passcode_hash';
   const MASTER_TRACK_KEY = 'dilshaj_portal_master_passcode_hash';
-  const DEFAULT_PASSCODE_HASH = 'a34dac09c365659f04efb9fd4f0a419a0bc33d32f4ec0802336aea0ebfdfccb1';
-  
-  // Known Preview mode passcode hashes ('preview123' and 'preview')
+  const DEFAULT_PASSCODE_HASH = '51ccb4068ef2cd314efee0df1ebea8fc5470f9dbd50dad5b9b14322b333eb57c';
+
+
   const PREVIEW_HASHES = [
-    '0bc8511dcc92ee35be271c194f509a25141616d646fe5d919a99c147237d7220', // preview123
-    '5975cf1bba432391c94667f5886225f69377c0aa8b9fa21fddfb21c89bcf9092'  // preview
+    '0bc8511dcc92ee35be271c194f509a25141616d646fe5d919a99c147237d7220', // 
+    '5975cf1bba432391c94667f5886225f69377c0aa8b9fa21fddfb21c89bcf9092'  // 
   ];
-  
+
   const LOGIN_PAGE = 'login.html';
 
   const lastKnownMasterHash = localStorage.getItem(MASTER_TRACK_KEY);
@@ -35,7 +35,7 @@
     var result = '';
     var words = [];
     var asciiLength = ascii[lengthProperty] * 8;
-    
+
     var hash = [
       0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19
     ];
@@ -71,11 +71,11 @@
           + ((e & hash[5]) ^ ((~e) & hash[6]))
           + k[i]
           + (w[i] = (i < 16) ? w[i] : (
-              w[i - 16]
-              + (rightRotate(w15, 7) ^ rightRotate(w15, 18) ^ (w15 >>> 3))
-              + w[i - 7]
-              + (rightRotate(w2, 17) ^ rightRotate(w2, 19) ^ (w2 >>> 10))
-            ) | 0);
+            w[i - 16]
+            + (rightRotate(w15, 7) ^ rightRotate(w15, 18) ^ (w15 >>> 3))
+            + w[i - 7]
+            + (rightRotate(w2, 17) ^ rightRotate(w2, 19) ^ (w2 >>> 10))
+          ) | 0);
         var temp2 = (rightRotate(a, 2) ^ rightRotate(a, 13) ^ rightRotate(a, 22))
           + ((a & hash[1]) ^ (a & hash[2]) ^ (hash[1] & hash[2]));
 
@@ -148,11 +148,11 @@
     if (getSessionRole() === 'preview') {
       document.documentElement.classList.add('mode-preview');
       if (document.body) document.body.classList.add('mode-preview');
-      
+
       // Lock personal/company fields and keep salary/amount inputs editable
       setTimeout(lockNonFinancialFields, 50);
       setTimeout(lockNonFinancialFields, 300);
-      
+
       setupPreviewProtection();
     } else {
       document.documentElement.classList.remove('mode-preview');
@@ -321,7 +321,7 @@
       try {
         const inputHash = await hashString(passcode.trim());
         const targetAdminHash = getActivePasscodeHash();
-        
+
         if (inputHash === targetAdminHash) {
           sessionStorage.setItem(AUTH_KEY, targetAdminHash);
           sessionStorage.setItem(ROLE_KEY, 'admin');

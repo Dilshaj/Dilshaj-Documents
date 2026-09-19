@@ -876,6 +876,7 @@ function reformatAllDatesOnPage(newFormat) {
   allInputs.forEach(input => {
     const id = (input.id || '').toLowerCase();
     const name = (input.name || '').toLowerCase();
+    if (id.includes('candidate') || name.includes('candidate')) return;
     if (id.includes('date') || id.includes('doj') || id.includes('dol') || name.includes('date')) {
       targetInputs.add(input);
     }
@@ -1106,6 +1107,7 @@ function setupUniversalDatePickers() {
   allInputs.forEach(input => {
     const id = (input.id || '').toLowerCase();
     const name = (input.name || '').toLowerCase();
+    if (id.includes('candidate') || name.includes('candidate')) return;
     if (id.includes('date') || id.includes('doj') || id.includes('dol') || name.includes('date')) {
       targetInputs.add(input);
     }
@@ -1168,6 +1170,8 @@ const initHeaderSuite = () => {
   document.querySelectorAll(explicitSelectors.join(', ')).forEach(el => targetInputs.add(el));
   allInputs.forEach(input => {
     const id = (input.id || '').toLowerCase();
+    const name = (input.name || '').toLowerCase();
+    if (id.includes('candidate') || name.includes('candidate')) return;
     if (id.includes('date') || id.includes('doj') || id.includes('dol')) {
       targetInputs.add(input);
     }
