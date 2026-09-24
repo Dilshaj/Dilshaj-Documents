@@ -1,0 +1,1901 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <!-- Auth Guard (Must load first) -->
+  <script src="auth.js?v=5.0"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Offer Letter Generator & PDF Exporter | Dilshaj Infotech</title>
+
+  <!-- Google Fonts for UI Header Bar -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+
+  <!-- html2canvas and jsPDF for razor-sharp page-by-page rendering (deferred to avoid render blocking) -->
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <!-- Consolidated Design System & Theme Stylesheet -->
+  <link rel="stylesheet" href="shared.css?v=5.0">
+  <!-- Centralized Header Engine & HR Profile Manager -->
+  <script src="header.js?v=5.0"></script>
+
+  <style>
+    /* Multi-page layout adjustments for 4-page Offer Letter */
+    #page-2 .section-heading {
+      margin-top: 14px;
+      margin-bottom: 4px;
+      font-size: 11pt;
+    }
+
+    #page-2 .doc-paragraph,
+    #page-2 .doc-subclause {
+      margin-bottom: 8px;
+      line-height: 1.36;
+    }
+
+    #page-3 .signature-container {
+      margin-top: 24px;
+    }
+
+    #page-3 .signature-line {
+      margin-top: 8px;
+      border-top: none !important;
+    }
+
+    #page-4 {
+      padding-top: 44mm;
+    }
+
+    /* Tight label columns next to values across all details tables */
+    .details-table td.label-col {
+      width: 1% !important;
+      white-space: nowrap !important;
+      padding-right: 8px !important;
+    }
+
+    .details-table td:nth-child(2) {
+      padding-right: 36px !important;
+    }
+
+    /* Annexure Table Styling */
+    .annexure-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      margin-bottom: 12px;
+      font-size: 9.5pt;
+    }
+
+    .annexure-table th,
+    .annexure-table td {
+      border: 1px solid var(--doc-table-border);
+      padding: 7px 10px;
+    }
+
+    .annexure-table th {
+      background-color: var(--doc-table-th-bg);
+      font-weight: 700;
+      color: var(--doc-text);
+      text-align: left;
+    }
+
+    .annexure-table tr.category-header {
+      background-color: var(--doc-table-alt-bg);
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .annexure-table tr.total-row {
+      background-color: var(--doc-table-th-bg);
+      font-weight: 700;
+    }
+
+    .annexure-table tr.subtotal-row {
+      background-color: #f8fafc;
+    }
+
+    .annexure-table tr.subtotal-row td {
+      border-top: 1px solid #cbd5e1;
+    }
+
+    .annexure-table tr.subtotal-row td:first-child {
+      font-weight: bold;
+      text-transform: none;
+    }
+
+    .annexure-table tr.subtotal-row td.text-right {
+      font-weight: bold;
+    }
+
+    .annexure-table tr.ctc-row td {
+      padding: 10px 10px;
+    }
+
+    .text-right {
+      text-align: right;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Centralized Top Navigation Bar (Injected by header.js) -->
+  <div id="header-placeholder"></div>
+
+  <!-- App Layout Grid -->
+  <div class="app-layout">
+
+    <!-- Left Column: Sidebar Form -->
+    <aside class="form-sidebar">
+
+      <!-- 0. Company & Legal Entity -->
+      <div class="section-card">
+        <div class="section-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm10 12h-8v-2h2v-2h-2v-2h2v-2h-2V9h8v10zm-2-8h-2v2h2v-2zm0 4h-2v2h2v-2z" />
+          </svg>
+          Company & Legal Entity
+        </div>
+        <div class="form-grid">
+          <div class="form-group full-width">
+            <label for="companyName">Legal Company Name</label>
+            <div class="field-toggle-wrapper">
+              <input type="text" id="companyName" value="Dilshaj Infotech Private Limited" oninput="updatePreview()">
+              <button type="button" class="field-toggle-btn active" title="Field visible in document page"
+                onclick="toggleFieldVisibility('companyName', '#prev_companyName, #prev_compName, #prev_sigCompName_annex', this)"
+                aria-label="Toggle visibility">
+                <svg class="eye-icon eye-open" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+                <svg class="eye-icon eye-off" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                  style="display: none;">
+                  <path
+                    d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24">
+                  </path>
+                  <line x1="1" y1="1" x2="23" y2="23"></line>
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="companyCin">CIN / Registration No.</label>
+            <div class="field-toggle-wrapper">
+              <input type="text" id="companyCin" value="U85499AP2025PTC121826" oninput="updatePreview()">
+              <button type="button" class="field-toggle-btn active" title="Field visible in document page"
+                onclick="toggleFieldVisibility('companyCin', '#prev_companyCin', this)" aria-label="Toggle visibility">
+                <svg class="eye-icon eye-open" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+                <svg class="eye-icon eye-off" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                  style="display: none;">
+                  <path
+                    d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24">
+                  </path>
+                  <line x1="1" y1="1" x2="23" y2="23"></line>
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="companyType">Entity Classification</label>
+            <div class="field-toggle-wrapper">
+              <input type="text" id="companyType" value="Private Limited Company" oninput="updatePreview()">
+              <button type="button" class="field-toggle-btn active" title="Field visible in document page"
+                onclick="toggleFieldVisibility('companyType', '#prev_companyType', this)"
+                aria-label="Toggle visibility">
+                <svg class="eye-icon eye-open" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+                <svg class="eye-icon eye-off" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                  style="display: none;">
+                  <path
+                    d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24">
+                  </path>
+                  <line x1="1" y1="1" x2="23" y2="23"></line>
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div class="form-group full-width">
+            <label for="companyAddress">Registered Office Address</label>
+            <div class="field-toggle-wrapper">
+              <textarea id="companyAddress" rows="2"
+                oninput="updatePreview()">Survey No: 225-2A, Narsipatnam, Visakhapatnam, Andhra Pradesh 531114</textarea>
+              <button type="button" class="field-toggle-btn active" title="Field visible in document page"
+                onclick="toggleFieldVisibility('companyAddress', '#prev_companyAddress', this)"
+                aria-label="Toggle visibility">
+                <svg class="eye-icon eye-open" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+                <svg class="eye-icon eye-off" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                  style="display: none;">
+                  <path
+                    d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24">
+                  </path>
+                  <line x1="1" y1="1" x2="23" y2="23"></line>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 1. Candidate Info -->
+      <div class="section-card">
+        <div class="section-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+          </svg>
+          Candidate Information
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="offerDate">Offer Release Date</label>
+            <div class="date-input-wrapper">
+              <input type="text" id="offerDate" value="25 May 2026" oninput="updatePreview()"
+                onclick="openUniversalDatePicker(this, this.nextElementSibling)">
+              <button type="button" class="date-picker-btn" title="Choose date from calendar"
+                onclick="openUniversalDatePicker(document.getElementById('offerDate'), this)">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                  <line x1="16" y1="2" x2="16" y2="6"></line>
+                  <line x1="8" y1="2" x2="8" y2="6"></line>
+                  <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="empPrefix">Salutation Prefix</label>
+            <select id="empPrefix" onchange="updatePreview()">
+              <option value="Mr." selected>Mr.</option>
+              <option value="Ms.">Ms.</option>
+              <option value="Mrs.">Mrs.</option>
+              <option value="Dr.">Dr.</option>
+            </select>
+          </div>
+          <div class="form-group full-width">
+            <label for="employeeName">Employee Full Name</label>
+            <input type="text" id="employeeName" value="Employe Name" oninput="updatePreview()">
+          </div>
+          <div class="form-group full-width">
+            <label for="employeeAddress">Employee Full Address</label>
+            <textarea id="employeeAddress" rows="2"
+              oninput="updatePreview()">Rolugunta, Anakapalle Andhra Pradesh, 531114</textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Employment Details -->
+      <div class="section-card">
+        <div class="section-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M20 6h-4V4c0-1.11-.89-2-2-2h-4c-1.11 0-2 .89-2 2v2H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-6 0h-4V4h4v2z" />
+          </svg>
+          Employment Details
+        </div>
+        <div class="form-grid">
+          <div class="form-group full-width">
+            <label for="rolePresetSelect">Select Role / Designation Preset</label>
+            <select id="rolePresetSelect" onchange="onRoleSelectChange()"></select>
+          </div>
+          <div class="form-group">
+            <label for="designation">Designation</label>
+            <input type="text" id="designation" value="Business Analyst" oninput="onCustomDesignationInput()">
+          </div>
+          <div class="form-group">
+            <label for="department">Department</label>
+            <input type="text" id="department" value="Data & Analytics" oninput="updatePreview()">
+          </div>
+          <div class="form-group">
+            <label for="reportingTo">Reporting To</label>
+            <input type="text" id="reportingTo" value="Dilshaj Shaik" oninput="updatePreview()">
+          </div>
+          <div class="form-group">
+            <label for="employmentType">Employment Type</label>
+            <input type="text" id="employmentType" value="Full-Time" oninput="updatePreview()">
+          </div>
+          <div class="form-group">
+            <label for="dateOfJoining">Date of Joining</label>
+            <div class="date-input-wrapper">
+              <input type="text" id="dateOfJoining" value="25 May 2026" oninput="updatePreview()"
+                onclick="openUniversalDatePicker(this, this.nextElementSibling)">
+              <button type="button" class="date-picker-btn" title="Choose date from calendar"
+                onclick="openUniversalDatePicker(document.getElementById('dateOfJoining'), this)">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                  <line x1="16" y1="2" x2="16" y2="6"></line>
+                  <line x1="8" y1="2" x2="8" y2="6"></line>
+                  <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="workLocation">Primary Location</label>
+            <input type="text" id="workLocation" value="Rolugunta" oninput="updatePreview()">
+          </div>
+          <div class="form-group full-width">
+            <label for="workMode">Work Mode</label>
+            <input type="text" id="workMode" value="Onsite (Office)" oninput="updatePreview()">
+          </div>
+          <div class="form-group full-width">
+            <label for="dutiesTextarea">Duties & Responsibilities Paragraph</label>
+            <textarea id="dutiesTextarea" rows="4"
+              oninput="updatePreview()">You will perform the duties normally associated with the position of Business Analyst and other reasonable responsibilities assigned by your reporting manager. Your responsibilities include gathering and documenting business requirements, analyzing workflows and processes, creating detailed functional specifications, bridging communication between stakeholders and technical teams, and facilitating project delivery. You are expected to perform your duties with professionalism, initiative and appropriate standards of quality and productivity.</textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. Compensation & Terms -->
+      <div class="section-card">
+        <div class="section-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z" />
+          </svg>
+          Compensation & Terms
+        </div>
+
+        <!-- Employment Track Selection (Toggle Switch & Segmented Control) -->
+        <div class="track-toggle-card" id="card_employmentTrack">
+          <div class="track-toggle-top">
+            <label class="track-toggle-title" for="toggle_employmentTrack">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+              </svg>
+              Employment Track
+            </label>
+            <div class="track-switch-inline" title="Toggle between Regular Hire and Trainee Track">
+              <label class="track-switch-pill">
+                <input type="checkbox" id="toggle_employmentTrack" onchange="toggleEmploymentTrackSwitch(this.checked)">
+                <span class="track-switch-slider"></span>
+              </label>
+            </div>
+          </div>
+          <div class="track-segmented-bar">
+            <button type="button" class="track-seg-btn active" id="btnTrackRegular"
+              onclick="switchEmploymentTrack('regular')">
+              💼 Regular Hire
+            </button>
+            <button type="button" class="track-seg-btn" id="btnTrackTrainee" onclick="switchEmploymentTrack('trainee')">
+              🎓 Trainee Track
+            </button>
+          </div>
+          <div class="track-badge-desc" id="trackDescText">
+            <span>● Full CTC &amp; regular benefits from Day 1</span>
+          </div>
+          <!-- Hidden radio inputs for backwards compatibility -->
+          <input type="radio" name="employmentTrack" id="trackModeRegular" value="regular" checked
+            style="display: none;">
+          <input type="radio" name="employmentTrack" id="trackModeTrainee" value="trainee" style="display: none;">
+        </div>
+
+        <!-- Trainee Specific Configuration (Revealed when Trainee-to-Permanent is chosen) -->
+        <div id="group_traineeFields"
+          style="display: none; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 10px; margin-bottom: 12px;">
+          <div
+            style="font-size: 11px; font-weight: 700; color: #166534; margin-bottom: 8px; display: flex; align-items: center; gap: 5px;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2L1 21h22L12 2zm0 3.99L19.53 19H4.47L12 5.99zM11 16h2v2h-2zm0-6h2v4h-2z" />
+            </svg>
+            Foundation Phase Settings
+          </div>
+          <div class="form-grid" style="grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
+            <div class="form-group" style="margin: 0;">
+              <label for="traineeRoleTitle" style="font-size: 10.5px; font-weight: 600;">Foundation Role Title</label>
+              <input type="text" id="traineeRoleTitle" value="DevOps Engineer Trainee" oninput="updatePreview()"
+                placeholder="e.g. DevOps Engineer Trainee">
+            </div>
+            <div class="form-group" style="margin: 0;">
+              <label for="confirmedRoleTitle" style="font-size: 10.5px; font-weight: 600;">Confirmed Role Title</label>
+              <input type="text" id="confirmedRoleTitle" value="DevOps Engineer" oninput="updatePreview()"
+                placeholder="e.g. DevOps Engineer">
+            </div>
+          </div>
+          <div class="form-grid" style="grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
+            <div class="form-group" style="margin: 0;">
+              <label for="trainingMonths" style="font-size: 10.5px; font-weight: 600;">Foundation
+                Duration</label>
+              <input type="text" id="trainingMonths" value="4" oninput="handleTraineeChange()">
+            </div>
+            <div class="form-group" style="margin: 0;">
+              <label for="trainingStipend" style="font-size: 10.5px; font-weight: 600;">Monthly Stipend (₹)</label>
+              <input type="text" id="trainingStipend" value="12,000" oninput="handleTraineeChange()">
+            </div>
+          </div>
+          <div class="form-group" style="margin: 0;">
+            <label for="trainingStipendWords" style="font-size: 10.5px; font-weight: 600;">Stipend in Words</label>
+            <input type="text" id="trainingStipendWords" value="Rupees Twelve Thousand only" oninput="updatePreview()">
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 10px;">
+          <label
+            style="font-weight: 600; margin-bottom: 6px; display: block; font-size: 11.5px; color: #334155;">Calculation
+            Mode</label>
+          <div style="display: flex; align-items: center; gap: 14px; flex-wrap: nowrap; width: 100%;">
+            <label
+              style="display: inline-flex; align-items: center; gap: 6px; cursor: pointer; font-size: 11.5px; font-weight: 500; white-space: nowrap; flex-shrink: 0; margin: 0;">
+              <input type="radio" name="calcMode" id="calcModeCTC" value="ctc" checked onchange="switchCalcMode('ctc')"
+                style="width: auto; margin: 0; cursor: pointer;">
+              <span>Total CTC</span>
+            </label>
+            <label
+              style="display: inline-flex; align-items: center; gap: 6px; cursor: pointer; font-size: 11.5px; font-weight: 500; white-space: nowrap; flex-shrink: 0; margin: 0;">
+              <input type="radio" name="calcMode" id="calcModeGross" value="gross" onchange="switchCalcMode('gross')"
+                style="width: auto; margin: 0; cursor: pointer;">
+              <span>Monthly Gross Salary</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Total CTC Mode Input -->
+        <div class="form-group" id="group_annualCTC">
+          <label for="annualCTC">Total Annual CTC (INR)</label>
+          <input type="text" id="annualCTC" value="2,00,000" oninput="handleCTCChange()">
+        </div>
+
+        <!-- Monthly Gross Salary Mode Inputs -->
+        <div id="group_grossMode" style="display: none;">
+          <div class="form-group">
+            <label for="totalGrossSalary">Monthly Gross Salary (INR)</label>
+            <input type="text" id="totalGrossSalary" value="15,256" oninput="handleGrossChange()">
+          </div>
+          <div class="form-group">
+            <label for="targetCTC">Total CTC (INR) <span
+                style="font-size: 10.5px; color: #64748b; font-weight: normal;">(Numbers only, custom
+                adjustable)</span></label>
+            <input type="text" id="targetCTC" inputmode="numeric" value="200000"
+              oninput="this.value = this.value.replace(/[^0-9]/g, ''); handleTargetCTCChange();">
+          </div>
+        </div>
+
+        <button class="btn-calc" onclick="autoCalculateSalary()" style="margin-top: 4px;">🖥️ Auto-Calculate Annexure
+          A</button>
+
+        <div class="form-group" style="margin-top: 10px;">
+          <label for="ctcInWords">CTC in Words</label>
+          <input type="text" id="ctcInWords" value="Rupees Two Lakh only" oninput="updatePreview()">
+        </div>
+
+        <!-- Additional Benefits (Optional) -->
+        <div style="border-top: 1px solid var(--border-color, #e2e8f0); margin: 12px 0 10px; padding-top: 10px;">
+          <label
+            style="font-size: 11.5px; font-weight: 600; color: #334155; margin-bottom: 6px; display: block;">Additional
+            Benefits (Optional)</label>
+          <div class="form-grid" style="grid-template-columns: 1.3fr 0.85fr 0.85fr; gap: 6px; margin-bottom: 8px;">
+            <div>
+              <label for="customBenefit1Name" style="font-size: 10px; white-space: nowrap;">Benefit 1 Name</label>
+              <input type="text" id="customBenefit1Name" placeholder="e.g. Gratuity"
+                oninput="handleCustomBenefitChange('b1Name')">
+            </div>
+            <div>
+              <label for="customBenefit1Monthly" style="font-size: 10px; white-space: nowrap;">Monthly (₹)</label>
+              <input type="text" id="customBenefit1Monthly" inputmode="numeric" placeholder="0"
+                oninput="this.value = this.value.replace(/[^0-9]/g, ''); handleCustomBenefitChange('b1Monthly');">
+            </div>
+            <div>
+              <label for="customBenefit1Val" style="font-size: 10px; white-space: nowrap;">Annual (₹)</label>
+              <input type="text" id="customBenefit1Val" inputmode="numeric" placeholder="0"
+                oninput="this.value = this.value.replace(/[^0-9]/g, ''); handleCustomBenefitChange('b1Annual');">
+            </div>
+          </div>
+          <div class="form-grid" style="grid-template-columns: 1.3fr 0.85fr 0.85fr; gap: 6px;">
+            <div>
+              <label for="customBenefit2Name" style="font-size: 10px; white-space: nowrap;">Benefit 2 Name</label>
+              <input type="text" id="customBenefit2Name" placeholder="e.g. Medical Insurance"
+                oninput="handleCustomBenefitChange('b2Name')">
+            </div>
+            <div>
+              <label for="customBenefit2Monthly" style="font-size: 10px; white-space: nowrap;">Monthly (₹)</label>
+              <input type="text" id="customBenefit2Monthly" inputmode="numeric" placeholder="0"
+                oninput="this.value = this.value.replace(/[^0-9]/g, ''); handleCustomBenefitChange('b2Monthly');">
+            </div>
+            <div>
+              <label for="customBenefit2Val" style="font-size: 10px; white-space: nowrap;">Annual (₹)</label>
+              <input type="text" id="customBenefit2Val" inputmode="numeric" placeholder="0"
+                oninput="this.value = this.value.replace(/[^0-9]/g, ''); handleCustomBenefitChange('b2Annual');">
+            </div>
+          </div>
+        </div>
+
+        <div class="form-grid" style="margin-top: 10px;">
+          <div class="form-group">
+            <label for="probationMonths">Probation (Months)</label>
+            <input type="text" id="probationMonths" value="3" oninput="updatePreview()">
+          </div>
+          <div class="form-group">
+            <label for="probationNotice">Probation Notice (Days)</label>
+            <input type="text" id="probationNotice" value="15" oninput="updatePreview()">
+          </div>
+          <div class="form-group">
+            <label for="confirmedNotice">Confirmed Notice (Days)</label>
+            <input type="text" id="confirmedNotice" value="30" oninput="updatePreview()">
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. HR Support & Inquiries Contact -->
+      <div class="section-card">
+        <div class="section-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
+          </svg>
+          HR Support &amp; Inquiries Contact
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="hrContactName">Contact Person Name</label>
+            <div class="field-toggle-wrapper">
+              <input type="text" id="hrContactName" value="Dilshaj Shaik" oninput="updatePreview()">
+              <button type="button" class="field-toggle-btn active" title="Field visible in document page"
+                onclick="toggleFieldVisibility('hrContactName', '#prev_hrContactName', this)"
+                aria-label="Toggle visibility">
+                <svg class="eye-icon eye-open" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+                <svg class="eye-icon eye-off" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                  style="display: none;">
+                  <path
+                    d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24">
+                  </path>
+                  <line x1="1" y1="1" x2="23" y2="23"></line>
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="hrContactDesig">Contact Designation</label>
+            <div class="field-toggle-wrapper">
+              <input type="text" id="hrContactDesig" value="Chief Executive Officer" oninput="updatePreview()">
+              <button type="button" class="field-toggle-btn active" title="Field visible in document page"
+                onclick="toggleFieldVisibility('hrContactDesig', '#prev_hrContactDesig', this)"
+                aria-label="Toggle visibility">
+                <svg class="eye-icon eye-open" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+                <svg class="eye-icon eye-off" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                  style="display: none;">
+                  <path
+                    d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24">
+                  </path>
+                  <line x1="1" y1="1" x2="23" y2="23"></line>
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="hrContactEmail">Contact Email</label>
+            <div class="field-toggle-wrapper">
+              <input type="text" id="hrContactEmail" value="dilshajceo@dilshajinfotech.tech" oninput="updatePreview()">
+              <button type="button" class="field-toggle-btn active" title="Field visible in document page"
+                onclick="toggleFieldVisibility('hrContactEmail', '#prev_hrContactEmail', this)"
+                aria-label="Toggle visibility">
+                <svg class="eye-icon eye-open" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+                <svg class="eye-icon eye-off" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                  style="display: none;">
+                  <path
+                    d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24">
+                  </path>
+                  <line x1="1" y1="1" x2="23" y2="23"></line>
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="hrContactPhone">Contact Phone</label>
+            <div class="field-toggle-wrapper">
+              <input type="text" id="hrContactPhone" value="+91-8977272783" oninput="updatePreview()">
+              <button type="button" class="field-toggle-btn active" title="Field visible in document page"
+                onclick="toggleFieldVisibility('hrContactPhone', '#prev_hrContactPhone', this)"
+                aria-label="Toggle visibility">
+                <svg class="eye-icon eye-open" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+                <svg class="eye-icon eye-off" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                  style="display: none;">
+                  <path
+                    d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24">
+                  </path>
+                  <line x1="1" y1="1" x2="23" y2="23"></line>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. Authorized Signatory (Signature Block) -->
+      <div class="section-card">
+        <div class="section-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" />
+          </svg>
+          Authorized Signatory (Signature Block)
+        </div>
+        <div class="form-grid">
+          <div class="form-group full-width">
+            <label for="signatoryName">Signatory Full Name</label>
+            <div class="field-toggle-wrapper">
+              <input type="text" id="signatoryName" value="Dilshaj Shaik" oninput="updatePreview()">
+              <button type="button" class="field-toggle-btn active" title="Field visible in document page"
+                onclick="toggleFieldVisibility('signatoryName', '#prev_signatoryName, #prev_signatoryName_annex', this)"
+                aria-label="Toggle visibility">
+                <svg class="eye-icon eye-open" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+                <svg class="eye-icon eye-off" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                  style="display: none;">
+                  <path
+                    d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24">
+                  </path>
+                  <line x1="1" y1="1" x2="23" y2="23"></line>
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div class="form-group full-width">
+            <label for="signatoryDesignation">Signatory Designation</label>
+            <div class="field-toggle-wrapper">
+              <input type="text" id="signatoryDesignation" value="CEO, Dilshaj Infotech" oninput="updatePreview()">
+              <button type="button" class="field-toggle-btn active" title="Field visible in document page"
+                onclick="toggleFieldVisibility('signatoryDesignation', '#prev_signatoryDesig, #prev_signatoryDesig_annex', this)"
+                aria-label="Toggle visibility">
+                <svg class="eye-icon eye-open" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+                <svg class="eye-icon eye-off" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                  style="display: none;">
+                  <path
+                    d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24">
+                  </path>
+                  <line x1="1" y1="1" x2="23" y2="23"></line>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </aside>
+
+    <!-- Right Column: Document Preview Workspace -->
+    <main class="preview-workspace">
+
+      <!-- Other Document Placeholder Container -->
+      <div id="other-doc-placeholder"
+        style="display: none; flex-direction: column; align-items: center; justify-content: center; min-height: 420px; color: var(--text-muted); text-align: center; background: rgba(255,255,255,0.02); border: 2px dashed var(--border-color); border-radius: 16px; padding: 60px 40px; margin-top: 40px; width: 100%; max-width: 650px;">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary)" stroke-width="1.5"
+          style="margin-bottom: 16px;">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+          <line x1="16" y1="13" x2="8" y2="13"></line>
+          <line x1="16" y1="17" x2="8" y2="17"></line>
+        </svg>
+        <h3 id="placeholder-title"
+          style="font-family: 'Outfit', sans-serif; font-size: 20px; font-weight: 700; color: white; margin-bottom: 8px;">
+          Relieving Letter Workspace</h3>
+        <p id="placeholder-desc" style="font-size: 14px; max-width: 450px; line-height: 1.5; color: var(--text-muted);">
+          Generate and customize official Relieving Letters for departing employees.</p>
+      </div>
+
+      <div id="pdf-export-container">
+
+        <!-- PAGE 1 (Aptos font, generous spacing, 0 bottom clipping) -->
+        <div class="a4-page" id="page-1">
+
+          <div class="meta-block">
+            <div class="meta-line"><strong>Date:</strong> <span id="prev_offerDate">25 May 2026</span></div>
+            <div class="meta-line"><strong id="prev_employeeName">Employe Name</strong></div>
+            <div class="meta-line" id="prev_employeeAddress">Rolugunta, Anakapalle Andhra Pradesh, 531114</div>
+          </div>
+
+          <div class="doc-title-bar">
+            <div class="subject-title" id="prev_subjectTitle">
+              <span class="track-regular">SUBJECT: OFFER OF EMPLOYMENT</span>
+              <span class="track-trainee" style="display: none;">SUBJECT: OFFER OF ENGAGEMENT &amp; EMPLOYMENT</span>
+            </div>
+          </div>
+
+          <div class="doc-paragraph">
+            Dear <span id="prev_salutationName">Employe Name</span>,
+          </div>
+
+          <div class="doc-paragraph track-regular" id="prev_offerIntroParagraph_reg">
+            We are pleased to offer you employment with <strong><span class="prev_companyLegalName"
+                id="prev_companyLegalName">Dilshaj Infotech
+                Private Limited</span></strong> (a <span class="prev_companyType" id="prev_companyType">Private Limited
+              Company</span>
+            incorporated under the Companies Act, 2013, CIN: <span class="prev_companyCin"
+              id="prev_companyCin">U85499AP2025PTC121826</span>),
+            having its registered office at <span class="prev_companyRegOffice" id="prev_companyRegOffice">Survey No:
+              225-2A, Narsipatnam,
+              Visakhapatnam, Andhra Pradesh 531114</span>. In this letter, Dilshaj Infotech Private Limited is referred
+            to as the “Company.” This offer is for the position stated below and is subject to the terms and conditions
+            of this letter and the applicable Company policies.
+          </div>
+          <div class="doc-paragraph track-trainee" id="prev_offerIntroParagraph_trainee" style="display: none;">
+            We are pleased to offer you engagement with <strong><span class="prev_companyLegalName">Dilshaj Infotech
+                Private Limited</span></strong> (a <span class="prev_companyType">Private Limited Company</span>
+            incorporated under the Companies Act, 2013, CIN: <span
+              class="prev_companyCin">U85499AP2025PTC121826</span>),
+            having its registered office at <span class="prev_companyRegOffice">Survey No: 225-2A, Narsipatnam,
+              Visakhapatnam, Andhra Pradesh 531114</span>. In this letter, Dilshaj Infotech Private Limited is referred
+            to as the “Company.” This offer is for engagement as <strong><span id="prev_traineeRoleIntro">DevOps
+                Engineer Trainee</span></strong>, with regular employment taking effect upon satisfactory completion of
+            the Foundation Period as set out in this letter.
+          </div>
+
+          <!-- 1. Employment Details -->
+          <div class="section-heading" id="prev_clause1Heading">
+            <span class="track-regular">1. Employment Details</span>
+            <span class="track-trainee" style="display: none;">1. Engagement Details</span>
+          </div>
+          <table class="details-table">
+            <tr>
+              <td class="label-col">Designation:</td>
+              <td id="prev_designation">Business Analyst</td>
+              <td class="label-col">Department:</td>
+              <td id="prev_department">Data &amp; Analytics</td>
+            </tr>
+            <tr>
+              <td class="label-col">Reporting To:</td>
+              <td id="prev_reportingTo">Dilshaj Shaik</td>
+              <td class="label-col">Employment Type:</td>
+              <td id="prev_employmentType">Full-Time</td>
+            </tr>
+            <tr>
+              <td class="label-col">Date of Joining:</td>
+              <td id="prev_dateOfJoining">25 May 2026</td>
+              <td class="label-col">Work Location:</td>
+              <td id="prev_workLocation">Rolugunta</td>
+            </tr>
+            <tr>
+              <td class="label-col">Work Mode:</td>
+              <td id="prev_workMode" colspan="3">Onsite (Office)</td>
+            </tr>
+          </table>
+
+          <!-- 2. Duties and Responsibilities -->
+          <div class="section-heading">2. Duties and Responsibilities</div>
+          <div class="doc-paragraph track-regular" id="prev_dutiesParagraph">You will perform the duties normally
+            associated with the
+            position of Business Analyst and other reasonable responsibilities assigned by your reporting manager. Your
+            responsibilities include gathering and documenting business requirements, analyzing workflows and processes,
+            creating detailed functional specifications, bridging communication between stakeholders and technical
+            teams, and facilitating project delivery. You are expected to perform your duties with professionalism,
+            initiative and appropriate standards of quality and productivity.</div>
+          <div class="doc-paragraph track-trainee" id="prev_traineeDutiesParagraph" style="display: none;">During the
+            Foundation Period, you will undergo structured enablement and project shadowing under mentor guidance,
+            completing assigned milestones and adhering to Company quality, conduct, and data security standards.</div>
+
+          <!-- 3. Compensation and Benefits -->
+          <div class="section-heading" id="prev_compHeading">
+            <span class="track-regular">3. Compensation and Benefits</span>
+            <span class="track-trainee" style="display: none;">3. Stipend and Post-Confirmation Compensation</span>
+          </div>
+          <div class="doc-paragraph track-regular" id="prev_compensationParagraph">
+            Your total annual Cost to Company will be <strong>₹ <span class="prev_ctcAmount"
+                id="prev_ctcAmount">2,00,000</span> (<span class="prev_ctcWords" id="prev_ctcWords">Rupees Two Lakh
+                only</span>)</strong>. The detailed salary structure,
+            employee deductions and employer contributions are set out in Annexure A which is attached to and forms an
+            integral part of this Offer Letter.
+          </div>
+          <div class="doc-paragraph track-trainee" id="prev_compensationParagraph_trainee" style="display: none;">
+            <p style="margin: 0 0 5px 0;">During the Foundation Period, you will receive a monthly stipend of
+              <strong>₹<span id="prev_trStipend">12,000</span> (<span id="prev_trStipendWords">Rupees Twelve Thousand
+                  only</span>)</strong>.</p>
+            <p style="margin: 0;">Upon satisfactory completion of the Foundation Period and written confirmation of
+              regular employment, you will be appointed as <span id="prev_confirmedRoleAOrAn">a</span> <strong><span
+                  class="prev_confirmedRoleTitle" id="prev_confirmedRoleTitle">DevOps Engineer</span></strong> with an
+              annual Cost to Company of <strong>₹<span class="prev_ctcAmount">2,00,000</span> (<span
+                  class="prev_ctcWords">Rupees Two Lakh only</span>)</strong>. The detailed post-confirmation
+              compensation structure is provided in Annexure A.</p>
+          </div>
+
+          <!-- 4. Salary Payment -->
+          <div class="section-heading" id="prev_paymentHeading">
+            <span class="track-regular">4. Salary Payment</span>
+            <span class="track-trainee" style="display: none;">4. Stipend &amp; Salary Payment</span>
+          </div>
+          <div class="doc-paragraph track-regular" id="prev_paymentParagraph">
+            Salary for each month will be credited to your bank account on or before the 7th day of the subsequent
+            calendar month. An itemized salary slip detailing gross earnings and deductions will be issued monthly.
+          </div>
+          <div class="doc-paragraph track-trainee" id="prev_paymentParagraph_trainee" style="display: none;">
+            Stipend or salary will be credited to your bank account on or before the 7th of each subsequent month, along
+            with an itemized monthly slip.
+          </div>
+
+          <!-- 5. Probation and Confirmation -->
+          <div class="section-heading" id="prev_clause5Heading">
+            <span class="track-regular">5. Probation and Confirmation</span>
+            <span class="track-trainee" style="display: none;">5. Foundation Period and Confirmation</span>
+          </div>
+          <div class="doc-paragraph track-regular" id="prev_clause5Paragraph">
+            You will be on probation for a period of <strong><span class="prev_probationMonths"
+                id="prev_probationMonths">3</span> months</strong>
+            from your Date of Joining. Upon satisfactory completion of your probation, your employment will be confirmed
+            in writing.
+          </div>
+          <div class="doc-paragraph track-trainee" id="prev_clause5Paragraph_trainee" style="display: none;">
+            You will undergo a Foundation Period of <strong><span id="prev_trainingMonths">4</span> months</strong> from
+            your Date of Joining, evaluated against predefined milestones. The Company reserves the right to extend this
+            period or discontinue engagement if performance benchmarks are not met. Regular employment as <span
+              id="prev_confirmedRoleAOrAn2">a</span> <strong><span class="prev_confirmedRoleTitle"
+                id="prev_confirmedRoleTitle2">DevOps Engineer</span></strong> takes effect solely upon formal written
+            confirmation.
+          </div>
+
+          <!-- Page 1 Footer -->
+          <div class="doc-page-footer">
+            <span>Page 1 of 4</span>
+          </div>
+
+        </div>
+
+        <!-- PAGE 2 (Sections 6 to 10 - Structured HR Clauses) -->
+        <div class="a4-page" id="page-2">
+
+          <!-- 6. Working Hours and Leave -->
+          <div class="section-heading" style="margin-top: 0;">6. Working Hours and Leave</div>
+          <div class="doc-paragraph" style="margin-bottom: 5px;">
+            <strong>a) Working Hours:</strong> Your normal working hours will be from 9:30 AM to 5:30 PM, Monday to
+            Saturday. You may occasionally be required to work beyond normal hours, on a weekly off, holiday or in
+            shifts based on business requirements. Overtime or compensatory off, where applicable, will be governed by
+            applicable law and Company policy.
+          </div>
+          <div class="doc-paragraph" style="margin-bottom: 5px;">
+            <strong>b) Flexible Work:</strong> Work from home or flexible working hours may be permitted based on the
+            nature of your role, business requirements and management approval.
+          </div>
+          <div class="doc-paragraph" style="margin-bottom: 8px;">
+            <strong>c) Leave Entitlement:</strong> You will be entitled to <span id="prev_totalPto">24</span> days of
+            Paid Time Off (PTO) per calendar year, accruing at <span id="prev_monthlyLeaves">2</span> days per completed
+            month, together with official holidays and any other leave required under applicable law and Company policy.
+            Leave requests are subject to prior manager approval.
+          </div>
+
+          <!-- 7. Performance Review and Increment -->
+          <div class="section-heading">7. Performance Review and Increment</div>
+          <div class="doc-paragraph">
+            Performance and compensation will be reviewed periodically in accordance with Company policy. Any increment,
+            bonus or incentive will depend on performance and business requirements.
+          </div>
+
+          <!-- 8. Code of Conduct -->
+          <div class="section-heading">8. Code of Conduct</div>
+          <div class="doc-paragraph">
+            You are expected to maintain professional conduct and comply with the Company's code of conduct,
+            information security, data protection and other applicable workplace policies. You shall
+            not enter into contracts, commitments or representations on behalf of the Company unless expressly
+            authorised to do so.
+          </div>
+
+          <!-- 9. Confidentiality and Intellectual Property -->
+          <div class="section-heading">9. Confidentiality and Intellectual Property</div>
+          <div class="doc-paragraph">
+            Confidential information relating to the Company, its customers, employees, business, technology and
+            operations must be protected during and after employment and must not be disclosed or misused except where
+            authorised or required by law. Subject to applicable law, work, software, code, documentation, designs,
+            inventions or other intellectual property created by you in the course of your assigned employment duties
+            will belong to the Company.
+          </div>
+
+          <!-- 10. Background Verification -->
+          <div class="section-heading">10. Background Verification</div>
+          <div class="doc-paragraph">
+            Your appointment is subject to satisfactory verification of the information and documents provided by you,
+            including your identity, qualifications, employment history and references.
+          </div>
+
+          <!-- 11. Employee Declarations -->
+          <div class="section-heading">11. Employee Declarations</div>
+          <div class="doc-paragraph">
+            You confirm that the information provided during recruitment is true and complete and that no obligation to
+            a previous employer prevents you from accepting this employment. Any material misrepresentation or
+            concealment may result in appropriate action in accordance with Company policy and applicable law.
+          </div>
+
+          <!-- Page 2 Footer -->
+          <div class="doc-page-footer">
+            <span>Page 2 of 4</span>
+          </div>
+
+        </div>
+
+        <!-- PAGE 3 (Sections 12 to 15 + Signatures) -->
+        <div class="a4-page" id="page-3">
+
+          <!-- 12. Transfer and Assignment -->
+          <div class="section-heading" style="margin-top: 0;">12. Transfer and Assignment</div>
+          <div class="doc-paragraph">
+            Based on business requirements, you may be transferred or assigned to another project, office,
+            group entity or customer location in India or abroad, subject to applicable law and Company policy. During
+            such assignment, you will continue to remain an employee of <span id="prev_companyShortName">Dilshaj
+              Infotech Private Limited</span> and will be required to comply
+            with applicable workplace, security and confidentiality requirements.
+          </div>
+
+          <!-- 13. Notice Period and Separation -->
+          <div class="section-heading">13. Notice Period and Separation</div>
+          <div class="doc-paragraph track-regular" style="margin-bottom: 5px;" id="prev_noticeParagraphA">
+            <strong>a) Notice Period:</strong> During probation, either party may terminate employment by giving <span
+              class="prev_probationNotice" id="prev_probationNotice">15</span> days written notice. After confirmation,
+            either party may terminate
+            employment by giving <span class="prev_confirmedNotice" id="prev_confirmedNotice">30</span> days written
+            notice.
+          </div>
+          <div class="doc-paragraph track-trainee" style="margin-bottom: 5px; display: none;"
+            id="prev_noticeParagraphA_trainee">
+            <strong>a) Notice Period:</strong> During the Foundation Period, either party may terminate the engagement
+            by giving <span class="prev_probationNotice">15</span> days written notice. After confirmation, either party
+            may terminate
+            employment by giving <span class="prev_confirmedNotice">30</span> days written notice.
+          </div>
+
+          <div class="doc-paragraph track-regular" style="margin-bottom: 5px;" id="prev_noticeParagraphB">
+            <strong>b) Salary in Lieu of Notice:</strong> If the Company terminates employment without requiring the
+            notice period to be served, the Company shall pay salary in lieu of notice for the unserved period. If an
+            employee resigns without serving the required notice period, the Company may recover salary in
+            lieu of notice for the unserved period, subject to applicable law, unless waived in writing by the Company.
+          </div>
+          <div class="doc-paragraph track-trainee" style="margin-bottom: 5px; display: none;"
+            id="prev_noticeParagraphB_trainee">
+            <strong>b) Compensation in Lieu of Notice:</strong> If the Company terminates engagement or employment
+            without requiring the
+            notice period to be served, the Company shall pay stipend or salary in lieu of notice for the unserved
+            period. If an
+            individual resigns without serving the required notice period, the Company may recover stipend or salary in
+            lieu of notice for the unserved period, subject to applicable law, unless waived in writing by the Company.
+          </div>
+
+          <div class="doc-paragraph track-regular" style="margin-bottom: 5px;" id="prev_noticeParagraphC">
+            <strong>c) Notice Pay Calculation:</strong> Salary in lieu of notice shall be calculated strictly on your
+            monthly Gross Salary (excluding employer statutory contributions, benefits, reimbursements, and variable
+            pay).
+          </div>
+          <div class="doc-paragraph track-trainee" style="margin-bottom: 5px; display: none;"
+            id="prev_noticeParagraphC_trainee">
+            <strong>c) Notice Pay Calculation:</strong> Compensation in lieu of notice shall be calculated on your
+            monthly stipend during
+            the Foundation Period, or monthly Gross Salary following confirmation (excluding employer statutory
+            contributions, benefits, reimbursements, and variable pay).
+          </div>
+          <div class="doc-paragraph" style="margin-bottom: 8px;">
+            <strong>d) Separation &amp; F&amp;F Settlement:</strong> Upon separation, earned wages for work performed up
+            to the last working day shall be paid within 2 working days of separation, as prescribed under statutory
+            wage regulations. All remaining Full-and-Final (F&amp;F) settlement components (including leave encashment
+            and statutory adjustments) and exit documentation shall be processed within 30 days of the last working day,
+            subject to completion of applicable exit clearance formalities.
+          </div>
+
+          <!-- 14. Inquiries and HR Support -->
+          <div class="section-heading">14. Inquiries and HR Support</div>
+          <div class="doc-paragraph">
+            If you have any questions or require clarifications regarding the terms of this offer letter, onboarding
+            documentation, or your joining process, please reach out to our point of contact, <strong><span
+                id="prev_hrContactName">Dilshaj Shaik</span></strong> (<span id="prev_hrContactDesig">Chief Executive
+              Officer</span>) at <span id="prev_hrContactEmail">dilshajceo@dilshajinfotech.tech</span> or <span
+              id="prev_hrContactPhone">+91-8977272783</span>.
+          </div>
+
+          <!-- 15. Acceptance -->
+          <div class="section-heading">15. Acceptance</div>
+          <div class="doc-paragraph">
+            Please sign and return a copy of this letter within 15 days to confirm that you have read, understood and
+            accepted the terms and conditions of employment stated in this letter.
+          </div>
+
+          <div class="doc-paragraph" style="margin-top: 18px;">
+            We are excited to welcome you to <strong><span id="prev_welcomeCompName">Dilshaj Infotech Private
+                Limited</span></strong> and look forward to your valuable
+            contributions toward our mission of empowering intelligence and building the future.
+          </div>
+
+          <!-- Signatures -->
+          <div class="signature-container">
+            <div class="signature-box" style="position: relative;">
+              <div>For <strong><span id="prev_sigCompName">Dilshaj Infotech Private Limited</span></strong></div>
+              <div class="sig-seal-wrap"
+                style="position: absolute; top: 0; left: 0; right: 0; height: 0; pointer-events: none; z-index: 10;">
+                <img data-admin-src="Signature.svg" alt="Authorized Signature" class="doc-signature-img"
+                  style="height: 44px; width: auto; position: absolute; left: 0; top: 20px; z-index: 2;">
+                <img data-admin-src="Stamp.svg" alt="Company Stamp" class="doc-stamp-img"
+                  style="height: 108px; width: auto; position: absolute; left: 168px; top: 30px; opacity: 0.88; z-index: 1;">
+              </div>
+              <div class="signature-line" style="margin-top: 46px;">
+                <strong id="prev_signatoryName">Dilshaj Shaik</strong><br>
+                <span id="prev_signatoryDesig">CEO, Dilshaj Infotech</span><br>
+                Date: <span id="prev_signatoryDate">25 May 2026</span>
+              </div>
+            </div>
+            <div class="signature-box">
+              <div>Accepted by:</div>
+              <div class="signature-line" style="margin-top: 46px;">
+                <strong id="prev_acceptedName">Employe Name</strong><br>
+                Date:
+              </div>
+            </div>
+          </div>
+
+          <!-- Page 3 Footer -->
+          <div class="doc-page-footer">
+            <span>Page 3 of 4</span>
+          </div>
+
+        </div>
+
+        <!-- PAGE 4 (Annexure A - Perfect Page Fill) -->
+        <div class="a4-page" id="page-4">
+
+          <div class="doc-title-bar" style="margin-top: 0;">
+            <div class="subject-title" style="font-size: 13.5pt;">ANNEXURE A</div>
+            <div id="prev_annexureSubtitle" style="font-size: 11pt; font-weight: 700; color: #0f172a; margin-top: 6px;">
+              COMPENSATION STRUCTURE</div>
+          </div>
+
+          <table class="details-table annexure-meta-table" style="margin-bottom: 8px; margin-top: 4px; width: 100%;">
+            <tr>
+              <td class="label-col">Employee:</td>
+              <td id="prev_annexureEmployee">Employe Name</td>
+              <td class="label-col">Designation:</td>
+              <td id="prev_annexureDesignation">Business Analyst</td>
+            </tr>
+            <tr id="row_annexureTraineeMeta" style="display: none;">
+              <td class="label-col" style="white-space: nowrap;">Monthly Stipend:</td>
+              <td id="prev_annex_stipendMeta" style="font-weight: 600; white-space: nowrap;">₹ 12,000
+                per month</td>
+              <td class="label-col" style="white-space: nowrap;">Effective Date:</td>
+              <td style="font-weight: 600; white-space: nowrap;">On Confirmation</td>
+            </tr>
+            <tr id="row_annexureRegularMeta">
+              <td class="label-col">Effective Date:</td>
+              <td id="prev_annexureEffective" colspan="3">25 May 2026</td>
+            </tr>
+          </table>
+
+          <!-- Salary Breakdown Table -->
+          <table class="annexure-table" style="margin-top: 20px; margin-bottom: 8px;">
+            <thead>
+              <tr>
+                <th>Compensation Component</th>
+                <th class="text-right">Monthly (₹)</th>
+                <th class="text-right">Annual (₹)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- SECTION A -->
+              <tr class="category-header">
+                <td colspan="3">A. GROSS SALARY</td>
+              </tr>
+              <tr>
+                <td style="padding-left: 20px;">Basic Salary</td>
+                <td class="text-right" id="val_basic_m">7,628</td>
+                <td class="text-right" id="val_basic_a">91,533</td>
+              </tr>
+              <tr>
+                <td style="padding-left: 20px;">House Rent Allowance (HRA)</td>
+                <td class="text-right" id="val_hra_m">3,051</td>
+                <td class="text-right" id="val_hra_a">36,613</td>
+              </tr>
+              <tr>
+                <td style="padding-left: 20px;">Special Allowance</td>
+                <td class="text-right" id="val_sa_m">4,577</td>
+                <td class="text-right" id="val_sa_a">54,920</td>
+              </tr>
+              <tr class="subtotal-row">
+                <td>Total Gross Salary</td>
+                <td class="text-right" id="val_gross_m">15,256</td>
+                <td class="text-right" id="val_gross_a">1,83,066</td>
+              </tr>
+
+              <!-- SECTION B -->
+              <tr class="category-header">
+                <td colspan="3">B. BENEFITS</td>
+              </tr>
+              <tr>
+                <td style="padding-left: 20px;">Employer PF Contribution</td>
+                <td class="text-right" id="val_epf_m">915</td>
+                <td class="text-right" id="val_epf_a">10,984</td>
+              </tr>
+              <tr>
+                <td style="padding-left: 20px;">Employer ESI Contribution</td>
+                <td class="text-right" id="val_eesi_m">496</td>
+                <td class="text-right" id="val_eesi_a">5,950</td>
+              </tr>
+              <tr id="row_custom_benefit_1" style="display: none;">
+                <td style="padding-left: 20px;" id="lbl_custom_benefit_1"></td>
+                <td class="text-right" id="val_custom_benefit_1_m">0</td>
+                <td class="text-right" id="val_custom_benefit_1_a">0</td>
+              </tr>
+              <tr id="row_custom_benefit_2" style="display: none;">
+                <td style="padding-left: 20px;" id="lbl_custom_benefit_2"></td>
+                <td class="text-right" id="val_custom_benefit_2_m">0</td>
+                <td class="text-right" id="val_custom_benefit_2_a">0</td>
+              </tr>
+              <tr class="subtotal-row">
+                <td>Total Benefits</td>
+                <td class="text-right" id="val_emp_contrib_m">1,411</td>
+                <td class="text-right" id="val_emp_contrib_a">16,934</td>
+              </tr>
+
+              <!-- TOTAL CTC -->
+              <tr class="total-row ctc-row" style="background-color: #e2e8f0; font-weight: bold;">
+                <td>TOTAL COST TO COMPANY</td>
+                <td class="text-right" id="val_ctc_m">16,667</td>
+                <td class="text-right" id="val_ctc_a">2,00,000</td>
+              </tr>
+
+              <!-- SECTION C -->
+              <tr class="category-header">
+                <td colspan="3">C. DEDUCTIONS</td>
+              </tr>
+              <tr>
+                <td style="padding-left: 20px;">Employee PF Contribution</td>
+                <td class="text-right" id="val_emp_pf_m">915</td>
+                <td class="text-right" id="val_emp_pf_a">10,984</td>
+              </tr>
+              <tr>
+                <td style="padding-left: 20px;">Employee ESI Contribution</td>
+                <td class="text-right" id="val_emp_esi_m">114</td>
+                <td class="text-right" id="val_emp_esi_a">1,373</td>
+              </tr>
+              <tr class="subtotal-row">
+                <td>Total Deductions</td>
+                <td class="text-right" id="val_ded_m">1,029</td>
+                <td class="text-right" id="val_ded_a">12,357</td>
+              </tr>
+
+              <!-- NET SALARY -->
+              <tr class="total-row" style="background-color: #e2e8f0; font-weight: bold;">
+                <td>Estimated Net Pay </td>
+                <td class="text-right" id="val_net_m">14,227</td>
+                <td class="text-right" id="val_net_a">1,70,709</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <!-- Annexure A Explanatory Notes & Disclaimers -->
+          <div style="font-size: 8.5pt; color: #475569; line-height: 1.45; margin-top: 8px; margin-bottom: 12px;">
+            <div style="margin-bottom: 3px;">• <em>Monthly figures are indicative and rounded for presentation.</em>
+            </div>
+          </div>
+
+
+
+          <!-- Annexure A Signatures -->
+          <div class="signature-container" style="margin-top: 20px;">
+            <div class="signature-box" style="position: relative;">
+              <div>For <strong><span id="prev_sigCompName_annex">Dilshaj Infotech Private Limited</span></strong></div>
+              <div class="sig-seal-wrap"
+                style="position: absolute; top: 0; left: 0; right: 0; height: 0; pointer-events: none; z-index: 10;">
+                <img data-admin-src="Signature.svg" alt="Authorized Signature" class="doc-signature-img"
+                  style="height: 44px; width: auto; position: absolute; left: 0; top: 20px; z-index: 2;">
+                <img data-admin-src="Stamp.svg" alt="Company Stamp" class="doc-stamp-img"
+                  style="height: 108px; width: auto; position: absolute; left: 168px; top: 30px; opacity: 0.88; z-index: 1;">
+              </div>
+              <div class="signature-line" style="margin-top: 46px;">
+                <strong id="prev_signatoryName_annex">Dilshaj Shaik</strong><br>
+                <span id="prev_signatoryDesig_annex">CEO, Dilshaj Infotech</span><br>
+                Date: <span id="prev_signatoryDate_annex">25 May 2026</span>
+              </div>
+            </div>
+            <div class="signature-box">
+              <div>Accepted by:</div>
+              <div class="signature-line" style="margin-top: 46px;">
+                <strong id="prev_acceptedName_annex">Employe Name</strong><br>
+                Date:
+              </div>
+            </div>
+          </div>
+
+          <!-- Page 4 Footer -->
+          <div class="doc-page-footer">
+            <span>Page 4 of 4</span>
+          </div>
+
+        </div>
+
+      </div>
+
+    </main>
+
+  </div>
+
+  <script>
+    // Document tab switching helper
+    function switchDocTab(type, btn) {
+      document.querySelectorAll('.doc-tab').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      const offerContainer = document.getElementById('pdf-export-container');
+      const placeholderContainer = document.getElementById('other-doc-placeholder');
+
+      if (type === 'offer') {
+        offerContainer.style.display = 'flex';
+        placeholderContainer.style.display = 'none';
+        showToast('Switched to Offer Letter mode');
+      } else if (type === 'relieving') {
+        offerContainer.style.display = 'none';
+        placeholderContainer.style.display = 'flex';
+        document.getElementById('placeholder-title').innerText = 'Relieving Letter Workspace';
+        document.getElementById('placeholder-desc').innerText = 'Generate and customize official Relieving Letters for departing employees.';
+        showToast('Switched to Relieving Letter mode');
+      } else if (type === 'experience') {
+        offerContainer.style.display = 'none';
+        placeholderContainer.style.display = 'flex';
+        document.getElementById('placeholder-title').innerText = 'Experience Letter Workspace';
+        document.getElementById('placeholder-desc').innerText = 'Generate and customize official Experience & Service Certificates.';
+        showToast('Switched to Experience Letter mode');
+      }
+    }
+
+    // Dynamic Page Size Change Handler
+    function changePageSize() {
+      const pageSize = document.getElementById('pageSizeSelect').value;
+      if (pageSize === 'letter') {
+        document.body.classList.add('mode-letter');
+        showToast('Page mode changed to US Letter (8.5 × 11 in)');
+      } else {
+        document.body.classList.remove('mode-letter');
+        showToast('Page mode changed to A4 (210 × 297 mm)');
+      }
+    }
+
+
+    // Live update preview function
+    function updatePreview() {
+      const getVal = id => {
+        const el = document.getElementById(id);
+        return el ? el.value.trim() : '';
+      };
+      const setPrevText = (idOrClass, val) => {
+        const el = document.getElementById(idOrClass);
+        if (el) el.innerText = val;
+        document.querySelectorAll('.' + idOrClass).forEach(node => {
+          node.innerText = val;
+        });
+      };
+
+      const compName = getVal('companyName') || 'Dilshaj Infotech Private Limited';
+      const compCin = getVal('companyCin') || 'U85499AP2025PTC121826';
+      const compType = getVal('companyType') || 'Private Limited Company';
+      const compAddress = getVal('companyAddress') || 'Survey No: 225-2A, Narsipatnam, Visakhapatnam, Andhra Pradesh 531114';
+
+      const sickLeaves = getVal('sickLeaves') || '12';
+      const monthlyLeaves = getVal('monthlyLeaves') || '2';
+      const totalPto = String((parseInt(monthlyLeaves, 10) || 2) * 12);
+      const bulkMonths = getVal('leaveBulkMonths') || '3';
+
+      const name = getVal('employeeName') || 'Employe Name';
+      const address = getVal('employeeAddress') || 'Rolugunta, Anakapalle Andhra Pradesh, 531114';
+      const date = getVal('offerDate') || '25 May 2026';
+      const desig = getVal('designation') || 'Business Analyst';
+      const dept = getVal('department') || (ROLE_PRESETS[desig] ? ROLE_PRESETS[desig].department : 'Data & Analytics');
+      const rep = getVal('reportingTo') || 'Dilshaj Shaik';
+      const empType = getVal('employmentType') || 'Full-Time';
+      const doj = getVal('dateOfJoining') || '25 May 2026';
+      const loc = getVal('workLocation') || 'Rolugunta';
+      const mode = getVal('workMode') || 'Onsite (Office)';
+      const ctc = document.getElementById('val_ctc_a')?.innerText || getVal('annualCTC') || '2,00,000';
+      const ctcWords = getVal('ctcInWords') || 'Rupees Two Lakh only';
+      const probation = getVal('probationMonths') || '3';
+      const probNotice = getVal('probationNotice') || '15';
+      const confNotice = getVal('confirmedNotice') || '30';
+      const exitDays = getVal('exitDocDays') || '______';
+      const contactName = getVal('hrContactName') || getVal('grievanceName') || 'Dilshaj Shaik';
+      const contactDesig = getVal('hrContactDesig') || getVal('grievanceDesignation') || 'Chief Executive Officer';
+      const contactEmail = getVal('hrContactEmail') || getVal('grievanceEmail') || 'dilshajceo@dilshajinfotech.tech';
+      const contactPhone = getVal('hrContactPhone') || getVal('grievancePhone') || '+91-8977272783';
+      const sigName = getVal('signatoryName') || getVal('sigName') || 'Dilshaj Shaik';
+      const sigDesig = getVal('signatoryDesignation') || getVal('sigDesig') || 'CEO, Dilshaj Infotech';
+
+      let dutiesText = getVal('dutiesTextarea');
+      const targetPreset = ROLE_PRESETS[desig];
+      const isAnotherPreset = !dutiesText || (targetPreset && Object.keys(ROLE_PRESETS).some(role => role !== desig && ROLE_PRESETS[role].duties.trim() === dutiesText.trim()));
+      if (isAnotherPreset && targetPreset) {
+        dutiesText = targetPreset.duties;
+        const dtBox = document.getElementById('dutiesTextarea');
+        if (dtBox && dtBox.value !== dutiesText) dtBox.value = dutiesText;
+      } else if (!dutiesText) {
+        dutiesText = ROLE_PRESETS['Business Analyst'].duties;
+      }
+
+      setPrevText('prev_companyLegalName', compName);
+      setPrevText('prev_companyCin', compCin);
+      setPrevText('prev_companyType', compType);
+      setPrevText('prev_companyRegOffice', compAddress);
+      setPrevText('prev_companyShortName', compName);
+      setPrevText('prev_welcomeCompName', compName);
+      setPrevText('prev_sigCompName', compName);
+
+      setPrevText('prev_sickLeaves', sickLeaves);
+      setPrevText('prev_monthlyLeaves', monthlyLeaves);
+      setPrevText('prev_totalPto', totalPto);
+      setPrevText('prev_bulkLeaveMonths', bulkMonths);
+
+      setPrevText('prev_offerDate', date);
+      setPrevText('prev_employeeName', name);
+      setPrevText('prev_employeeAddress', address);
+      setPrevText('prev_salutationName', name);
+
+      // Handle Dynamic Clauses for Employment Track (Regular vs Trainee-to-Permanent)
+      const isTrainee = currentEmploymentTrack === 'trainee';
+      const traineeRole = (isTrainee && document.getElementById('traineeRoleTitle')) ? (getVal('traineeRoleTitle') || `${desig} Trainee`) : `${desig} Trainee`;
+      const confirmedRole = (isTrainee && document.getElementById('confirmedRoleTitle')) ? (getVal('confirmedRoleTitle') || desig) : desig;
+      const displayDesig = isTrainee ? traineeRole : desig;
+      const aOrAn = str => /^[aeiou]/i.test((str || '').trim()) ? 'an' : 'a';
+
+      // 1. Pure CSS visibility toggle for SSOT blocks (NO innerHTML string overwrites)
+      document.querySelectorAll('.track-regular').forEach(el => el.style.display = isTrainee ? 'none' : '');
+      document.querySelectorAll('.track-trainee').forEach(el => el.style.display = isTrainee ? '' : 'none');
+
+      // 2. Set dynamic role and duties tokens
+      setPrevText('prev_designation', displayDesig);
+      setPrevText('prev_annexureDesignation', isTrainee ? confirmedRole : desig);
+      setPrevText('prev_traineeRoleIntro', traineeRole);
+      setPrevText('prev_confirmedRoleAOrAn', aOrAn(confirmedRole));
+      setPrevText('prev_confirmedRoleAOrAn2', aOrAn(confirmedRole));
+      setPrevText('prev_confirmedRoleTitle', confirmedRole);
+      setPrevText('prev_department', dept);
+      setPrevText('prev_reportingTo', rep);
+      setPrevText('prev_employmentType', empType);
+      setPrevText('prev_dateOfJoining', doj);
+      setPrevText('prev_workLocation', loc);
+      setPrevText('prev_workMode', mode);
+
+      const prevDutiesEl = document.getElementById('prev_dutiesParagraph');
+      if (prevDutiesEl && !isTrainee) {
+        prevDutiesEl.innerText = dutiesText;
+      }
+
+      setPrevText('prev_ctcAmount', ctc);
+      setPrevText('prev_ctcWords', ctcWords);
+      setPrevText('prev_probationMonths', probation);
+
+      setPrevText('prev_probationNotice', probNotice);
+      setPrevText('prev_confirmedNotice', confNotice);
+      setPrevText('prev_exitDocDays', exitDays);
+
+      const trMonths = getVal('trainingMonths') || '4';
+      const trStipend = getVal('trainingStipend') || '12,000';
+      const trStipendWords = getVal('trainingStipendWords') || 'Rupees Twelve Thousand only';
+
+      setPrevText('prev_trStipend', trStipend);
+      setPrevText('prev_trStipendWords', trStipendWords);
+      setPrevText('prev_trainingMonths', trMonths);
+
+      // Canteen benefit non-cash disclaimer check
+      const b1n = (getVal('customBenefit1Name') || '').toLowerCase();
+      const b2n = (getVal('customBenefit2Name') || '').toLowerCase();
+      const hasCanteen = b1n.includes('canteen') || b2n.includes('canteen') || b1n.includes('meal') || b2n.includes('meal');
+      const canteenNoteEl = document.getElementById('prev_canteenNote');
+      if (canteenNoteEl) {
+        canteenNoteEl.style.display = hasCanteen ? 'block' : 'none';
+      }
+
+      // Annexure A Dynamic Updates
+      const subTitleEl = document.getElementById('prev_annexureSubtitle');
+      if (subTitleEl) {
+        subTitleEl.innerText = 'COMPENSATION STRUCTURE';
+      }
+      const rowTraineeMeta = document.getElementById('row_annexureTraineeMeta');
+      const rowRegularMeta = document.getElementById('row_annexureRegularMeta');
+      if (rowTraineeMeta && rowRegularMeta) {
+        if (isTrainee) {
+          rowTraineeMeta.style.display = 'table-row';
+          rowRegularMeta.style.display = 'none';
+          setPrevText('prev_annex_stipendMeta', `₹ ${trStipend} per month`);
+        } else {
+          rowTraineeMeta.style.display = 'none';
+          rowRegularMeta.style.display = 'table-row';
+        }
+      }
+
+      setPrevText('prev_hrContactName', contactName);
+      setPrevText('prev_hrContactDesig', contactDesig);
+      setPrevText('prev_hrContactEmail', contactEmail);
+      setPrevText('prev_hrContactPhone', contactPhone);
+
+      setPrevText('prev_grievanceName', contactName);
+      setPrevText('prev_grievanceDesignation', contactDesig);
+      setPrevText('prev_grievanceEmail', contactEmail);
+      setPrevText('prev_grievancePhone', contactPhone);
+
+      setPrevText('prev_signatoryName', sigName);
+      setPrevText('prev_signatoryDesig', sigDesig);
+      setPrevText('prev_signatoryDate', date);
+      setPrevText('prev_acceptedName', name);
+
+      setPrevText('prev_sigCompName_annex', compName);
+      setPrevText('prev_signatoryName_annex', sigName);
+      setPrevText('prev_signatoryDesig_annex', sigDesig);
+      setPrevText('prev_signatoryDate_annex', date);
+      setPrevText('prev_acceptedName_annex', name);
+
+      setPrevText('prev_annexureEmployee', name);
+      setPrevText('prev_annexureEffective', doj);
+      setPrevText('prev_annexureDesignation', desig);
+      if (window.refreshHiddenFields) refreshHiddenFields();
+    }
+
+    let currentEmploymentTrack = 'regular';
+
+    function convertAmountToWordsIndian(num) {
+      const n = parseInt(String(num).replace(/[^0-9]/g, ''), 10);
+      if (isNaN(n) || n === 0) return '';
+      const a = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
+      const b = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+      function inWords(val) {
+        let str = '';
+        if (val >= 10000000) {
+          str += inWords(Math.floor(val / 10000000)) + ' Crore ';
+          val %= 10000000;
+        }
+        if (val >= 100000) {
+          str += inWords(Math.floor(val / 100000)) + ' Lakh ';
+          val %= 100000;
+        }
+        if (val >= 1000) {
+          str += inWords(Math.floor(val / 1000)) + ' Thousand ';
+          val %= 1000;
+        }
+        if (val >= 100) {
+          str += inWords(Math.floor(val / 100)) + ' Hundred ';
+          val %= 100;
+        }
+        if (val > 0) {
+          if (str !== '') str += 'and ';
+          if (val < 20) str += a[val];
+          else str += b[Math.floor(val / 10)] + (val % 10 !== 0 ? ' ' + a[val % 10] : '');
+        }
+        return str.trim();
+      }
+      return 'Rupees ' + inWords(n) + ' only';
+    }
+
+    function switchEmploymentTrack(track) {
+      currentEmploymentTrack = track;
+      const isTrainee = track === 'trainee';
+
+      const toggleEl = document.getElementById('toggle_employmentTrack');
+      if (toggleEl) toggleEl.checked = isTrainee;
+
+      const card = document.getElementById('card_employmentTrack');
+      if (card) {
+        if (isTrainee) card.classList.add('is-trainee');
+        else card.classList.remove('is-trainee');
+      }
+
+      const btnReg = document.getElementById('btnTrackRegular');
+      const btnTr = document.getElementById('btnTrackTrainee');
+      if (btnReg && btnTr) {
+        btnReg.classList.toggle('active', !isTrainee);
+        btnTr.classList.toggle('active', isTrainee);
+      }
+
+      const desc = document.getElementById('trackDescText');
+      if (desc) {
+        desc.innerHTML = isTrainee
+          ? '<span>● Foundation Period with Monthly Stipend &amp; Confirmation</span>'
+          : '<span>● Full CTC &amp; regular benefits from Day 1</span>';
+      }
+
+      const radioReg = document.getElementById('trackModeRegular');
+      const radioTr = document.getElementById('trackModeTrainee');
+      if (radioReg && radioTr) {
+        radioReg.checked = !isTrainee;
+        radioTr.checked = isTrainee;
+      }
+
+      const traineeGroup = document.getElementById('group_traineeFields');
+      if (traineeGroup) {
+        traineeGroup.style.display = isTrainee ? 'block' : 'none';
+      }
+      if (isTrainee) {
+        const desigVal = document.getElementById('designation')?.value?.trim() || 'DevOps Engineer';
+        const trTitle = document.getElementById('traineeRoleTitle');
+        const confTitle = document.getElementById('confirmedRoleTitle');
+        if (trTitle && (!trTitle.value || trTitle.value.endsWith('Trainee'))) {
+          trTitle.value = `${desigVal} Trainee`;
+        }
+        if (confTitle && (!confTitle.value || confTitle.value.startsWith('Associate '))) {
+          confTitle.value = desigVal;
+        }
+        handleTraineeChange();
+      }
+      updatePreview();
+      showToast(isTrainee ? 'Switched to Trainee-to-Permanent Track' : 'Switched to Direct Regular Hire Track');
+    }
+
+    function toggleEmploymentTrackSwitch(isChecked) {
+      switchEmploymentTrack(isChecked ? 'trainee' : 'regular');
+    }
+
+    function handleTraineeChange() {
+      const stipendInput = document.getElementById('trainingStipend');
+      if (stipendInput) {
+        const rawVal = stipendInput.value.replace(/[^0-9]/g, '');
+        if (rawVal) {
+          const numVal = parseInt(rawVal, 10);
+          const stipendWordsEl = document.getElementById('trainingStipendWords');
+          if (stipendWordsEl) {
+            stipendWordsEl.value = convertAmountToWordsIndian(numVal);
+          }
+        }
+      }
+      updatePreview();
+    }
+
+    let currentCalcMode = 'ctc';
+
+    function switchCalcMode(mode) {
+      currentCalcMode = mode;
+      const groupCTC = document.getElementById('group_annualCTC');
+      const groupGross = document.getElementById('group_grossMode');
+      if (mode === 'ctc') {
+        if (groupCTC) groupCTC.style.display = 'block';
+        if (groupGross) groupGross.style.display = 'none';
+        const ctcVal = document.getElementById('val_ctc_a')?.innerText?.replace(/[^0-9]/g, '');
+        if (ctcVal && document.getElementById('annualCTC')) {
+          document.getElementById('annualCTC').value = parseInt(ctcVal, 10).toLocaleString('en-IN');
+        }
+      } else {
+        if (groupCTC) groupCTC.style.display = 'none';
+        if (groupGross) groupGross.style.display = 'block';
+        const grossVal = document.getElementById('val_gross_m')?.innerText?.replace(/[^0-9]/g, '');
+        const ctcVal = document.getElementById('val_ctc_a')?.innerText?.replace(/[^0-9]/g, '');
+        if (grossVal && document.getElementById('totalGrossSalary')) {
+          document.getElementById('totalGrossSalary').value = parseInt(grossVal, 10).toLocaleString('en-IN');
+        }
+        if (ctcVal && document.getElementById('targetCTC')) {
+          document.getElementById('targetCTC').value = ctcVal;
+        }
+      }
+      autoCalculateSalary();
+    }
+
+    function handleCTCChange() {
+      autoCalculateSalary('ctc');
+    }
+
+    function handleGrossChange() {
+      autoCalculateSalary('gross');
+    }
+
+    function handleTargetCTCChange() {
+      autoCalculateSalary('targetCTC');
+    }
+
+    function handleCustomBenefitChange(trigger) {
+      if (trigger === 'b1Monthly') {
+        const rawM = (document.getElementById('customBenefit1Monthly')?.value || '').replace(/[^0-9.]/g, '');
+        const m = Math.round(parseFloat(rawM) || 0);
+        const aEl = document.getElementById('customBenefit1Val');
+        if (aEl) aEl.value = m > 0 ? String(m * 12) : '';
+      } else if (trigger === 'b1Annual') {
+        const rawA = (document.getElementById('customBenefit1Val')?.value || '').replace(/[^0-9.]/g, '');
+        const a = Math.round(parseFloat(rawA) || 0);
+        const mEl = document.getElementById('customBenefit1Monthly');
+        if (mEl) mEl.value = a > 0 ? String(Math.round(a / 12)) : '';
+      } else if (trigger === 'b2Monthly') {
+        const rawM = (document.getElementById('customBenefit2Monthly')?.value || '').replace(/[^0-9.]/g, '');
+        const m = Math.round(parseFloat(rawM) || 0);
+        const aEl = document.getElementById('customBenefit2Val');
+        if (aEl) aEl.value = m > 0 ? String(m * 12) : '';
+      } else if (trigger === 'b2Annual') {
+        const rawA = (document.getElementById('customBenefit2Val')?.value || '').replace(/[^0-9.]/g, '');
+        const a = Math.round(parseFloat(rawA) || 0);
+        const mEl = document.getElementById('customBenefit2Monthly');
+        if (mEl) mEl.value = a > 0 ? String(Math.round(a / 12)) : '';
+      }
+      autoCalculateSalary();
+    }
+
+    // Salary Auto-calculation function supporting both Total CTC and Monthly Gross Salary modes
+    function autoCalculateSalary(source) {
+      const b1Name = (document.getElementById('customBenefit1Name')?.value || '').trim();
+      let b1Val = Math.round(parseFloat(document.getElementById('customBenefit1Val')?.value?.replace(/[^0-9.]/g, '') || '0')) || 0;
+      let b1Monthly = Math.round(parseFloat(document.getElementById('customBenefit1Monthly')?.value?.replace(/[^0-9.]/g, '') || '0')) || 0;
+      if (b1Val > 0 && b1Monthly === 0) {
+        b1Monthly = Math.round(b1Val / 12);
+        const el = document.getElementById('customBenefit1Monthly');
+        if (el) el.value = String(b1Monthly);
+      } else if (b1Monthly > 0 && b1Val === 0) {
+        b1Val = b1Monthly * 12;
+        const el = document.getElementById('customBenefit1Val');
+        if (el) el.value = String(b1Val);
+      }
+
+      const b2Name = (document.getElementById('customBenefit2Name')?.value || '').trim();
+      let b2Val = Math.round(parseFloat(document.getElementById('customBenefit2Val')?.value?.replace(/[^0-9.]/g, '') || '0')) || 0;
+      let b2Monthly = Math.round(parseFloat(document.getElementById('customBenefit2Monthly')?.value?.replace(/[^0-9.]/g, '') || '0')) || 0;
+      if (b2Val > 0 && b2Monthly === 0) {
+        b2Monthly = Math.round(b2Val / 12);
+        const el = document.getElementById('customBenefit2Monthly');
+        if (el) el.value = String(b2Monthly);
+      } else if (b2Monthly > 0 && b2Val === 0) {
+        b2Val = b2Monthly * 12;
+        const el = document.getElementById('customBenefit2Val');
+        if (el) el.value = String(b2Val);
+      }
+
+      const customBenefitsTotal = (b1Name && b1Val > 0 ? b1Val : 0) + (b2Name && b2Val > 0 ? b2Val : 0);
+
+      let annualCTC = 200000;
+      let monthlyGross = 15256;
+      let annualGross = 183072;
+
+      if (currentCalcMode === 'ctc') {
+        const rawCTC = (document.getElementById('annualCTC')?.value || '200000').replace(/[^0-9.]/g, '');
+        annualCTC = Math.round(parseFloat(rawCTC) || 200000);
+        const effectiveCTC = Math.max(0, annualCTC - customBenefitsTotal);
+        const isEsiApplicable = (effectiveCTC / 12 / 1.0925) <= 21000;
+        const grossDivisor = isEsiApplicable ? 1.0925 : 1.06;
+        annualGross = Math.round(effectiveCTC / grossDivisor);
+        monthlyGross = Math.round(annualGross / 12);
+      } else {
+        if (source === 'targetCTC') {
+          const rawTarget = (document.getElementById('targetCTC')?.value || '200000').replace(/[^0-9]/g, '');
+          annualCTC = Math.round(parseFloat(rawTarget) || 200000);
+          const effectiveCTC = Math.max(0, annualCTC - customBenefitsTotal);
+          const isEsiApplicable = (effectiveCTC / 12 / 1.0925) <= 21000;
+          const grossDivisor = isEsiApplicable ? 1.0925 : 1.06;
+          annualGross = Math.round(effectiveCTC / grossDivisor);
+          monthlyGross = Math.round(annualGross / 12);
+          if (document.getElementById('totalGrossSalary')) {
+            document.getElementById('totalGrossSalary').value = monthlyGross.toLocaleString('en-IN');
+          }
+        } else {
+          const rawGross = (document.getElementById('totalGrossSalary')?.value || '15256').replace(/[^0-9.]/g, '');
+          monthlyGross = Math.round(parseFloat(rawGross) || 0);
+          annualGross = monthlyGross * 12;
+          const isEsiApplicable = monthlyGross <= 21000;
+          const basic_m = Math.round(monthlyGross * 0.50);
+          const epf_m = Math.round(basic_m * 0.12);
+          const eesi_m = isEsiApplicable ? Math.round(monthlyGross * 0.0325) : 0;
+          annualCTC = annualGross + (epf_m * 12) + (eesi_m * 12) + customBenefitsTotal;
+          if (document.getElementById('targetCTC')) {
+            document.getElementById('targetCTC').value = String(annualCTC);
+          }
+        }
+      }
+
+      const isEsiApplicable = monthlyGross <= 21000;
+      const basic_m = Math.round(monthlyGross * 0.50);
+      const hra_m = Math.round(basic_m * 0.40);
+      const sa_m = Math.max(0, monthlyGross - basic_m - hra_m);
+      const gross_m = basic_m + hra_m + sa_m;
+
+      const annualBasic = basic_m * 12;
+      const annualHra = hra_m * 12;
+
+      const epf_m = Math.round(basic_m * 0.12);
+      const annualEpf = epf_m * 12;
+
+      const eesi_m = isEsiApplicable ? Math.round(monthlyGross * 0.0325) : 0;
+      const annualEesi = eesi_m * 12;
+
+      const empPF_m = epf_m;
+      const empESI_m = eesi_m;
+
+      const customB1_m = Math.round(b1Val / 12);
+      const customB2_m = Math.round(b2Val / 12);
+      const customBenefits_m = (b1Name && b1Val > 0 ? customB1_m : 0) + (b2Name && b2Val > 0 ? customB2_m : 0);
+      const empContrib_m = empPF_m + empESI_m + customBenefits_m;
+      const annualEmpContrib = annualEpf + annualEesi + customBenefitsTotal;
+
+      let annualSpecial = sa_m * 12;
+      if (currentCalcMode === 'ctc' || source === 'targetCTC') {
+        annualSpecial = Math.max(0, annualCTC - annualBasic - annualHra - annualEmpContrib);
+      } else {
+        annualCTC = annualBasic + annualHra + annualSpecial + annualEmpContrib;
+      }
+      const gross_a = annualBasic + annualHra + annualSpecial;
+      const monthlyCTC = Math.round(annualCTC / 12);
+
+      if (document.getElementById('ctcInWords')) {
+        document.getElementById('ctcInWords').value = numberToWordsINR(annualCTC);
+      }
+
+      const annualEmpPf = annualEpf;
+      const employeeESI_m = isEsiApplicable ? Math.round(monthlyGross * 0.0075) : 0;
+      const annualEmpEsi = employeeESI_m * 12;
+      const annualDed = annualEmpPf + annualEmpEsi;
+      const net_a = gross_a - annualDed;
+
+      const employeePF_m = epf_m;
+      const totalDed_m = employeePF_m + employeeESI_m;
+      const net_m = gross_m - totalDed_m;
+
+      const fmt = num => Math.round(num).toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+      const setTxt = (id, num) => {
+        const el = document.getElementById(id);
+        if (el) el.innerText = fmt(num);
+      };
+
+      setTxt('val_basic_m', basic_m);
+      setTxt('val_basic_a', annualBasic);
+
+      setTxt('val_hra_m', hra_m);
+      setTxt('val_hra_a', annualHra);
+
+      setTxt('val_sa_m', sa_m);
+      setTxt('val_sa_a', annualSpecial);
+
+      setTxt('val_gross_m', gross_m);
+      setTxt('val_gross_a', gross_a);
+
+      setTxt('val_epf_m', empPF_m);
+      setTxt('val_epf_a', annualEpf);
+
+      setTxt('val_eesi_m', empESI_m);
+      setTxt('val_eesi_a', annualEesi);
+
+      // Custom Benefit 1 row
+      const rowB1 = document.getElementById('row_custom_benefit_1');
+      if (rowB1) {
+        if (b1Name && b1Val > 0) {
+          rowB1.style.display = '';
+          const lbl = document.getElementById('lbl_custom_benefit_1');
+          if (lbl) lbl.innerText = b1Name;
+          setTxt('val_custom_benefit_1_m', customB1_m);
+          setTxt('val_custom_benefit_1_a', b1Val);
+        } else {
+          rowB1.style.display = 'none';
+          const lbl = document.getElementById('lbl_custom_benefit_1');
+          if (lbl) lbl.innerText = '';
+          setTxt('val_custom_benefit_1_m', 0);
+          setTxt('val_custom_benefit_1_a', 0);
+        }
+      }
+
+      // Custom Benefit 2 row
+      const rowB2 = document.getElementById('row_custom_benefit_2');
+      if (rowB2) {
+        if (b2Name && b2Val > 0) {
+          rowB2.style.display = '';
+          const lbl = document.getElementById('lbl_custom_benefit_2');
+          if (lbl) lbl.innerText = b2Name;
+          setTxt('val_custom_benefit_2_m', customB2_m);
+          setTxt('val_custom_benefit_2_a', b2Val);
+        } else {
+          rowB2.style.display = 'none';
+          const lbl = document.getElementById('lbl_custom_benefit_2');
+          if (lbl) lbl.innerText = '';
+          setTxt('val_custom_benefit_2_m', 0);
+          setTxt('val_custom_benefit_2_a', 0);
+        }
+      }
+
+      setTxt('val_emp_contrib_m', empContrib_m);
+      setTxt('val_emp_contrib_a', annualEmpContrib);
+
+      setTxt('val_ctc_m', monthlyCTC);
+      setTxt('val_ctc_a', annualCTC);
+
+      setTxt('val_emp_pf_m', employeePF_m);
+      setTxt('val_emp_pf_a', annualEmpPf);
+
+      setTxt('val_emp_esi_m', employeeESI_m);
+      setTxt('val_emp_esi_a', annualEmpEsi);
+
+      setTxt('val_ded_m', totalDed_m);
+      setTxt('val_ded_a', annualDed);
+
+      setTxt('val_net_m', net_m);
+      setTxt('val_net_a', net_a);
+
+      updatePreview();
+    }
+
+    // Initialize preview on DOM load
+    window.addEventListener('DOMContentLoaded', () => {
+      loadSharedProfile({
+        'companyName': 'companyName',
+        'employeeName': 'empName',
+        'designation': 'designation',
+        'department': 'department',
+        'workLocation': 'location',
+        'offerDate': 'docDate',
+        'dateOfJoining': 'doj',
+        'signatoryName': 'sigName',
+        'signatoryDesignation': 'sigDesig'
+      });
+      // Synchronize duties with the active designation
+      const desigVal = document.getElementById('designation')?.value?.trim() || 'Business Analyst';
+      const dutiesBox = document.getElementById('dutiesTextarea');
+      if (dutiesBox) {
+        const isAnotherPreset = !dutiesBox.value || Object.keys(ROLE_PRESETS).some(role => role !== desigVal && ROLE_PRESETS[role].duties.trim() === dutiesBox.value.trim());
+        if (isAnotherPreset && ROLE_PRESETS[desigVal]) {
+          dutiesBox.value = ROLE_PRESETS[desigVal].duties;
+        } else if (!dutiesBox.value) {
+          dutiesBox.value = ROLE_PRESETS['Business Analyst'].duties;
+        }
+      }
+
+      // Synchronize role titles with active designation
+      const trTitle = document.getElementById('traineeRoleTitle');
+      const confTitle = document.getElementById('confirmedRoleTitle');
+      if (trTitle && (!trTitle.value || trTitle.value.endsWith('Trainee'))) {
+        trTitle.value = `${desigVal} Trainee`;
+      }
+      if (confTitle && (!confTitle.value || confTitle.value.startsWith('Associate '))) {
+        confTitle.value = desigVal;
+      }
+
+      // Ensure additional benefits are NOT filled by default on Annexure page
+      const b1n = document.getElementById('customBenefit1Name');
+      const b1m = document.getElementById('customBenefit1Monthly');
+      const b1a = document.getElementById('customBenefit1Val');
+      const b2n = document.getElementById('customBenefit2Name');
+      const b2m = document.getElementById('customBenefit2Monthly');
+      const b2a = document.getElementById('customBenefit2Val');
+      if (b1n) b1n.value = '';
+      if (b1m) b1m.value = '';
+      if (b1a) b1a.value = '';
+      if (b2n) b2n.value = '';
+      if (b2m) b2m.value = '';
+      if (b2a) b2a.value = '';
+      localStorage.removeItem('shared_customBenefit1Name');
+      localStorage.removeItem('shared_customBenefit1Monthly');
+      localStorage.removeItem('shared_customBenefit1Val');
+      localStorage.removeItem('shared_customBenefit2Name');
+      localStorage.removeItem('shared_customBenefit2Monthly');
+      localStorage.removeItem('shared_customBenefit2Val');
+
+      autoCalculateSalary();
+      updatePreview();
+    });
+  </script>
+</body>
+
+</html>

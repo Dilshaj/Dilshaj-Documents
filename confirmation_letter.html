@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <!-- Auth Guard (Must load first) -->
+  <script src="auth.js?v=5.0"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Employment Confirmation Letter Generator | Dilshaj Infotech</title>
+
+  <!-- Google Fonts for UI Header Bar -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+
+  <!-- html2canvas and jsPDF for razor-sharp rendering (deferred) -->
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <!-- Consolidated Design System & Theme Stylesheet -->
+  <link rel="stylesheet" href="shared.css?v=5.0">
+  <!-- Centralized Header Navigation & Shared HR Profile Manager -->
+  <script src="header.js?v=5.0"></script>
+</head>
+
+<body>
+
+  <!-- Centralized Top Navigation Bar (Injected by header.js) -->
+  <div id="header-placeholder"></div>
+
+  <!-- App Layout Grid -->
+  <div class="app-layout">
+    <!-- Left Column: Form Sidebar -->
+    <aside class="form-sidebar">
+      <!-- 1. Confirmation & Employee Details -->
+      <div class="section-card">
+        <div class="section-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+          </svg>
+          Confirmation Details
+        </div>
+
+        <!-- Confirmation Track Selection (Toggle Switch & Segmented Control) -->
+        <div class="track-toggle-card" id="card_confirmationTrack">
+          <div class="track-toggle-top">
+            <label class="track-toggle-title" for="toggle_confirmationTrack">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+              </svg>
+              Confirmation Track
+            </label>
+            <div class="track-switch-inline" title="Toggle between Probation and Trainee Confirmation">
+              <label class="track-switch-pill">
+                <input type="checkbox" id="toggle_confirmationTrack" onchange="toggleConfirmationTrackSwitch(this.checked)">
+                <span class="track-switch-slider"></span>
+              </label>
+            </div>
+          </div>
+          <div class="track-segmented-bar">
+            <button type="button" class="track-seg-btn active" id="btnConfProbation" onclick="switchConfirmationTrack('probation')">
+              💼 Probation Track
+            </button>
+            <button type="button" class="track-seg-btn" id="btnConfTrainee" onclick="switchConfirmationTrack('trainee')">
+              🎓 Trainee Track
+            </button>
+          </div>
+          <div class="track-badge-desc" id="confTrackDescText">
+            <span>● Probation to Regular Employment Confirmation</span>
+          </div>
+          <!-- Hidden radio inputs for backwards compatibility -->
+          <input type="radio" name="confirmationTrack" id="trackModeProbation" value="probation" checked style="display: none;">
+          <input type="radio" name="confirmationTrack" id="trackModeTrainee" value="trainee" style="display: none;">
+        </div>
+
+        <!-- Trainee Specific Settings (Revealed when Trainee track selected) -->
+        <div id="group_traineeSettings"
+          style="display: none; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 10px; margin-bottom: 12px;">
+          <div
+            style="font-size: 11px; font-weight: 700; color: #166534; margin-bottom: 8px; display: flex; align-items: center; gap: 5px;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2L1 21h22L12 2zm0 3.99L19.53 19H4.47L12 5.99zM11 16h2v2h-2zm0-6h2v4h-2z" />
+            </svg>
+            Trainee Transition Parameters
+          </div>
+          <div class="form-grid" style="grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 6px;">
+            <div class="form-group" style="margin: 0;">
+              <label for="traineeDuration" style="font-size: 10.5px; font-weight: 600;">Foundation Duration</label>
+              <input type="text" id="traineeDuration" value="4 months" oninput="updatePreview()">
+            </div>
+            <div class="form-group" style="margin: 0;">
+              <label for="traineePriorRole" style="font-size: 10.5px; font-weight: 600;">Prior Trainee Role</label>
+              <input type="text" id="traineePriorRole" value="Business Analyst Trainee" oninput="updatePreview()">
+            </div>
+          </div>
+          <div class="form-group" style="margin: 0;">
+            <label for="confirmedCtc" style="font-size: 10.5px; font-weight: 600;">Annual Confirmed CTC (₹)</label>
+            <input type="text" id="confirmedCtc" value="₹ 2,00,000 per annum" oninput="updatePreview()">
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="letterDate">Letter Date</label>
+            <div class="date-input-wrapper">
+              <input type="text" id="letterDate" value="January 07, 2026" oninput="updatePreview()"
+                onclick="openUniversalDatePicker(this, this.nextElementSibling)">
+              <button type="button" class="date-picker-btn" title="Choose date from calendar"
+                onclick="openUniversalDatePicker(document.getElementById('letterDate'), this)">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                  <line x1="16" y1="2" x2="16" y2="6"></line>
+                  <line x1="8" y1="2" x2="8" y2="6"></line>
+                  <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="empPrefix">Salutation Prefix</label>
+            <select id="empPrefix" onchange="updatePreview()">
+              <option value="Mr." selected>Mr.</option>
+              <option value="Ms.">Ms.</option>
+              <option value="Mrs.">Mrs.</option>
+              <option value="Dr.">Dr.</option>
+            </select>
+          </div>
+          <div class="form-group full-width">
+            <label for="empName">Employee Name</label>
+            <input type="text" id="empName" value="Sampath Kumar" oninput="updatePreview()">
+          </div>
+          <div class="form-group">
+            <label for="empId">Employee ID</label>
+            <input type="text" id="empId" value="DIPL-2026-042" oninput="updatePreview()">
+          </div>
+          <div class="form-group">
+            <label for="rolePresetSelect">Select Role Preset</label>
+            <select id="rolePresetSelect" onchange="onRoleSelectChange()"></select>
+          </div>
+          <div class="form-group full-width">
+            <label for="designation">Job Title / Final Designation</label>
+            <input type="text" id="designation" value="Business Analyst" oninput="onCustomDesignationInput()">
+          </div>
+          <div class="form-group">
+            <label for="department">Department</label>
+            <input type="text" id="department" value="Data & Analytics" oninput="updatePreview()">
+          </div>
+          <div class="form-group">
+            <label for="effectiveDate">Effective Date of Confirmation</label>
+            <div class="date-input-wrapper">
+              <input type="text" id="effectiveDate" value="January 01, 2026" oninput="updatePreview()"
+                onclick="openUniversalDatePicker(this, this.nextElementSibling)">
+              <button type="button" class="date-picker-btn" title="Choose date from calendar"
+                onclick="openUniversalDatePicker(document.getElementById('effectiveDate'), this)">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                  <line x1="16" y1="2" x2="16" y2="6"></line>
+                  <line x1="8" y1="2" x2="8" y2="6"></line>
+                  <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div class="form-group full-width">
+            <label for="reportingManager">Reporting Manager</label>
+            <input type="text" id="reportingManager" value="Dilshaj Shaik, CEO" oninput="updatePreview()">
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Company & Signatory -->
+      <div class="section-card">
+        <div class="section-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
+          </svg>
+          Company &amp; Signatory
+        </div>
+        <div class="form-grid">
+          <div class="form-group full-width">
+            <label for="companyName">Company Name</label>
+            <div class="field-toggle-wrapper">
+              <input type="text" id="companyName" value="Dilshaj Infotech Private Limited" oninput="updatePreview()">
+              <button type="button" class="field-toggle-btn active" title="Field visible in document page"
+                onclick="toggleFieldVisibility('companyName', '#prev_compName, #prev_sigComp', this)"
+                aria-label="Toggle visibility">
+                <svg class="eye-icon eye-open" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+                <svg class="eye-icon eye-off" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                  style="display: none;">
+                  <path
+                    d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24">
+                  </path>
+                  <line x1="1" y1="1" x2="23" y2="23"></line>
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="sigName">Signatory Name</label>
+            <div class="field-toggle-wrapper">
+              <input type="text" id="sigName" value="Dilshaj Shaik" oninput="updatePreview()">
+              <button type="button" class="field-toggle-btn active" title="Field visible in document page"
+                onclick="toggleFieldVisibility('sigName', '#prev_signatory', this)" aria-label="Toggle visibility">
+                <svg class="eye-icon eye-open" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+                <svg class="eye-icon eye-off" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                  style="display: none;">
+                  <path
+                    d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24">
+                  </path>
+                  <line x1="1" y1="1" x2="23" y2="23"></line>
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="sigDesig">Signatory Designation</label>
+            <div class="field-toggle-wrapper">
+              <input type="text" id="sigDesig" value="Chief Executive Officer" oninput="updatePreview()">
+              <button type="button" class="field-toggle-btn active" title="Field visible in document page"
+                onclick="toggleFieldVisibility('sigDesig', '#prev_signatoryDesig', this)"
+                aria-label="Toggle visibility">
+                <svg class="eye-icon eye-open" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+                <svg class="eye-icon eye-off" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                  style="display: none;">
+                  <path
+                    d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24">
+                  </path>
+                  <line x1="1" y1="1" x2="23" y2="23"></line>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Right Column: Document Workspace Preview -->
+    <main class="preview-workspace">
+      <div id="pdf-export-container">
+        <div class="a4-page" id="page-1">
+
+          <div class="meta-block" style="margin-top: 6px; margin-bottom: 16px;">
+            <div class="meta-line"><strong>Date:</strong> <span id="prev_date">January 07, 2026</span></div>
+          </div>
+
+          <div class="doc-paragraph" style="margin-bottom: 16px; line-height: 1.5;">
+            <strong>To:</strong><br>
+            <span id="prev_prefixName">Mr. Sampath Kumar</span><br>
+            <strong>Employee ID:</strong> <span id="prev_empId">DIPL-2026-042</span><br>
+            <strong>Designation:</strong> <span id="prev_desigHeader">Business Analyst</span>
+          </div>
+
+          <div class="doc-title-bar" style="margin-top: 14px; margin-bottom: 16px;">
+            <div class="subject-title" id="prev_subjectTitle">SUBJECT: CONFIRMATION OF EMPLOYMENT</div>
+          </div>
+
+          <div class="doc-paragraph" style="margin-bottom: 12px;">
+            Dear <span id="prev_salutationName">Sampath Kumar</span>,
+          </div>
+
+          <div class="doc-paragraph" id="prev_p1" style="margin-bottom: 12px; line-height: 1.55;">
+            Following the successful completion of your probationary period and a positive review of your performance,
+            we are pleased to inform you that your employment with <strong id="prev_compName">Dilshaj Infotech Private
+              Limited</strong> is hereby confirmed.
+          </div>
+
+          <div class="doc-paragraph" id="prev_p2" style="margin-bottom: 16px; line-height: 1.55;">
+            Your performance during the assessment period has met the standards required for this role, and we are
+            confident that you will continue to be a valuable asset to our team.
+          </div>
+
+          <div class="section-heading" style="margin-top: 18px; margin-bottom: 8px;">EMPLOYMENT DETAILS</div>
+
+          <table class="details-table" style="width: 100%; margin-bottom: 18px;">
+            <tr>
+              <td class="label-col" style="width: 34%;">Effective Date of Confirmation</td>
+              <td style="width: 3%;">:</td>
+              <td id="prev_effectiveDate" style="width: 63%; font-weight: 600;">January 01, 2026</td>
+            </tr>
+            <tr>
+              <td class="label-col">Confirmed Job Title</td>
+              <td>:</td>
+              <td id="prev_jobTitle" style="font-weight: 600;">Business Analyst</td>
+            </tr>
+            <tr>
+              <td class="label-col">Department</td>
+              <td>:</td>
+              <td id="prev_department">Data & Analytics</td>
+            </tr>
+            <tr>
+              <td class="label-col">Reporting Manager</td>
+              <td>:</td>
+              <td id="prev_reportingManager">Dilshaj Shaik, CEO</td>
+            </tr>
+            <tr id="row_confirmedCtc" style="display: none;">
+              <td class="label-col">Confirmed Annual CTC</td>
+              <td>:</td>
+              <td id="prev_confirmedCtc">₹ 2,00,000 per annum</td>
+            </tr>
+            <tr id="row_priorTenure" style="display: none;">
+              <td class="label-col">Completed Training Period</td>
+              <td>:</td>
+              <td id="prev_completedTenure">3 months (as Trainee - Business Analyst)</td>
+            </tr>
+          </table>
+
+          <div class="doc-paragraph" id="prev_p3" style="margin-bottom: 14px; line-height: 1.55;">
+            All other terms and conditions of your employment as set out in your original Letter of Appointment remain
+            unchanged. We look forward to your continued contribution and growth within the organization.
+          </div>
+
+          <div class="doc-paragraph" id="prev_p4"
+            style="font-weight: 700; color: #0f172a; margin-top: 16px; margin-bottom: 24px;">
+            Congratulations on your confirmation!
+          </div>
+
+          <div class="signature-box" style="position: relative; margin-top: 36px;">
+            <div>For <strong><span id="prev_sigComp">Dilshaj Infotech Private Limited</span></strong></div>
+            <div class="sig-seal-wrap"
+              style="position: absolute; top: 0; left: 0; right: 0; height: 0; pointer-events: none; z-index: 10;">
+              <img data-admin-src="Signature.svg" alt="Authorized Signature" class="doc-signature-img"
+                style="height: 44px; width: auto; position: absolute; left: 0; top: 20px; z-index: 2;">
+              <img data-admin-src="Stamp.svg" alt="Company Stamp" class="doc-stamp-img"
+                style="height: 104px; width: auto; position: absolute; left: 168px; top: 24px; opacity: 0.88; z-index: 1;">
+            </div>
+            <div class="signature-line" style="margin-top: 48px;">
+              <strong id="prev_signatory">Dilshaj Shaik</strong><br>
+              <span id="prev_signatoryDesig">Chief Executive Officer</span><br>
+              Date: <span id="prev_signatoryDate">January 07, 2026</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    let currentConfirmationTrack = 'probation';
+
+    function switchConfirmationTrack(track) {
+      currentConfirmationTrack = track;
+      const isTrainee = track === 'trainee';
+
+      const toggleEl = document.getElementById('toggle_confirmationTrack');
+      if (toggleEl) toggleEl.checked = isTrainee;
+
+      const card = document.getElementById('card_confirmationTrack');
+      if (card) {
+        if (isTrainee) card.classList.add('is-trainee');
+        else card.classList.remove('is-trainee');
+      }
+
+      const btnProb = document.getElementById('btnConfProbation');
+      const btnTr = document.getElementById('btnConfTrainee');
+      if (btnProb && btnTr) {
+        btnProb.classList.toggle('active', !isTrainee);
+        btnTr.classList.toggle('active', isTrainee);
+      }
+
+      const desc = document.getElementById('confTrackDescText');
+      if (desc) {
+        desc.innerHTML = isTrainee 
+          ? '<span>● Foundation/Trainee Period to Full-Time Confirmation</span>' 
+          : '<span>● Probation to Regular Employment Confirmation</span>';
+      }
+
+      const radioProb = document.getElementById('trackModeProbation');
+      const radioTr = document.getElementById('trackModeTrainee');
+      if (radioProb && radioTr) {
+        radioProb.checked = !isTrainee;
+        radioTr.checked = isTrainee;
+      }
+
+      const traineeGroup = document.getElementById('group_traineeSettings');
+      if (traineeGroup) {
+        traineeGroup.style.display = isTrainee ? 'block' : 'none';
+      }
+      const rowCtc = document.getElementById('row_confirmedCtc');
+      const rowTenure = document.getElementById('row_priorTenure');
+      if (rowCtc) rowCtc.style.display = isTrainee ? 'table-row' : 'none';
+      if (rowTenure) rowTenure.style.display = isTrainee ? 'table-row' : 'none';
+      updatePreview();
+      showToast(isTrainee ? 'Switched to Trainee to Full-Time Confirmation' : 'Switched to Probation to Permanent Confirmation');
+    }
+
+    function toggleConfirmationTrackSwitch(isChecked) {
+      switchConfirmationTrack(isChecked ? 'trainee' : 'probation');
+    }
+
+    function updatePreview() {
+      const getVal = id => {
+        const el = document.getElementById(id);
+        return el ? el.value.trim() : '';
+      };
+
+      const date = getVal('letterDate') || 'January 07, 2026';
+      const prefix = document.getElementById('empPrefix')?.value || 'Mr.';
+      const name = getVal('empName') || 'Sampath Kumar';
+      const empId = getVal('empId') || 'DIPL-2026-042';
+      const desig = getVal('designation') || 'Business Analyst';
+      const dept = getVal('department') || 'Data & Analytics';
+      const effectiveDate = getVal('effectiveDate') || 'January 01, 2026';
+      const manager = getVal('reportingManager') || 'Dilshaj Shaik, CEO';
+      const company = getVal('companyName') || 'Dilshaj Infotech Private Limited';
+      const sigName = getVal('sigName') || 'Dilshaj Shaik';
+      const sigDesig = getVal('sigDesig') || 'Chief Executive Officer';
+
+      const isTrainee = currentConfirmationTrack === 'trainee';
+      const traineeDuration = getVal('traineeDuration') || '4 months';
+      const traineePriorRole = getVal('traineePriorRole') || 'Business Analyst Trainee';
+      const confirmedCtc = getVal('confirmedCtc') || '₹ 2,00,000 per annum';
+
+      const setEl = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.innerText = val;
+      };
+
+      setEl('prev_date', date);
+      setEl('prev_prefixName', `${prefix} ${name}`);
+      setEl('prev_empId', empId);
+      setEl('prev_desigHeader', isTrainee ? `${desig} (FTE)` : desig);
+      setEl('prev_salutationName', name);
+      setEl('prev_compName', company);
+      setEl('prev_effectiveDate', effectiveDate);
+      setEl('prev_jobTitle', desig);
+      setEl('prev_department', dept);
+      setEl('prev_reportingManager', manager);
+      setEl('prev_sigComp', company);
+      setEl('prev_signatory', sigName);
+      setEl('prev_signatoryDesig', sigDesig);
+      setEl('prev_signatoryDate', date);
+
+      // Dynamic Subject & Paragraphs
+      const subjectEl = document.getElementById('prev_subjectTitle');
+      if (subjectEl) {
+        subjectEl.innerText = isTrainee ? 'SUBJECT: CONFIRMATION OF EMPLOYMENT' : 'SUBJECT: CONFIRMATION OF EMPLOYMENT';
+      }
+
+      const p1El = document.getElementById('prev_p1');
+      if (p1El) {
+        if (isTrainee) {
+          p1El.innerHTML = `Following the successful completion of your <strong>${traineeDuration}</strong> Foundation Period and a positive assessment of your performance, learning, and contributions as a <strong>${traineePriorRole}</strong>, we are pleased to inform you that your employment with <strong id="prev_compName">${company}</strong> is hereby confirmed as a regular employee.`;
+        } else {
+          p1El.innerHTML = `Following the successful completion of your probationary period and a positive review of your performance, we are pleased to inform you that your employment with <strong id="prev_compName">${company}</strong> is hereby confirmed.`;
+        }
+      }
+
+      const p2El = document.getElementById('prev_p2');
+      if (p2El) {
+        if (isTrainee) {
+          p2El.innerText = 'Your capability, discipline, and performance during the Foundation Period have met the standards required for this role, and we are confident that you will continue to be a valuable asset to our team.';
+        } else {
+          p2El.innerText = 'Your performance during the assessment period has met the standards required for this role, and we are confident that you will continue to be a valuable asset to our team.';
+        }
+      }
+
+      const p3El = document.getElementById('prev_p3');
+      if (p3El) {
+        if (isTrainee) {
+          p3El.innerText = 'All other terms and conditions of your employment remain in full effect. We look forward to your continued contribution and growth within the organization.';
+        } else {
+          p3El.innerText = 'All other terms and conditions of your employment as set out in your original Letter of Appointment remain unchanged. We look forward to your continued contribution and growth within the organization.';
+        }
+      }
+
+      const p4El = document.getElementById('prev_p4');
+      if (p4El) {
+        p4El.innerText = isTrainee ? 'Congratulations on your transition and confirmation to full-time employment!' : 'Congratulations on your confirmation!';
+      }
+
+      setEl('prev_confirmedCtc', confirmedCtc);
+      setEl('prev_completedTenure', `${traineeDuration} (as ${traineePriorRole})`);
+
+      if (window.refreshHiddenFields) refreshHiddenFields();
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      loadSharedProfile({
+        'companyName': 'companyName',
+        'empName': 'empName',
+        'empPrefix': 'empPrefix',
+        'empId': 'empId',
+        'designation': 'designation',
+        'department': 'department',
+        'sigName': 'sigName',
+        'sigDesig': 'sigDesig'
+      });
+
+      const savedCtc = localStorage.getItem('shared_annualCTC');
+      if (savedCtc && document.getElementById('confirmedCtc')) {
+        document.getElementById('confirmedCtc').value = `₹ ${savedCtc} per annum`;
+      }
+
+      updatePreview();
+    });
+  </script>
+</body>
+
+</html>
