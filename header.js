@@ -109,6 +109,8 @@ const SHARED_KEYS = {
   pfNo: 'shared_pfNo',
   uanNo: 'shared_uanNo',
   esiNo: 'shared_esiNo',
+  esiEnabled: 'shared_esiEnabled',
+  salaryRatio: 'shared_salaryRatio',
   paymentMode: 'shared_paymentMode',
   annualCTC: 'shared_annualCTC',
   monthlyGrossSalary: 'shared_monthlyGrossSalary',
@@ -411,6 +413,20 @@ function saveSharedProfile() {
   if (bgToggle) localStorage.setItem('hr_doc_showBg', bgToggle.checked ? 'true' : 'false');
   if (dateFormatSelect) localStorage.setItem(DATE_FORMAT_KEY, dateFormatSelect.value);
 
+  const esiDisableEl = document.getElementById('esiCoverageDisable');
+  const esiEnableEl = document.getElementById('esiCoverageEnable');
+  if (esiDisableEl || esiEnableEl) {
+    const isEsiActive = esiEnableEl ? esiEnableEl.checked : !esiDisableEl.checked;
+    localStorage.setItem(SHARED_KEYS.esiEnabled, isEsiActive ? 'true' : 'false');
+  }
+
+  const ratio55El = document.getElementById('ratio_55_45');
+  const ratio50El = document.getElementById('ratio_50_40_10');
+  if (ratio55El || ratio50El) {
+    const activeRatio = (ratio55El && ratio55El.checked) ? '55_45' : '50_40_10';
+    localStorage.setItem(SHARED_KEYS.salaryRatio, activeRatio);
+  }
+
   updateHeaderDocTitle();
 }
 
@@ -450,6 +466,30 @@ function loadSharedProfile(explicitMap = null) {
     document.body.classList.remove('show-letterhead-bg');
   }
   initSignaturesAndStamps();
+
+  const savedEsi = localStorage.getItem(SHARED_KEYS.esiEnabled);
+  if (savedEsi !== null) {
+    const isEsiActive = savedEsi !== 'false';
+    const esiDisableEl = document.getElementById('esiCoverageDisable');
+    const esiEnableEl = document.getElementById('esiCoverageEnable');
+    if (esiEnableEl) esiEnableEl.checked = isEsiActive;
+    if (esiDisableEl) esiDisableEl.checked = !isEsiActive;
+    if (typeof updateEsiCoverageUI === 'function') {
+      updateEsiCoverageUI(isEsiActive);
+    }
+  }
+
+  const savedRatio = localStorage.getItem(SHARED_KEYS.salaryRatio);
+  if (savedRatio !== null) {
+    const is55 = savedRatio === '55_45';
+    const ratio55El = document.getElementById('ratio_55_45');
+    const ratio50El = document.getElementById('ratio_50_40_10');
+    if (ratio55El) ratio55El.checked = is55;
+    if (ratio50El) ratio50El.checked = !is55;
+    if (typeof updateSalaryRatioUI === 'function') {
+      updateSalaryRatioUI(savedRatio);
+    }
+  }
 
   const dateFormatSelect = document.getElementById('dateFormatSelect');
   if (dateFormatSelect) {

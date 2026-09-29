@@ -429,23 +429,64 @@
           Earnings & Auto-CTC Engine (₹)
         </div>
         <div class="form-grid">
-          <div class="form-group full-width">
-            <label for="annualCtc" style="color: #0284c7; font-weight: 700;">Annual CTC (₹) [Auto-Fills
-              Components]</label>
-            <input type="number" id="annualCtc" value="200000" oninput="onAttendanceOrCtcChange()"
+          <div class="form-group">
+            <label for="annualCtc" style="color: #0284c7; font-weight: 700; font-size: 11px;">Annual CTC (₹)</label>
+            <input type="text" id="annualCtc" value="2,00,000" oninput="onCtcInputChange()"
               style="border: 1.5px solid #0284c7; font-weight: 700;">
           </div>
+          <div class="form-group">
+            <label for="totalGrossSalary" style="font-weight: 600; font-size: 11px; color: #334155;">Monthly Gross (₹)</label>
+            <input type="text" id="totalGrossSalary" value="15,256" oninput="onGrossInputChange()">
+          </div>
+        </div>
+        <!-- ESI Coverage Setting in F&F -->
+        <div class="form-group full-width" style="margin-top: 10px; margin-bottom: 8px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <label style="font-weight: 600; font-size: 11.5px; color: #334155; margin: 0;">ESI Coverage (Statutory)</label>
+            <span id="esiBadgeStatus" style="font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 12px; background: #e0f2fe; color: #0369a1; transition: all 0.2s;">Active</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 14px; flex-wrap: nowrap; margin-top: 4px;">
+            <label style="display: inline-flex; align-items: center; gap: 6px; cursor: pointer; font-size: 11px; font-weight: 500; margin: 0; color: #1e293b;">
+              <input type="radio" name="esiCoverage" id="esiCoverageEnable" value="enabled" checked onchange="toggleEsiCoverage(true)" style="width: auto; margin: 0; cursor: pointer;">
+              <span>Enabled (Statutory)</span>
+            </label>
+            <label style="display: inline-flex; align-items: center; gap: 6px; cursor: pointer; font-size: 11px; font-weight: 500; margin: 0; color: #1e293b;">
+              <input type="radio" name="esiCoverage" id="esiCoverageDisable" value="disabled" onchange="toggleEsiCoverage(false)" style="width: auto; margin: 0; cursor: pointer;">
+              <span>Disabled (Opt-out)</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Salary Component Ratio Setting in F&F -->
+        <div class="form-group full-width" style="margin-top: 6px; margin-bottom: 8px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <label style="font-weight: 600; font-size: 11.5px; color: #334155; margin: 0;">Salary Component Ratio</label>
+            <span id="ratioBadgeStatus" style="font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 12px; background: #ede9fe; color: #6d28d9; transition: all 0.2s;">50/40/10</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 14px; flex-wrap: nowrap; margin-top: 4px;">
+            <label style="display: inline-flex; align-items: center; gap: 6px; cursor: pointer; font-size: 11px; font-weight: 500; margin: 0; color: #1e293b;">
+              <input type="radio" name="salaryRatio" id="ratio_50_40_10" value="50_40_10" checked onchange="toggleSalaryRatio('50_40_10')" style="width: auto; margin: 0; cursor: pointer;">
+              <span>50% Basic + 40% HRA + 10% SA</span>
+            </label>
+            <label style="display: inline-flex; align-items: center; gap: 6px; cursor: pointer; font-size: 11px; font-weight: 500; margin: 0; color: #1e293b;">
+              <input type="radio" name="salaryRatio" id="ratio_55_45" value="55_45" onchange="toggleSalaryRatio('55_45')" style="width: auto; margin: 0; cursor: pointer;">
+              <span>55% Basic + 45% HRA</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="form-grid">
           <div class="form-group">
             <label for="earnBasic">Earned Basic Salary</label>
             <input type="number" id="earnBasic" value="5085" oninput="calcFnF()">
           </div>
           <div class="form-group">
             <label for="earnHra">Earned HRA</label>
-            <input type="number" id="earnHra" value="2034" oninput="calcFnF()">
+            <input type="number" id="earnHra" value="4068" oninput="calcFnF()">
           </div>
-          <div class="form-group">
+          <div class="form-group" id="group_fnf_special">
             <label for="earnSpecial">Special Allowance</label>
-            <input type="number" id="earnSpecial" value="3051" oninput="calcFnF()">
+            <input type="number" id="earnSpecial" value="1017" oninput="calcFnF()">
           </div>
           <div class="form-group">
             <label for="earnLeave">Leave Encashment</label>
@@ -696,8 +737,8 @@
                 <tr>
                   <td class="lbl">Notice Period Served</td>
                   <td class="val">: <span id="prev_notice">30 of 30 Days</span></td>
-                  <td class="lbl">ESI Number</td>
-                  <td class="val">: <span id="prev_esiNo">31XX XXXX 56</span></td>
+                  <td class="lbl" id="lbl_esiNo">ESI Number</td>
+                  <td class="val" id="val_esiNo">: <span id="prev_esiNo">31XX XXXX 56</span></td>
                 </tr>
                 <tr>
                   <td class="lbl">Settlement Date</td>
@@ -809,6 +850,7 @@
         'panNo': 'panNo',
         'bankAcc': 'bankAcc',
         'annualCtc': 'annualCTC',
+        'totalGrossSalary': 'monthlyGrossSalary',
         'paymentMode': 'paymentMode',
         'customBenefit1Name': 'customBenefit1Name',
         'customBenefit2Name': 'customBenefit2Name'
@@ -863,58 +905,167 @@
       return str.slice(0, 2) + 'XXXX XXXX ' + str.slice(-2);
     }
 
-    function onAttendanceOrCtcChange() {
-      const rawCTC = document.getElementById('annualCtc').value.replace(/[^0-9.]/g, '');
-      const annualCTC = Math.round(parseFloat(rawCTC) || 0);
+    function onCtcInputChange() {
+      onAttendanceOrCtcChange('ctc');
+    }
+
+    function onGrossInputChange() {
+      onAttendanceOrCtcChange('gross');
+    }
+
+    function getActiveSalaryRatio() {
+      return document.getElementById('ratio_55_45')?.checked ? '55_45' : '50_40_10';
+    }
+
+    function toggleSalaryRatio(ratio) {
+      updateSalaryRatioUI(ratio);
+      onAttendanceOrCtcChange('gross');
+      if (typeof saveSharedProfile === 'function') {
+        saveSharedProfile();
+      } else {
+        localStorage.setItem('shared_salaryRatio', ratio);
+      }
+      showToast(ratio === '55_45' ? 'Salary Ratio set to 55% Basic + 45% HRA' : 'Salary Ratio set to 50% Basic + 40% HRA + 10% SA');
+    }
+
+    function updateSalaryRatioUI(ratio) {
+      const is55 = ratio === '55_45';
+      const r50 = document.getElementById('ratio_50_40_10');
+      const r55 = document.getElementById('ratio_55_45');
+      if (r50) r50.checked = !is55;
+      if (r55) r55.checked = is55;
+      const badge = document.getElementById('ratioBadgeStatus');
+      if (badge) {
+        badge.innerText = is55 ? '55/45' : '50/40/10';
+        badge.style.background = is55 ? '#ecfdf5' : '#ede9fe';
+        badge.style.color = is55 ? '#047857' : '#6d28d9';
+      }
+      const groupSa = document.getElementById('group_fnf_special');
+      if (groupSa) {
+        groupSa.style.display = is55 ? 'none' : '';
+      }
+    }
+
+    function toggleEsiCoverage(isEnabled) {
+      updateEsiCoverageUI(isEnabled);
+      localStorage.setItem('shared_esiEnabled', isEnabled ? 'true' : 'false');
+      onAttendanceOrCtcChange('gross');
+      if (typeof saveSharedProfile === 'function') {
+        saveSharedProfile();
+      }
+      showToast(isEnabled ? 'ESI Enabled (Statutory Contributions Active)' : 'ESI Disabled (Completely Removed from Statement)');
+    }
+
+    function updateEsiCoverageUI(isEnabled) {
+      const badge = document.getElementById('esiBadgeStatus');
+      const rEnable = document.getElementById('esiCoverageEnable');
+      const rDisable = document.getElementById('esiCoverageDisable');
+      if (rEnable) rEnable.checked = isEnabled;
+      if (rDisable) rDisable.checked = !isEnabled;
+
+      if (badge) {
+        if (isEnabled) {
+          badge.innerText = 'Active';
+          badge.style.background = '#e0f2fe';
+          badge.style.color = '#0369a1';
+        } else {
+          badge.innerText = 'Disabled (Exempt)';
+          badge.style.background = '#fef3c7';
+          badge.style.color = '#92400e';
+        }
+      }
+
+      const groupEsiNo = document.getElementById('esiNo')?.closest('.form-group');
+      if (groupEsiNo) groupEsiNo.style.display = isEnabled ? '' : 'none';
+
+      const groupDedEsi = document.getElementById('dedEsi')?.closest('.form-group');
+      if (groupDedEsi) {
+        groupDedEsi.style.display = isEnabled ? '' : 'none';
+        if (!isEnabled) {
+          const dedEsiInput = document.getElementById('dedEsi');
+          if (dedEsiInput) dedEsiInput.value = 0;
+        }
+      }
+    }
+
+    function onAttendanceOrCtcChange(source = 'ctc') {
       const stdDays = Math.max(1, parseFloat(document.getElementById('stdDays').value) || 30);
       const workDays = Math.max(0, parseFloat(document.getElementById('workDays').value) || 0);
 
-      if (annualCTC > 0) {
-        const b1Name = (document.getElementById('customBenefit1Name')?.value || '').trim();
-        const b1Val = parseFloat(document.getElementById('customBenefit1Val')?.value) || 0;
-        const b2Name = (document.getElementById('customBenefit2Name')?.value || '').trim();
-        const b2Val = parseFloat(document.getElementById('customBenefit2Val')?.value) || 0;
-        const customBenefitsAnnual = ((b1Name && b1Val > 0 ? b1Val : 0) + (b2Name && b2Val > 0 ? b2Val : 0)) * 12;
+      const b1Name = (document.getElementById('customBenefit1Name')?.value || '').trim();
+      const b1Val = parseFloat(document.getElementById('customBenefit1Val')?.value) || 0;
+      const b2Name = (document.getElementById('customBenefit2Name')?.value || '').trim();
+      const b2Val = parseFloat(document.getElementById('customBenefit2Val')?.value) || 0;
+      const customBenefitsAnnual = ((b1Name && b1Val > 0 ? b1Val : 0) + (b2Name && b2Val > 0 ? b2Val : 0)) * 12;
+
+      const isEsiEnabled = !document.getElementById('esiCoverageDisable')?.checked;
+
+      const ratio = getActiveSalaryRatio();
+      const is55 = ratio === '55_45';
+      const basicPercent = is55 ? 0.55 : 0.50;
+      const hraPercent = is55 ? 0.45 : 0.40;
+      const pfFactor = 0.12 * basicPercent; // 0.06 in 50/40/10, 0.066 in 55/45
+
+      let annualCTC = 200000;
+      let monthlyGross = 15256;
+      let annualGross = 183072;
+
+      if (source === 'gross') {
+        const rawGross = (document.getElementById('totalGrossSalary')?.value || '15256').replace(/[^0-9.]/g, '');
+        monthlyGross = Math.round(parseFloat(rawGross) || 0);
+        annualGross = monthlyGross * 12;
+        const isEsiApplicable = isEsiEnabled && (monthlyGross <= 21000);
+        const basic_m = Math.round(monthlyGross * basicPercent);
+        const epf_m = Math.round(basic_m * 0.12);
+        const eesi_m = isEsiApplicable ? Math.round(monthlyGross * 0.0325) : 0;
+        annualCTC = annualGross + (epf_m * 12) + (eesi_m * 12) + customBenefitsAnnual;
+
+        const ctcInput = document.getElementById('annualCtc');
+        if (ctcInput) ctcInput.value = annualCTC.toLocaleString('en-IN');
+      } else {
+        const rawCTC = document.getElementById('annualCtc').value.replace(/[^0-9.]/g, '');
+        annualCTC = Math.round(parseFloat(rawCTC) || 0);
         const effectiveCTC = Math.max(0, annualCTC - customBenefitsAnnual);
+        const testGross = (effectiveCTC / 12) / (1 + pfFactor + 0.0325);
+        const isEsiApplicable = isEsiEnabled && (testGross <= 21000);
+        const grossDivisor = 1 + pfFactor + (isEsiApplicable ? 0.0325 : 0);
+        annualGross = Math.round(effectiveCTC / grossDivisor);
+        monthlyGross = Math.round(annualGross / 12);
 
-        // 1. Determine ESI applicability (if Monthly Gross <= 21,000/mo as per Annexure A)
-        const isEsiApplicable = (effectiveCTC / 12 / 1.0925) <= 21000;
-        const grossDivisor = isEsiApplicable ? 1.0925 : 1.06;
+        const grossInput = document.getElementById('totalGrossSalary');
+        if (grossInput) grossInput.value = monthlyGross.toLocaleString('en-IN');
+      }
 
-        // 2. Calculate Annual Figures (Annexure A Exact Logic)
-        const annualGross = Math.round(effectiveCTC / grossDivisor);
-        const annualBasic = Math.round(annualGross * 0.50);
-        const annualHra = Math.round(annualBasic * 0.40);
+      if (annualCTC > 0) {
+        const isEsiApplicable = isEsiEnabled && (monthlyGross <= 21000);
+        const basic_m = Math.round(monthlyGross * basicPercent);
+        const hra_m = Math.round(monthlyGross * hraPercent);
+        const sa_m = is55 ? 0 : Math.max(0, monthlyGross - basic_m - hra_m);
 
-        const annualEpf = Math.round(annualBasic * 0.12);
-        const annualEesi = isEsiApplicable ? Math.round(annualGross * 0.0325) : 0;
-        const annualEmpContrib = annualEpf + annualEesi + customBenefitsAnnual;
+        const employeePF_m = Math.round(basic_m * 0.12);
+        const employeeESI_m = isEsiApplicable ? Math.round(monthlyGross * 0.0075) : 0;
 
-        const annualSpecial = annualCTC - annualBasic - annualHra - annualEmpContrib;
-
-        // Employee Deductions (Section C - Annual)
-        const annualEmpEsi = isEsiApplicable ? Math.round(annualGross * 0.0075) : 0;
-
-        // 3. Unprorated Monthly Component Figures
-        const basic_m = Math.round(annualBasic / 12);
-        const hra_m = Math.round(annualHra / 12);
-        const sa_m = Math.round(annualSpecial / 12);
-        const employeePF_m = Math.round(annualEpf / 12);
-        const employeeESI_m = Math.round(annualEmpEsi / 12);
-
-        // 4. Prorated Earned Figures for FnF Exit Month based on Worked Days
-        const ratio = workDays / stdDays;
-        const earnedBasic = Math.round(basic_m * ratio);
-        const earnedHra = Math.round(hra_m * ratio);
-        const earnedSpecial = Math.round(sa_m * ratio);
-        const earnedPf = Math.round(employeePF_m * ratio);
-        const earnedEsi = Math.round(employeeESI_m * ratio);
+        // Prorated Earned Figures for FnF Exit Month based on Worked Days
+        const ratioVal = workDays / stdDays;
+        const earnedBasic = Math.round(basic_m * ratioVal);
+        const earnedHra = Math.round(hra_m * ratioVal);
+        const earnedSpecial = Math.round(sa_m * ratioVal);
+        const earnedPf = Math.round(employeePF_m * ratioVal);
+        const earnedEsi = isEsiApplicable ? Math.round((earnedBasic + earnedHra + earnedSpecial) * 0.0075) : 0;
 
         document.getElementById('earnBasic').value = earnedBasic;
         document.getElementById('earnHra').value = earnedHra;
         document.getElementById('earnSpecial').value = earnedSpecial;
         document.getElementById('dedPf').value = earnedPf;
         document.getElementById('dedEsi').value = earnedEsi;
+
+        const groupEsiNo = document.getElementById('esiNo')?.closest('.form-group');
+        if (groupEsiNo) groupEsiNo.style.display = isEsiEnabled ? '' : 'none';
+        const groupDedEsi = document.getElementById('dedEsi')?.closest('.form-group');
+        if (groupDedEsi) {
+          groupDedEsi.style.display = isEsiEnabled ? '' : 'none';
+          if (!isEsiEnabled) document.getElementById('dedEsi').value = 0;
+        }
       }
 
       calcFnF();
@@ -1079,7 +1230,20 @@
       document.getElementById('prev_lopDays').innerText = `${lopDays} Days`;
       document.getElementById('prev_uan').innerText = uan;
       document.getElementById('prev_pfNo').innerText = pfNo;
-      document.getElementById('prev_esiNo').innerText = esiNo;
+
+      const isEsiEnabled = localStorage.getItem('shared_esiEnabled') !== 'false';
+      const lblEsi = document.getElementById('lbl_esiNo');
+      const valEsi = document.getElementById('val_esiNo');
+      if (lblEsi && valEsi) {
+        if (isEsiEnabled) {
+          lblEsi.innerText = 'ESI Number';
+          valEsi.innerHTML = `: <span id="prev_esiNo">${esiNo}</span>`;
+        } else {
+          lblEsi.innerText = '';
+          valEsi.innerHTML = '';
+        }
+      }
+
       document.getElementById('prev_pan').innerText = panNo;
       document.getElementById('prev_bankAcc').innerText = bankAcc;
 
@@ -1108,7 +1272,18 @@
 
     window.addEventListener('DOMContentLoaded', () => {
       loadSettings();
-      onAttendanceOrCtcChange();
+
+      const savedEsi = localStorage.getItem('shared_esiEnabled');
+      if (savedEsi !== null) {
+        updateEsiCoverageUI(savedEsi !== 'false');
+      }
+
+      const savedRatio = localStorage.getItem('shared_salaryRatio');
+      if (savedRatio) {
+        updateSalaryRatioUI(savedRatio);
+      }
+
+      onAttendanceOrCtcChange('ctc');
     });
   </script>
 </body>
