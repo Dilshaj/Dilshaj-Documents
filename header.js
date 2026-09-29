@@ -111,6 +111,9 @@ const SHARED_KEYS = {
   esiNo: 'shared_esiNo',
   esiEnabled: 'shared_esiEnabled',
   salaryRatio: 'shared_salaryRatio',
+  ptEnabled: 'shared_ptEnabled',
+  ptState: 'shared_ptState',
+  ptCustomAmount: 'shared_ptCustomAmount',
   paymentMode: 'shared_paymentMode',
   annualCTC: 'shared_annualCTC',
   monthlyGrossSalary: 'shared_monthlyGrossSalary',
@@ -427,6 +430,23 @@ function saveSharedProfile() {
     localStorage.setItem(SHARED_KEYS.salaryRatio, activeRatio);
   }
 
+  const ptDisableEl = document.getElementById('ptCoverageDisable');
+  const ptEnableEl = document.getElementById('ptCoverageEnable');
+  if (ptDisableEl || ptEnableEl) {
+    const isPtActive = ptEnableEl ? ptEnableEl.checked : !ptDisableEl.checked;
+    localStorage.setItem(SHARED_KEYS.ptEnabled, isPtActive ? 'true' : 'false');
+  }
+
+  const ptStateEl = document.getElementById('ptStateSelect');
+  if (ptStateEl) {
+    localStorage.setItem(SHARED_KEYS.ptState, ptStateEl.value);
+  }
+
+  const ptCustomEl = document.getElementById('ptCustomAmount');
+  if (ptCustomEl) {
+    localStorage.setItem(SHARED_KEYS.ptCustomAmount, ptCustomEl.value);
+  }
+
   updateHeaderDocTitle();
 }
 
@@ -489,6 +509,35 @@ function loadSharedProfile(explicitMap = null) {
     if (typeof updateSalaryRatioUI === 'function') {
       updateSalaryRatioUI(savedRatio);
     }
+  }
+
+  const savedPt = localStorage.getItem(SHARED_KEYS.ptEnabled);
+  if (savedPt !== null) {
+    const isPtActive = savedPt !== 'false';
+    const ptDisableEl = document.getElementById('ptCoverageDisable');
+    const ptEnableEl = document.getElementById('ptCoverageEnable');
+    if (ptEnableEl) ptEnableEl.checked = isPtActive;
+    if (ptDisableEl) ptDisableEl.checked = !isPtActive;
+    if (typeof updatePtCoverageUI === 'function') {
+      updatePtCoverageUI(isPtActive);
+    }
+  }
+
+  const savedPtState = localStorage.getItem(SHARED_KEYS.ptState);
+  if (savedPtState) {
+    const ptStateEl = document.getElementById('ptStateSelect');
+    if (ptStateEl) {
+      ptStateEl.value = savedPtState;
+      if (typeof onPtStateChange === 'function') {
+        onPtStateChange();
+      }
+    }
+  }
+
+  const savedPtCustom = localStorage.getItem(SHARED_KEYS.ptCustomAmount);
+  if (savedPtCustom) {
+    const ptCustomEl = document.getElementById('ptCustomAmount');
+    if (ptCustomEl) ptCustomEl.value = savedPtCustom;
   }
 
   const dateFormatSelect = document.getElementById('dateFormatSelect');

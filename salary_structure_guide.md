@@ -17,6 +17,7 @@ This comprehensive guide explains how each salary component is structured, calcu
 | **Employee ESI** | **0.75% of Gross Salary** | **Section 39 & 40**, ESI Act, 1948; **Rule 51**, ESI (Central) Rules, 1950 | Mandatory if Gross Salary $\le$ ₹21,000/month | MoLE Notification No. **G.S.R. 423(E)** (w.e.f. 01-Jul-2019) |
 | **Employer ESI** | **3.25% of Gross Salary** | **Section 39 & 40**, ESI Act, 1948; **Rule 51**, ESI (Central) Rules, 1950 | Mandatory if Gross Salary $\le$ ₹21,000/month | MoLE Notification No. **G.S.R. 423(E)** (w.e.f. 01-Jul-2019) |
 | **ESI Wage Ceiling** | **₹21,000 per month** | **Section 2(9)**, ESI Act, 1948; **Rule 50**, ESI (Central) Rules, 1950 | Full exemption from ESI if Gross > ₹21,000 at joining | MoLE Gazette Notification **S.O. 4212(E)** (w.e.f. 01-Jan-2017) |
+| **Professional Tax (PT)** | **State Slab Schedule** (AP/TS: ₹0 / ₹150 / ₹200) | **Article 276(2)**, Constitution of India; **Section 16(iii)**, IT Act, 1961 | Statutory ceiling of ₹2,500/year across all States | AP Act 1987 / Respective State Acts; Const. 60th Amend. 1988 |
 
 ---
 
@@ -125,6 +126,37 @@ This comprehensive guide explains how each salary component is structured, calcu
 
 ---
 
+### E. Section C: Professional Tax (PT)
+
+#### 1. Constitutional Authority & Ceiling
+* **Article 276(2) of the Constitution of India**:
+  * Professional Tax is a direct tax on professions, trades, callings, and employments levied by State Governments.
+  * Under the **Constitution (Sixtieth Amendment) Act, 1988**, the total amount payable in respect of any one person to the State or to any one municipality by way of tax on professions shall not exceed **₹2,500 per annum**.
+* **Section 16(iii) of the Income Tax Act, 1961**:
+  * Any Professional Tax paid by an employee during the financial year is **100% tax-deductible** from their Gross Salary before computing taxable income under both Old and New Tax Regimes (where applicable).
+
+#### 2. Key State Slabs & Schedules
+* **Andhra Pradesh & Telangana** *(AP Tax on Professions, Trades, Callings and Employments Act, 1987 - Default establishment schedule)*:
+  * Monthly Gross Salary $\le$ ₹15,000: **NIL (₹0)**
+  * Monthly Gross Salary ₹15,001 to ₹20,000: **₹150 per month** (₹1,800/year)
+  * Monthly Gross Salary > ₹20,000: **₹200 per month** (₹2,400/year)
+* **Karnataka** *(Karnataka Tax on Professions, Trades, Callings and Employments Act, 1976 - Amended w.e.f. April 2023)*:
+  * Monthly Gross Salary < ₹25,000: **NIL (₹0)**
+  * Monthly Gross Salary $\ge$ ₹25,000: **₹200 per month** (₹2,400/year)
+* **Maharashtra** *(Maharashtra State Tax on Professions, Trades, Callings and Employments Act, 1975)*:
+  * Monthly Gross Salary $\le$ ₹7,500 (men) / $\le$ ₹25,000 (women): **NIL (₹0)**
+  * Monthly Gross Salary ₹7,501 to ₹10,000: **₹175 per month**
+  * Monthly Gross Salary > ₹10,000: **₹200 per month** (for 11 months, and **₹300 in February** = ₹2,500/year)
+* **Zero PT States / Regions**:
+  * States such as Delhi, Haryana (Gurugram), Uttar Pradesh (Noida), Rajasthan, and Punjab do not levy any Professional Tax.
+
+#### 3. Crucial CTC vs. Take-Home Distinction
+* **PT is NOT in CTC**: Professional Tax is strictly an **Employee Deduction** from Gross Salary. Employers collect and remit it to the State treasury on the employee's behalf. It is **never** added to the employer's Cost to Company (CTC).
+* **Net Pay Formula**:
+  $$\text{Net Pay} = \text{Gross Salary} - (\text{Employee PF} + \text{Employee ESI} + \mathbf{Professional\ Tax})$$
+
+---
+
 ## 3. Step-by-Step Walkthrough Example (₹2,00,000 Annual CTC)
 
 Below is an exact calculation walkthrough for an annual CTC of **₹2,00,000** (₹16,667/month), demonstrating how each statutory formula and ceiling is applied:
@@ -147,9 +179,10 @@ Below is an exact calculation walkthrough for an annual CTC of **₹2,00,000** (
 | **C. DEDUCTIONS** | *(Deducted from Employee Gross Pay)* | | | |
 | Employee PF Contribution | 12% of Basic (Sec 6 EPF Act, 1952) | **₹10,984** | 12% of ₹7,628 | **₹915** |
 | Employee ESI Contribution | 0.75% of Gross (Rule 51 ESI Rules; Gross $\le$ ₹21k) | **₹1,373** | 0.75% of ₹15,256 | **₹114** |
-| **Total Deductions (C)** | Employee PF + Employee ESI | **₹12,357** | Employee PF + ESI | **₹1,029** |
+| Professional Tax (PT) | AP/TS Slab Schedule (Gross ₹15,001–₹20,000) | **₹1,800** | AP/TS Schedule | **₹150** |
+| **Total Deductions (C)** | Employee PF + ESI + Professional Tax | **₹14,157** | Employee PF + ESI + PT | **₹1,179** |
 | | | | | |
-| **ESTIMATED NET PAY** | **Gross Salary (A) − Employee Deductions (C)** | **₹1,70,709** | **₹15,256 − ₹1,029** | **₹14,227** |
+| **ESTIMATED NET PAY** | **Gross Salary (A) − Employee Deductions (C)** | **₹1,68,909** | **₹15,256 − ₹1,179** | **₹14,077** |
 
 ---
 
