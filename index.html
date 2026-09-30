@@ -51,15 +51,65 @@
       padding-top: 44mm;
     }
 
-    /* Tight label columns next to values across all details tables */
-    .details-table td.label-col {
-      width: 1% !important;
-      white-space: nowrap !important;
-      padding-right: 8px !important;
+    /* Balanced, non-wrapping details table layout */
+    .details-table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: auto;
+      margin: 6px 0 12px 0;
     }
 
-    .details-table td:nth-child(2) {
-      padding-right: 36px !important;
+    .details-table td {
+      padding: 3.5px 6px;
+      vertical-align: top;
+      font-size: 9.8pt;
+      line-height: 1.35;
+    }
+
+    /* Column 1: Left Label */
+    .details-table td.label-col:first-child {
+      width: 18% !important;
+      white-space: nowrap !important;
+      font-weight: 700;
+      color: var(--doc-text, #0f172a);
+      padding-right: 6px !important;
+    }
+
+    /* Column 2: Left Value */
+    .details-table td:nth-child(2):not([colspan]) {
+      width: 32% !important;
+      padding-right: 18px !important;
+    }
+
+    /* Column 3: Right Label */
+    .details-table td:nth-child(3).label-col {
+      width: 18% !important;
+      white-space: nowrap !important;
+      font-weight: 700;
+      color: var(--doc-text, #0f172a);
+      padding-right: 6px !important;
+    }
+
+    /* Column 4: Right Value */
+    .details-table td:nth-child(4) {
+      width: 32% !important;
+      padding-right: 0 !important;
+    }
+
+    /* Full-width spanned cells (Work Mode, Work Location) */
+    .details-table td[colspan] {
+      width: auto !important;
+      padding-right: 0 !important;
+    }
+
+    /* Prevent awkward date, name, and mode wrapping */
+    #prev_dateOfJoining,
+    #prev_reportingTo,
+    #prev_employmentType,
+    #prev_workMode,
+    #prev_annexureEffective,
+    #prev_annexureTraineePeriod {
+      white-space: nowrap;
     }
 
     /* Annexure Table Styling */
@@ -305,16 +355,8 @@
             <input type="text" id="designation" value="Business Analyst" oninput="onCustomDesignationInput()">
           </div>
           <div class="form-group">
-            <label for="department">Department</label>
-            <input type="text" id="department" value="Data & Analytics" oninput="updatePreview()">
-          </div>
-          <div class="form-group">
             <label for="reportingTo">Reporting To</label>
             <input type="text" id="reportingTo" value="Dilshaj Shaik" oninput="updatePreview()">
-          </div>
-          <div class="form-group">
-            <label for="employmentType">Employment Type</label>
-            <input type="text" id="employmentType" value="Full-Time" oninput="updatePreview()">
           </div>
           <div class="form-group">
             <label for="dateOfJoining">Date of Joining</label>
@@ -334,12 +376,16 @@
             </div>
           </div>
           <div class="form-group">
-            <label for="workLocation">Primary Location</label>
-            <input type="text" id="workLocation" value="Rolugunta" oninput="updatePreview()">
+            <label for="employmentType">Employment Type</label>
+            <input type="text" id="employmentType" value="Full-Time" oninput="updatePreview()">
           </div>
-          <div class="form-group full-width">
+          <div class="form-group">
             <label for="workMode">Work Mode</label>
             <input type="text" id="workMode" value="Onsite (Office)" oninput="updatePreview()">
+          </div>
+          <div class="form-group">
+            <label for="workLocation">Primary Location</label>
+            <input type="text" id="workLocation" value="Rolugunta" oninput="updatePreview()">
           </div>
           <div class="form-group full-width">
             <label for="dutiesTextarea">Duties & Responsibilities Paragraph</label>
@@ -442,29 +488,38 @@
               <input type="text" id="annualCTC" value="2,00,000" oninput="handleCTCChange()">
             </div>
             <div class="form-group" style="margin-bottom: 0;">
-              <label for="totalGrossSalary" style="font-weight: 600; font-size: 11px; color: #334155;">Monthly Gross (INR)</label>
+              <label for="totalGrossSalary" style="font-weight: 600; font-size: 11px; color: #334155;">Monthly Gross
+                (INR)</label>
               <input type="text" id="totalGrossSalary" value="15,256" oninput="handleGrossChange()">
             </div>
           </div>
-          <div style="font-size: 10px; color: #64748b; margin-top: 5px; display: flex; justify-content: space-between; padding: 0 2px;">
+          <div
+            style="font-size: 10px; color: #64748b; margin-top: 5px; display: flex; justify-content: space-between; padding: 0 2px;">
             <span>Annual Gross: ₹<strong id="display_annualGross">1,83,072</strong></span>
             <span>Total CTC: ₹<strong id="display_annualCTC">2,00,000</strong></span>
           </div>
         </div>
 
         <!-- Salary Component Ratio Setting -->
-        <div class="form-group" style="margin-bottom: 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px;">
+        <div class="form-group"
+          style="margin-bottom: 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-            <label style="font-weight: 600; font-size: 11.5px; color: #334155; margin: 0;">Salary Component Ratio</label>
-            <span id="ratioBadgeStatus" style="font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 12px; background: #ede9fe; color: #6d28d9; transition: all 0.2s;">50/40/10</span>
+            <label style="font-weight: 600; font-size: 11.5px; color: #334155; margin: 0;">Salary Component
+              Ratio</label>
+            <span id="ratioBadgeStatus"
+              style="font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 12px; background: #ede9fe; color: #6d28d9; transition: all 0.2s;">50/40/10</span>
           </div>
           <div style="display: flex; align-items: center; gap: 14px; flex-wrap: nowrap; margin-top: 4px;">
-            <label style="display: inline-flex; align-items: center; gap: 6px; cursor: pointer; font-size: 11px; font-weight: 500; margin: 0; color: #1e293b;">
-              <input type="radio" name="salaryRatio" id="ratio_50_40_10" value="50_40_10" checked onchange="toggleSalaryRatio('50_40_10')" style="width: auto; margin: 0; cursor: pointer;">
+            <label
+              style="display: inline-flex; align-items: center; gap: 6px; cursor: pointer; font-size: 11px; font-weight: 500; margin: 0; color: #1e293b;">
+              <input type="radio" name="salaryRatio" id="ratio_50_40_10" value="50_40_10" checked
+                onchange="toggleSalaryRatio('50_40_10')" style="width: auto; margin: 0; cursor: pointer;">
               <span>50% Basic + 40% HRA + 10% SA</span>
             </label>
-            <label style="display: inline-flex; align-items: center; gap: 6px; cursor: pointer; font-size: 11px; font-weight: 500; margin: 0; color: #1e293b;">
-              <input type="radio" name="salaryRatio" id="ratio_55_45" value="55_45" onchange="toggleSalaryRatio('55_45')" style="width: auto; margin: 0; cursor: pointer;">
+            <label
+              style="display: inline-flex; align-items: center; gap: 6px; cursor: pointer; font-size: 11px; font-weight: 500; margin: 0; color: #1e293b;">
+              <input type="radio" name="salaryRatio" id="ratio_55_45" value="55_45"
+                onchange="toggleSalaryRatio('55_45')" style="width: auto; margin: 0; cursor: pointer;">
               <span>55% Basic + 45% HRA</span>
             </label>
           </div>
@@ -474,18 +529,24 @@
         </div>
 
         <!-- ESI Coverage Setting -->
-        <div class="form-group" style="margin-bottom: 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px;">
+        <div class="form-group"
+          style="margin-bottom: 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
             <label style="font-weight: 600; font-size: 11.5px; color: #334155; margin: 0;">ESI Coverage</label>
-            <span id="esiBadgeStatus" style="font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 12px; background: #e0f2fe; color: #0369a1; transition: all 0.2s;">Active</span>
+            <span id="esiBadgeStatus"
+              style="font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 12px; background: #e0f2fe; color: #0369a1; transition: all 0.2s;">Active</span>
           </div>
           <div style="display: flex; align-items: center; gap: 14px; flex-wrap: nowrap; margin-top: 4px;">
-            <label style="display: inline-flex; align-items: center; gap: 6px; cursor: pointer; font-size: 11px; font-weight: 500; margin: 0; color: #1e293b;">
-              <input type="radio" name="esiCoverage" id="esiCoverageEnable" value="enabled" checked onchange="toggleEsiCoverage(true)" style="width: auto; margin: 0; cursor: pointer;">
+            <label
+              style="display: inline-flex; align-items: center; gap: 6px; cursor: pointer; font-size: 11px; font-weight: 500; margin: 0; color: #1e293b;">
+              <input type="radio" name="esiCoverage" id="esiCoverageEnable" value="enabled" checked
+                onchange="toggleEsiCoverage(true)" style="width: auto; margin: 0; cursor: pointer;">
               <span>Enabled (Statutory)</span>
             </label>
-            <label style="display: inline-flex; align-items: center; gap: 6px; cursor: pointer; font-size: 11px; font-weight: 500; margin: 0; color: #1e293b;">
-              <input type="radio" name="esiCoverage" id="esiCoverageDisable" value="disabled" onchange="toggleEsiCoverage(false)" style="width: auto; margin: 0; cursor: pointer;">
+            <label
+              style="display: inline-flex; align-items: center; gap: 6px; cursor: pointer; font-size: 11px; font-weight: 500; margin: 0; color: #1e293b;">
+              <input type="radio" name="esiCoverage" id="esiCoverageDisable" value="disabled"
+                onchange="toggleEsiCoverage(false)" style="width: auto; margin: 0; cursor: pointer;">
               <span>Disabled (Opt-out)</span>
             </label>
           </div>
@@ -801,24 +862,20 @@
             <tr>
               <td class="label-col">Designation:</td>
               <td id="prev_designation">Business Analyst</td>
-              <td class="label-col">Department:</td>
-              <td id="prev_department">Data &amp; Analytics</td>
-            </tr>
-            <tr>
               <td class="label-col">Reporting To:</td>
               <td id="prev_reportingTo">Dilshaj Shaik</td>
-              <td class="label-col">Employment Type:</td>
-              <td id="prev_employmentType">Full-Time</td>
             </tr>
             <tr>
               <td class="label-col">Date of Joining:</td>
               <td id="prev_dateOfJoining">25 May 2026</td>
-              <td class="label-col">Work Location:</td>
-              <td id="prev_workLocation">Rolugunta</td>
+              <td class="label-col">Employment Type:</td>
+              <td id="prev_employmentType">Full-Time</td>
             </tr>
             <tr>
               <td class="label-col">Work Mode:</td>
-              <td id="prev_workMode" colspan="3">Onsite (Office)</td>
+              <td id="prev_workMode">Onsite (Office)</td>
+              <td class="label-col">Work Location:</td>
+              <td id="prev_workLocation">Rolugunta</td>
             </tr>
           </table>
 
@@ -850,7 +907,8 @@
           <div class="doc-paragraph track-trainee" id="prev_compensationParagraph_trainee" style="display: none;">
             <p style="margin: 0 0 5px 0;">During the Foundation Period, you will receive a monthly stipend of
               <strong>₹<span id="prev_trStipend">12,000</span> (<span id="prev_trStipendWords">Rupees Twelve Thousand
-                  only</span>)</strong>.</p>
+                  only</span>)</strong>.
+            </p>
             <p style="margin: 0;">Upon satisfactory completion of the Foundation Period and written confirmation of
               regular employment, you will be appointed as <span id="prev_confirmedRoleAOrAn">a</span> <strong><span
                   class="prev_confirmedRoleTitle" id="prev_confirmedRoleTitle">DevOps Engineer</span></strong> with an
@@ -1338,7 +1396,6 @@
       const address = getVal('employeeAddress') || 'Rolugunta, Anakapalle Andhra Pradesh, 531114';
       const date = getVal('offerDate') || '25 May 2026';
       const desig = getVal('designation') || 'Business Analyst';
-      const dept = getVal('department') || (ROLE_PRESETS[desig] ? ROLE_PRESETS[desig].department : 'Data & Analytics');
       const rep = getVal('reportingTo') || 'Dilshaj Shaik';
       const empType = getVal('employmentType') || 'Full-Time';
       const doj = getVal('dateOfJoining') || '25 May 2026';
@@ -1404,7 +1461,6 @@
       setPrevText('prev_confirmedRoleAOrAn', aOrAn(confirmedRole));
       setPrevText('prev_confirmedRoleAOrAn2', aOrAn(confirmedRole));
       setPrevText('prev_confirmedRoleTitle', confirmedRole);
-      setPrevText('prev_department', dept);
       setPrevText('prev_reportingTo', rep);
       setPrevText('prev_employmentType', empType);
       setPrevText('prev_dateOfJoining', doj);
@@ -1925,7 +1981,6 @@
         'companyName': 'companyName',
         'employeeName': 'empName',
         'designation': 'designation',
-        'department': 'department',
         'workLocation': 'location',
         'offerDate': 'docDate',
         'dateOfJoining': 'doj',

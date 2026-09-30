@@ -1716,11 +1716,11 @@ body.mode-letter .a4-page {
   box-shadow: 0 1px 3px rgba(15, 23, 42, 0.3);
 }
 
-.track-switch-pill input:checked + .track-switch-slider {
+.track-switch-pill input:checked+.track-switch-slider {
   background-color: #16a34a;
 }
 
-.track-switch-pill input:checked + .track-switch-slider:before {
+.track-switch-pill input:checked+.track-switch-slider:before {
   transform: translateX(22px);
 }
 

@@ -229,9 +229,9 @@ function injectPrintStyles() {
 
 function isCurrentRolePreview() {
   return (typeof DilshajAuth !== 'undefined' && DilshajAuth.getRole && DilshajAuth.getRole() === 'preview') ||
-         (window.PortalAuth && window.PortalAuth.getRole && window.PortalAuth.getRole() === 'preview') ||
-         document.documentElement.classList.contains('mode-preview') ||
-         (document.body && document.body.classList.contains('mode-preview'));
+    (window.PortalAuth && window.PortalAuth.getRole && window.PortalAuth.getRole() === 'preview') ||
+    document.documentElement.classList.contains('mode-preview') ||
+    (document.body && document.body.classList.contains('mode-preview'));
 }
 
 function initSignaturesAndStamps() {
@@ -988,7 +988,7 @@ function closeUniversalDatePicker() {
 }
 
 const DATE_FORMAT_KEY = 'hr_doc_dateFormat';
-const DEFAULT_DATE_FORMAT = 'DD Mon YYYY'; 
+const DEFAULT_DATE_FORMAT = 'DD Mon YYYY';
 
 function getActiveDateFormat() {
   return localStorage.getItem(DATE_FORMAT_KEY) || DEFAULT_DATE_FORMAT;
@@ -1042,8 +1042,8 @@ function formatByPattern(day, monthIndex, year, formatKey) {
   const pad = n => String(n).padStart(2, '0');
   const d = pad(day);
   const m = pad(monthIndex + 1);
-  const monShort = MONTH_NAMES_SHORT[monthIndex]; 
-  const monthFull = MONTH_NAMES_FULL[monthIndex]; 
+  const monShort = MONTH_NAMES_SHORT[monthIndex];
+  const monthFull = MONTH_NAMES_FULL[monthIndex];
 
   switch (formatKey) {
     case 'DD/MM/YYYY':
@@ -1588,7 +1588,7 @@ async function convertImageToPngBase64(imgEl) {
     tempImg.onload = () => {
       try {
         const canvas = document.createElement('canvas');
-        const scale = 2; 
+        const scale = 2;
 
         canvas.width = targetW * scale;
         canvas.height = targetH * scale;
@@ -2236,7 +2236,7 @@ function autoScaleMobilePreview() {
   const viewportWidth = window.innerWidth;
   if (viewportWidth < 840) {
     const padding = 16;
-    const targetWidth = 794; 
+    const targetWidth = 794;
     const scale = Math.max(0.30, Math.min(1, (viewportWidth - padding) / targetWidth));
     container.style.transform = `scale(${scale})`;
     container.style.transformOrigin = 'top center';

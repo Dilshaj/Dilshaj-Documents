@@ -139,13 +139,25 @@
             <input type="text" id="designation" value="Software Engineer" oninput="onCustomDesignationInput()">
           </div>
           <div class="form-group">
-            <label for="department">Department</label>
-            <input type="text" id="department" value="Engineering" oninput="updatePreview()">
-          </div>
-          <div class="form-group full-width">
             <label for="location">Location</label>
-            <input type="text" id="location" value="Rolugunta, Anakapalle Andhra Pradesh, 531114"
-              oninput="updatePreview()">
+            <input type="text" id="location" value="Rolugunta" oninput="updatePreview()">
+          </div>
+          <div class="form-group">
+            <label for="doj">Date of Joining</label>
+            <div class="date-input-wrapper">
+              <input type="text" id="doj" value="25 May 2026" oninput="updatePreview()"
+                onclick="openUniversalDatePicker(this, this.nextElementSibling)">
+              <button type="button" class="date-picker-btn" title="Choose date from calendar"
+                onclick="openUniversalDatePicker(document.getElementById('doj'), this)">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                  <line x1="16" y1="2" x2="16" y2="6"></line>
+                  <line x1="8" y1="2" x2="8" y2="6"></line>
+                  <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -413,14 +425,14 @@
                 <td class="val-col" id="prev_bankName">HDFC Bank</td>
               </tr>
               <tr>
-                <td class="label-col">Department:</td>
-                <td class="val-col" id="prev_dept">Engineering</td>
+                <td class="label-col">Location:</td>
+                <td class="val-col" id="prev_location">Rolugunta</td>
                 <td class="label-col">Bank A/c No:</td>
                 <td class="val-col" id="prev_bankAcc">50100234567890</td>
               </tr>
               <tr>
-                <td class="label-col">Location:</td>
-                <td class="val-col" id="prev_location">Rolugunta, Anakapalle Andhra Pradesh, 531114</td>
+                <td class="label-col">Date of Joining:</td>
+                <td class="val-col" id="prev_doj">25 May 2026</td>
                 <td class="label-col">PAN Number:</td>
                 <td class="val-col" id="prev_panNo">ABCDE1234F</td>
               </tr>
@@ -767,8 +779,8 @@
       const name = getVal('empName') || 'Employe Name';
       const empId = getVal('empId') || '2028001';
       const desig = getVal('designation') || 'Software Engineer';
-      const dept = getVal('department') || 'Engineering';
-      const location = getVal('location') || 'Rolugunta, Anakapalle Andhra Pradesh, 531114';
+      const location = getVal('location') || 'Rolugunta';
+      const doj = getVal('doj') || '25 May 2026';
 
       const bankName = getVal('bankName') || 'HDFC Bank';
       const bankAcc = getVal('bankAcc') || '50100234567890';
@@ -792,8 +804,8 @@
       setInner('prev_name', prefix ? `${prefix} ${name}` : name);
       setInner('prev_empId', empId);
       setInner('prev_desig', desig);
-      setInner('prev_dept', dept);
       setInner('prev_location', location);
+      setInner('prev_doj', formatDisplayDate(doj));
       setInner('prev_workDays', workDays);
       setInner('prev_empWorkDays', empWorkDays);
       setInner('prev_lopDays', lopDays);
@@ -1032,7 +1044,7 @@
         'empName': 'empName',
         'empId': 'empId',
         'designation': 'designation',
-        'department': 'department',
+        'doj': 'doj',
         'location': 'location',
         'companyName': 'companyName',
         'bankName': 'bankName',

@@ -80,16 +80,12 @@
             <input type="text" id="empId" value="2028001" oninput="updatePreview()">
           </div>
           <div class="form-group">
-            <label for="location">Location</label>
-            <input type="text" id="location" value="Rolugunta" oninput="updatePreview()">
-          </div>
-          <div class="form-group full-width">
             <label for="designation">Designation</label>
             <input type="text" id="designation" value="Data Analyst" oninput="updatePreview()">
           </div>
-          <div class="form-group full-width">
-            <label for="department">Department</label>
-            <input type="text" id="department" value="Data & Analytics" oninput="updatePreview()">
+          <div class="form-group">
+            <label for="location">Location</label>
+            <input type="text" id="location" value="Rolugunta" oninput="updatePreview()">
           </div>
         </div>
       </div>
@@ -182,7 +178,6 @@
             <div class="meta-line"><strong>Date:</strong> <span id="prev_date">14 Sep 2026</span></div>
             <div class="meta-line"><strong>Name:</strong> <span id="prev_empNameWithPrefix">Mr. Sa Sa</span></div>
             <div class="meta-line"><strong>Employee No:</strong> <span id="prev_empId">2028001</span></div>
-            <div class="meta-line"><strong>Department:</strong> <span id="prev_dept">Data & Analytics</span></div>
             <div class="meta-line"><strong>Location:</strong> <span id="prev_location">Rolugunta</span></div>
           </div>
 
@@ -241,7 +236,7 @@
 
           <div class="doc-paragraph" style="margin-top: 15px;">
             If you believe this record contains an error or if you have necessary supporting documentation, please submit
-            your clarification to the Human Resources Department within 3 working days.
+            your clarification to Human Resources within 3 working days.
           </div>
 
           <div class="signature-box" style="margin-top: 50px;">
@@ -270,7 +265,6 @@
       const name = getVal('empName') || 'Sa Sa';
       const empId = getVal('empId') || '2028001';
       const desig = getVal('designation') || 'Data Analyst';
-      const dept = getVal('department') || 'Data & Analytics';
       const location = getVal('location') || 'Rolugunta';
 
       const month = getVal('lopMonth') || 'September 2026';
@@ -285,7 +279,6 @@
       document.getElementById('prev_date').innerText = date;
       document.getElementById('prev_empNameWithPrefix').innerText = `${prefix} ${name}`;
       document.getElementById('prev_empId').innerText = empId;
-      document.getElementById('prev_dept').innerText = dept;
       document.getElementById('prev_location').innerText = location;
 
       document.getElementById('prev_salutation').innerText = `${prefix} ${name}`;
@@ -311,7 +304,6 @@
         'empName': 'empName',
         'empId': 'empId',
         'designation': 'designation',
-        'department': 'department',
         'location': 'location',
         'companyName': 'companyName',
         'sigName': 'sigName',

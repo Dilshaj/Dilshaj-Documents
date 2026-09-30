@@ -142,13 +142,13 @@
             <label for="rolePresetSelect">Select Role Preset</label>
             <select id="rolePresetSelect" onchange="onRoleSelectChange()"></select>
           </div>
-          <div class="form-group full-width">
+          <div class="form-group">
             <label for="designation">Job Title / Final Designation</label>
             <input type="text" id="designation" value="Business Analyst" oninput="onCustomDesignationInput()">
           </div>
           <div class="form-group">
-            <label for="department">Department</label>
-            <input type="text" id="department" value="Data & Analytics" oninput="updatePreview()">
+            <label for="location">Work Location</label>
+            <input type="text" id="location" value="Rolugunta" oninput="updatePreview()">
           </div>
           <div class="form-group">
             <label for="effectiveDate">Effective Date of Confirmation</label>
@@ -167,7 +167,7 @@
               </button>
             </div>
           </div>
-          <div class="form-group full-width">
+          <div class="form-group">
             <label for="reportingManager">Reporting Manager</label>
             <input type="text" id="reportingManager" value="Dilshaj Shaik, CEO" oninput="updatePreview()">
           </div>
@@ -305,9 +305,9 @@
               <td id="prev_jobTitle" style="font-weight: 600;">Business Analyst</td>
             </tr>
             <tr>
-              <td class="label-col">Department</td>
+              <td class="label-col">Work Location</td>
               <td>:</td>
-              <td id="prev_department">Data & Analytics</td>
+              <td id="prev_location">Rolugunta</td>
             </tr>
             <tr>
               <td class="label-col">Reporting Manager</td>
@@ -421,7 +421,7 @@
       const name = getVal('empName') || 'Sampath Kumar';
       const empId = getVal('empId') || 'DIPL-2026-042';
       const desig = getVal('designation') || 'Business Analyst';
-      const dept = getVal('department') || 'Data & Analytics';
+      const location = getVal('location') || 'Rolugunta';
       const effectiveDate = getVal('effectiveDate') || 'January 01, 2026';
       const manager = getVal('reportingManager') || 'Dilshaj Shaik, CEO';
       const company = getVal('companyName') || 'Dilshaj Infotech Private Limited';
@@ -446,7 +446,7 @@
       setEl('prev_compName', company);
       setEl('prev_effectiveDate', effectiveDate);
       setEl('prev_jobTitle', desig);
-      setEl('prev_department', dept);
+      setEl('prev_location', location);
       setEl('prev_reportingManager', manager);
       setEl('prev_sigComp', company);
       setEl('prev_signatory', sigName);
@@ -504,7 +504,7 @@
         'empPrefix': 'empPrefix',
         'empId': 'empId',
         'designation': 'designation',
-        'department': 'department',
+        'location': 'location',
         'sigName': 'sigName',
         'sigDesig': 'sigDesig'
       });

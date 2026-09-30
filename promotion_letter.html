@@ -65,17 +65,13 @@
             <label for="rolePresetSelect">Select Role / Designation Preset</label>
             <select id="rolePresetSelect" onchange="onRoleSelectChange()"></select>
           </div>
-          <div class="form-group full-width">
+          <div class="form-group">
             <label for="designation">Promoted Job Title</label>
             <input type="text" id="designation" value="Senior Software Engineer" oninput="onCustomDesignationInput()">
           </div>
           <div class="form-group">
-            <label for="department">Department</label>
-            <input type="text" id="department" value="Engineering" oninput="updatePreview()">
-          </div>
-          <div class="form-group">
             <label for="location">Office Location</label>
-            <input type="text" id="location" value="Rolugunta [Visakhapatnam]" oninput="updatePreview()">
+            <input type="text" id="location" value="Rolugunta" oninput="updatePreview()">
           </div>
           <div class="form-group">
             <label for="effectiveDate">Effective Date</label>
@@ -86,8 +82,8 @@
             <input type="text" id="tenure" value="2 years" oninput="updatePreview()">
           </div>
           <div class="form-group full-width">
-            <label for="managerInfo">Reporting Manager (Name, Desig, Dept)</label>
-            <input type="text" id="managerInfo" value="Dilshaj Shaik, CEO, Management" oninput="updatePreview()">
+            <label for="managerInfo">Reporting Manager (Name, Designation)</label>
+            <input type="text" id="managerInfo" value="Dilshaj Shaik, CEO" oninput="updatePreview()">
           </div>
         </div>
       </div>
@@ -187,7 +183,7 @@
           </div>
 
           <div class="doc-paragraph" style="margin-bottom: 12px; line-height: 1.5;">
-            We're pleased to inform you that you've been promoted to <strong id="prev_jobTitle">Senior Software Engineer</strong>. Your new position with <span id="prev_dept">Engineering</span> at <span id="prev_location">Rolugunta [Visakhapatnam]</span> will begin on <span id="prev_effectiveDate">01 Nov 2026</span>. You will report to <span id="prev_managerInfo">Dilshaj Shaik, CEO, Management</span>.
+            We're pleased to inform you that you've been promoted to <strong id="prev_jobTitle">Senior Software Engineer</strong>. Your new position at <span id="prev_location">Rolugunta</span> will begin on <span id="prev_effectiveDate">01 Nov 2026</span>. You will report to <span id="prev_managerInfo">Dilshaj Shaik, CEO</span>.
           </div>
 
           <div class="doc-paragraph" style="margin-bottom: 12px; line-height: 1.5;">
@@ -232,10 +228,9 @@
       const name = getVal('empName') || 'Sampath Kumar';
       const fullNameWithPrefix = `${prefix} ${name}`;
       const desig = getVal('designation') || 'Senior Software Engineer';
-      const dept = getVal('department') || 'Engineering';
-      const location = getVal('location') || 'Rolugunta [Visakhapatnam]';
+      const location = getVal('location') || 'Rolugunta';
       const effectiveDate = getVal('effectiveDate') || '01 Nov 2026';
-      const managerInfo = getVal('managerInfo') || 'Dilshaj Shaik, CEO, Management';
+      const managerInfo = getVal('managerInfo') || 'Dilshaj Shaik, CEO';
       const salary = getVal('newSalary') || '₹ 4,50,000 per annum';
       const payFrequency = document.getElementById('payFrequency').value || 'monthly';
       const hrEmail = getVal('hrEmail') || 'dilshajceo@dilshajinfotech.tech';
@@ -249,7 +244,6 @@
       document.getElementById('prev_subjectRole').innerText = desig;
       document.getElementById('prev_salutation').innerText = fullNameWithPrefix;
       document.getElementById('prev_jobTitle').innerText = desig;
-      document.getElementById('prev_dept').innerText = dept;
       document.getElementById('prev_location').innerText = location;
       document.getElementById('prev_effectiveDate').innerText = effectiveDate;
       document.getElementById('prev_managerInfo').innerText = managerInfo;

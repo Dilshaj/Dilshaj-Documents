@@ -275,8 +275,8 @@
             <input type="text" id="designation" value="Software Engineer" oninput="onCustomDesignationInput()">
           </div>
           <div class="form-group">
-            <label for="department">Department</label>
-            <input type="text" id="department" value="Engineering" oninput="updatePreview()">
+            <label for="location">Work Location</label>
+            <input type="text" id="location" value="Rolugunta" oninput="updatePreview()">
           </div>
           <div class="form-group">
             <label for="separationType">Separation Reason</label>
@@ -711,8 +711,8 @@
                   <td class="val">: <span id="prev_lopDays">0 Days</span></td>
                 </tr>
                 <tr>
-                  <td class="lbl">Department</td>
-                  <td class="val">: <span id="prev_dept">Engineering</span></td>
+                  <td class="lbl">Work Location</td>
+                  <td class="val">: <span id="prev_location">Rolugunta</span></td>
                   <td class="lbl">Bank Account No</td>
                   <td class="val">: <span id="prev_bankAcc">XXXX XXXX 7890 (HDFC Bank)</span></td>
                 </tr>
@@ -841,7 +841,7 @@
         'empName': 'empName',
         'empId': 'empId',
         'designation': 'designation',
-        'department': 'department',
+        'location': 'location',
         'doj': 'doj',
         'dol': 'dol',
         'uanNo': 'uanNo',
@@ -1184,7 +1184,7 @@
       const name = getVal('empName') || 'Sampath Kumar';
       const empId = getVal('empId') || '2028001';
       const desig = getVal('designation') || 'Software Engineer';
-      const dept = getVal('department') || 'Engineering';
+      const location = getVal('location') || 'Rolugunta';
       const separation = getVal('separationType') || 'Resignation';
       const doj = getVal('doj') || '21 Sep 2023';
       const dol = getVal('dol') || '23 Sep 2026';
@@ -1220,7 +1220,7 @@
       document.getElementById('prev_empName').innerText = name;
       document.getElementById('prev_empId').innerText = empId;
       document.getElementById('prev_desig').innerText = desig;
-      document.getElementById('prev_dept').innerText = dept;
+      document.getElementById('prev_location').innerText = location;
       document.getElementById('prev_separation').innerText = separation;
       document.getElementById('prev_doj').innerText = doj;
       document.getElementById('prev_dol').innerText = dol;
