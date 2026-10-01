@@ -296,9 +296,25 @@
         el.classList.add('input-editable-preview');
         el.classList.remove('input-locked-preview');
         el.setAttribute('title', 'Editable amount field in Preview Mode');
-      } else {
         if (el.dataset.lockedVal === undefined) {
-          el.dataset.lockedVal = el.value || '';
+          let initVal = el.value || '';
+          try {
+            const map = (typeof SHARED_KEY_MAP !== 'undefined') ? SHARED_KEY_MAP : null;
+            const keys = (typeof SHARED_KEYS !== 'undefined') ? SHARED_KEYS : null;
+            if (map && keys) {
+              for (const k of Object.keys(map)) {
+                if (map[k].includes(el.id)) {
+                  const saved = localStorage.getItem(keys[k]);
+                  if (saved !== null && saved !== undefined && saved !== '') {
+                    initVal = saved;
+                    if (el.tagName !== 'SELECT' && el.value !== saved) el.value = saved;
+                  }
+                  break;
+                }
+              }
+            }
+          } catch (e) {}
+          el.dataset.lockedVal = initVal;
         }
         if (el.tagName === 'SELECT') {
           el.disabled = true;

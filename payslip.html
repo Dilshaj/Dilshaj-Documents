@@ -731,9 +731,6 @@
 
       calculateLopAmount();
       updatePreview();
-      if (typeof saveSharedProfile === 'function') {
-        saveSharedProfile();
-      }
     }
 
     function formatDisplayDate(dateStr) {
@@ -1049,9 +1046,7 @@
     function togglePtCoverage(isEnabled) {
       updatePtCoverageUI(isEnabled);
       autoCalculatePayslip();
-      if (typeof saveSharedProfile === 'function') {
-        saveSharedProfile();
-      }
+      localStorage.setItem(typeof SHARED_KEYS !== 'undefined' ? SHARED_KEYS.ptEnabled : 'shared_ptEnabled', isEnabled ? 'true' : 'false');
       showToast(isEnabled ? 'Professional Tax Enabled (Statutory Active)' : 'Professional Tax Disabled (Removed from Payslip)');
     }
 
@@ -1067,16 +1062,13 @@
         badge.innerText = state === 'AP_TS' ? 'Active (AP/TS)' : (state === 'KA' ? 'Active (KA)' : (state === 'MH' ? 'Active (MH)' : 'Active (Custom)'));
       }
       autoCalculatePayslip();
-      if (typeof saveSharedProfile === 'function') {
-        saveSharedProfile();
-      }
+      localStorage.setItem(typeof SHARED_KEYS !== 'undefined' ? SHARED_KEYS.ptState : 'shared_ptState', state);
     }
 
     function onPtCustomInput() {
       autoCalculatePayslip();
-      if (typeof saveSharedProfile === 'function') {
-        saveSharedProfile();
-      }
+      const val = document.getElementById('ptCustomAmount')?.value || '200';
+      localStorage.setItem(typeof SHARED_KEYS !== 'undefined' ? SHARED_KEYS.ptCustomAmount : 'shared_ptCustomAmount', val);
     }
 
     function updatePtCoverageUI(isEnabled) {
@@ -1124,6 +1116,7 @@
         'doj': 'doj',
         'location': 'location',
         'companyName': 'companyName',
+        'companyAddress': 'companyAddress',
         'bankName': 'bankName',
         'bankAcc': 'bankAcc',
         'panNo': 'panNo',
@@ -1149,7 +1142,13 @@
         const ptStateEl = document.getElementById('ptStateSelect');
         if (ptStateEl) {
           ptStateEl.value = savedPtState;
-          onPtStateChange();
+          const customInput = document.getElementById('ptCustomAmount');
+          if (customInput) customInput.style.display = (savedPtState === 'CUSTOM') ? 'inline-block' : 'none';
+          const badge = document.getElementById('ptBadgeStatus');
+          const isEnabled = !document.getElementById('ptCoverageDisable')?.checked;
+          if (badge && isEnabled) {
+            badge.innerText = savedPtState === 'AP_TS' ? 'Active (AP/TS)' : (savedPtState === 'KA' ? 'Active (KA)' : (savedPtState === 'MH' ? 'Active (MH)' : 'Active (Custom)'));
+          }
         }
       }
       const savedPtCustom = localStorage.getItem(typeof SHARED_KEYS !== 'undefined' ? SHARED_KEYS.ptCustomAmount : 'shared_ptCustomAmount');
@@ -1167,7 +1166,8 @@
       const savedPfCap = localStorage.getItem(typeof SHARED_KEYS !== 'undefined' ? SHARED_KEYS.pfWageCap : 'shared_pfWageCap') || '15000';
       updatePfCapUI(savedPfCap);
 
-      autoCalculatePayslip();
+      const hasAnnualCTC = localStorage.getItem(typeof SHARED_KEYS !== 'undefined' ? SHARED_KEYS.annualCTC : 'shared_annualCTC');
+      autoCalculatePayslip(hasAnnualCTC ? 'ctc' : 'gross');
       onDateSelectionChange();
     });
   </script>

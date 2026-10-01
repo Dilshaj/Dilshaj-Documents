@@ -2084,13 +2084,18 @@
     window.addEventListener('DOMContentLoaded', () => {
       loadSharedProfile({
         'companyName': 'companyName',
+        'companyAddress': 'companyAddress',
         'employeeName': 'empName',
+        'employeeAddress': 'address',
         'designation': 'designation',
+        'reportingTo': 'reportingManager',
         'workLocation': 'location',
         'offerDate': 'docDate',
         'dateOfJoining': 'doj',
         'signatoryName': 'sigName',
-        'signatoryDesignation': 'sigDesig'
+        'signatoryDesignation': 'sigDesig',
+        'annualCTC': 'annualCTC',
+        'totalGrossSalary': 'monthlyGrossSalary'
       });
       // Synchronize duties with the active designation
       const desigVal = document.getElementById('designation')?.value?.trim() || 'Business Analyst';
@@ -2114,25 +2119,19 @@
         confTitle.value = desigVal;
       }
 
-      // Ensure additional benefits are NOT filled by default on Annexure page
+      // Load saved additional benefits if available
       const b1n = document.getElementById('customBenefit1Name');
       const b1m = document.getElementById('customBenefit1Monthly');
       const b1a = document.getElementById('customBenefit1Val');
       const b2n = document.getElementById('customBenefit2Name');
       const b2m = document.getElementById('customBenefit2Monthly');
       const b2a = document.getElementById('customBenefit2Val');
-      if (b1n) b1n.value = '';
-      if (b1m) b1m.value = '';
-      if (b1a) b1a.value = '';
-      if (b2n) b2n.value = '';
-      if (b2m) b2m.value = '';
-      if (b2a) b2a.value = '';
-      localStorage.removeItem('shared_customBenefit1Name');
-      localStorage.removeItem('shared_customBenefit1Monthly');
-      localStorage.removeItem('shared_customBenefit1Val');
-      localStorage.removeItem('shared_customBenefit2Name');
-      localStorage.removeItem('shared_customBenefit2Monthly');
-      localStorage.removeItem('shared_customBenefit2Val');
+      if (b1n && localStorage.getItem('shared_customBenefit1Name')) b1n.value = localStorage.getItem('shared_customBenefit1Name');
+      if (b1m && localStorage.getItem('shared_customBenefit1Monthly')) b1m.value = localStorage.getItem('shared_customBenefit1Monthly');
+      if (b1a && localStorage.getItem('shared_customBenefit1Val')) b1a.value = localStorage.getItem('shared_customBenefit1Val');
+      if (b2n && localStorage.getItem('shared_customBenefit2Name')) b2n.value = localStorage.getItem('shared_customBenefit2Name');
+      if (b2m && localStorage.getItem('shared_customBenefit2Monthly')) b2m.value = localStorage.getItem('shared_customBenefit2Monthly');
+      if (b2a && localStorage.getItem('shared_customBenefit2Val')) b2a.value = localStorage.getItem('shared_customBenefit2Val');
 
       // Check saved ESI setting
       const savedEsi = localStorage.getItem(typeof SHARED_KEYS !== 'undefined' ? SHARED_KEYS.esiEnabled : 'shared_esiEnabled');
@@ -2150,7 +2149,8 @@
       const savedPfCap = localStorage.getItem(typeof SHARED_KEYS !== 'undefined' ? SHARED_KEYS.pfWageCap : 'shared_pfWageCap') || '15000';
       updatePfCapUI(savedPfCap);
 
-      autoCalculateSalary();
+      const hasAnnualCTC = localStorage.getItem(typeof SHARED_KEYS !== 'undefined' ? SHARED_KEYS.annualCTC : 'shared_annualCTC');
+      autoCalculateSalary(hasAnnualCTC ? 'ctc' : 'gross');
       updatePreview();
     });
   </script>

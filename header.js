@@ -96,6 +96,7 @@ const SHARED_KEYS = {
   designation: 'shared_designation',
   department: 'shared_department',
   address: 'shared_address',
+  companyAddress: 'shared_companyAddress',
   location: 'shared_location',
   docDate: 'shared_docDate',
   doj: 'shared_doj',
@@ -118,6 +119,7 @@ const SHARED_KEYS = {
   paymentMode: 'shared_paymentMode',
   annualCTC: 'shared_annualCTC',
   monthlyGrossSalary: 'shared_monthlyGrossSalary',
+  reportingManager: 'shared_reportingManager',
   customBenefit1Name: 'shared_customBenefit1Name',
   customBenefit1Monthly: 'shared_customBenefit1Monthly',
   customBenefit1Val: 'shared_customBenefit1Val',
@@ -125,6 +127,66 @@ const SHARED_KEYS = {
   customBenefit2Monthly: 'shared_customBenefit2Monthly',
   customBenefit2Val: 'shared_customBenefit2Val'
 };
+
+const SHARED_KEY_MAP = {
+  empPrefix: ['empPrefix', 'salutationPrefix', 'prefix'],
+  empName: ['empName', 'employeeName', 'name', 'candidateName'],
+  empId: ['empId', 'employeeId', 'employeeNo'],
+  designation: ['designation', 'desig'],
+  department: ['department', 'dept'],
+  address: ['employeeAddress', 'candidateAddress', 'address'],
+  companyAddress: ['companyAddress'],
+  location: ['location', 'workLocation', 'candidateLocation'],
+  docDate: ['offerDate', 'letterDate', 'expDate', 'fnfDate', 'terminationDate', 'docDate'],
+  doj: ['doj', 'dateOfJoining', 'joiningDate', 'fromDate'],
+  dol: ['dol', 'relievingDate', 'dateOfLeaving', 'lastWorkingDate', 'toDate'],
+  companyName: ['companyName'],
+  sigName: ['sigName', 'signatoryName'],
+  sigDesig: ['sigDesig', 'signatoryDesignation'],
+  bankName: ['bankName'],
+  bankAcc: ['bankAcc', 'bankAccountNo'],
+  panNo: ['panNo', 'panNumber'],
+  pfNo: ['pfNo', 'pfNumber'],
+  uanNo: ['uanNo', 'pfUan'],
+  esiNo: ['esiNo', 'esiNumber'],
+  paymentMode: ['paymentMode', 'payMode'],
+  annualCTC: ['annualCTC', 'annualCtc', 'ctc', 'totalCtc', 'currentCtcAnnual', 'confirmedCtc'],
+  monthlyGrossSalary: ['totalGrossSalary', 'monthlyGrossSalary', 'currentCtcMonthly'],
+  reportingManager: ['reportingManager', 'reportingTo', 'managerInfo'],
+  customBenefit1Name: ['customBenefit1Name'],
+  customBenefit1Monthly: ['customBenefit1Monthly'],
+  customBenefit1Val: ['customBenefit1Val'],
+  customBenefit2Name: ['customBenefit2Name'],
+  customBenefit2Monthly: ['customBenefit2Monthly'],
+  customBenefit2Val: ['customBenefit2Val']
+};
+
+function hasAnyElement(ids = []) {
+  return ids.some(id => document.getElementById(id) !== null);
+}
+
+function setInputValueSafe(el, val) {
+  if (!el || val === undefined || val === null) return;
+  if (el.tagName === 'SELECT') {
+    let matched = false;
+    const sVal = String(val).trim().toLowerCase();
+    for (let i = 0; i < el.options.length; i++) {
+      const optVal = el.options[i].value.trim().toLowerCase();
+      const optText = el.options[i].text.trim().toLowerCase();
+      if (optVal === sVal || optVal.includes(sVal) || sVal.includes(optVal) || optText === sVal) {
+        el.selectedIndex = i;
+        matched = true;
+        break;
+      }
+    }
+    if (!matched) el.value = val;
+  } else {
+    el.value = val;
+  }
+  if (el.dataset) {
+    el.dataset.lockedVal = el.value;
+  }
+}
 
 function showToast(msg) {
   let toast = document.getElementById('toast');
@@ -383,28 +445,30 @@ function saveSharedProfile() {
   }
 
   const profile = {
-    empPrefix: getFirstVal(['empPrefix', 'salutationPrefix', 'prefix']),
-    empName: getFirstVal(['empName', 'employeeName', 'name']),
-    empId: getFirstVal(['empId', 'employeeId', 'employeeNo']),
-    designation: getFirstVal(['designation', 'desig']),
-    department: getFirstVal(['department', 'dept']),
-    address: getFirstVal(['employeeAddress', 'candidateAddress', 'address']),
-    location: getFirstVal(['location', 'workLocation']),
-    docDate: getFirstVal(['offerDate', 'letterDate', 'expDate', 'fnfDate', 'terminationDate', 'docDate']),
-    doj: getFirstVal(['doj', 'dateOfJoining', 'joiningDate', 'fromDate']),
-    dol: getFirstVal(['dol', 'relievingDate', 'dateOfLeaving', 'relieveDate', 'effectiveDate', 'toDate']),
-    companyName: getFirstVal(['companyName']) || 'Dilshaj Infotech Private Limited',
-    sigName: getFirstVal(['sigName', 'signatoryName']),
-    sigDesig: getFirstVal(['sigDesig', 'signatoryDesignation']),
-    bankName: getFirstVal(['bankName']),
-    bankAcc: getFirstVal(['bankAcc', 'bankAccountNo']),
-    panNo: getFirstVal(['panNo', 'panNumber']),
-    pfNo: getFirstVal(['pfNo', 'pfNumber']),
-    uanNo: getFirstVal(['uanNo', 'pfUan']),
-    esiNo: getFirstVal(['esiNo', 'esiNumber']),
-    paymentMode: getFirstVal(['paymentMode', 'payMode']),
-    annualCTC: getFirstVal(['annualCTC', 'annualCtc', 'ctc', 'totalCtc', 'currentCtcAnnual']),
-    monthlyGrossSalary: getFirstVal(['totalGrossSalary', 'monthlyGrossSalary', 'currentCtcMonthly']),
+    empPrefix: getFirstVal(SHARED_KEY_MAP.empPrefix),
+    empName: getFirstVal(SHARED_KEY_MAP.empName),
+    empId: getFirstVal(SHARED_KEY_MAP.empId),
+    designation: getFirstVal(SHARED_KEY_MAP.designation),
+    department: getFirstVal(SHARED_KEY_MAP.department),
+    address: getFirstVal(SHARED_KEY_MAP.address),
+    companyAddress: getFirstVal(SHARED_KEY_MAP.companyAddress),
+    location: getFirstVal(SHARED_KEY_MAP.location),
+    docDate: getFirstVal(SHARED_KEY_MAP.docDate),
+    doj: getFirstVal(SHARED_KEY_MAP.doj),
+    dol: getFirstVal(SHARED_KEY_MAP.dol),
+    companyName: getFirstVal(SHARED_KEY_MAP.companyName) || 'Dilshaj Infotech Private Limited',
+    sigName: getFirstVal(SHARED_KEY_MAP.sigName),
+    sigDesig: getFirstVal(SHARED_KEY_MAP.sigDesig),
+    bankName: getFirstVal(SHARED_KEY_MAP.bankName),
+    bankAcc: getFirstVal(SHARED_KEY_MAP.bankAcc),
+    panNo: getFirstVal(SHARED_KEY_MAP.panNo),
+    pfNo: getFirstVal(SHARED_KEY_MAP.pfNo),
+    uanNo: getFirstVal(SHARED_KEY_MAP.uanNo),
+    esiNo: getFirstVal(SHARED_KEY_MAP.esiNo),
+    paymentMode: getFirstVal(SHARED_KEY_MAP.paymentMode),
+    annualCTC: getFirstVal(SHARED_KEY_MAP.annualCTC),
+    monthlyGrossSalary: getFirstVal(SHARED_KEY_MAP.monthlyGrossSalary),
+    reportingManager: getFirstVal(SHARED_KEY_MAP.reportingManager),
     customBenefit1Name: getFirstVal(['customBenefit1Name']),
     customBenefit1Monthly: b1m,
     customBenefit1Val: b1a,
@@ -413,10 +477,26 @@ function saveSharedProfile() {
     customBenefit2Val: b2a
   };
 
+  const isPreview = isCurrentRolePreview();
+  const nonFinancialKeys = [
+    'empPrefix', 'empName', 'empId', 'designation', 'department',
+    'address', 'companyAddress', 'location', 'docDate', 'doj', 'dol',
+    'companyName', 'sigName', 'sigDesig', 'reportingManager'
+  ];
+
   Object.keys(profile).forEach(k => {
-    if (profile[k] !== undefined && profile[k] !== null && profile[k] !== '') {
-      localStorage.setItem(SHARED_KEYS[k], profile[k]);
-    } else if (k.startsWith('customBenefit')) {
+    const val = profile[k];
+    const keyIds = SHARED_KEY_MAP[k] || [k];
+    const elemExistsOnPage = hasAnyElement(keyIds);
+
+    if (isPreview && nonFinancialKeys.includes(k)) {
+      const existing = localStorage.getItem(SHARED_KEYS[k]);
+      if (existing) return;
+    }
+
+    if (val !== undefined && val !== null && val !== '') {
+      localStorage.setItem(SHARED_KEYS[k], val);
+    } else if (elemExistsOnPage) {
       localStorage.removeItem(SHARED_KEYS[k]);
     }
   });
@@ -482,6 +562,35 @@ function debouncedSaveSharedProfile() {
 }
 
 function loadSharedProfile(explicitMap = null) {
+  // 1. FIRST: Populate all input elements across the page from shared profile storage
+  const autoMap = SHARED_KEY_MAP;
+  Object.keys(autoMap).forEach(key => {
+    const savedVal = localStorage.getItem(SHARED_KEYS[key]);
+    if (savedVal !== null && savedVal !== '') {
+      autoMap[key].forEach(elemId => {
+        const inputElem = document.getElementById(elemId);
+        if (inputElem) {
+          setInputValueSafe(inputElem, savedVal);
+        }
+      });
+    }
+  });
+
+  if (explicitMap && typeof explicitMap === 'object') {
+    Object.keys(explicitMap).forEach(elemId => {
+      const key = explicitMap[elemId];
+      const storageKey = SHARED_KEYS[key] || (key && key.startsWith('shared_') ? key : null);
+      if (storageKey) {
+        const savedVal = localStorage.getItem(storageKey);
+        const inputElem = document.getElementById(elemId);
+        if (savedVal !== null && savedVal !== '' && inputElem) {
+          setInputValueSafe(inputElem, savedVal);
+        }
+      }
+    });
+  }
+
+  // 2. Load page layout, background and format options
   const savedSize = localStorage.getItem('hr_doc_pageSize');
   const savedBg = localStorage.getItem('hr_doc_showBg');
 
@@ -513,6 +622,7 @@ function loadSharedProfile(explicitMap = null) {
   }
   initSignaturesAndStamps();
 
+  // 3. Load statutory toggle states safely
   const savedEsi = localStorage.getItem(SHARED_KEYS.esiEnabled);
   if (savedEsi !== null) {
     const isEsiActive = savedEsi !== 'false';
@@ -559,8 +669,12 @@ function loadSharedProfile(explicitMap = null) {
     const ptStateEl = document.getElementById('ptStateSelect');
     if (ptStateEl) {
       ptStateEl.value = savedPtState;
-      if (typeof onPtStateChange === 'function') {
-        onPtStateChange();
+      const customInput = document.getElementById('ptCustomAmount');
+      if (customInput) customInput.style.display = (savedPtState === 'CUSTOM') ? 'inline-block' : 'none';
+      const badge = document.getElementById('ptBadgeStatus');
+      const isEnabled = !document.getElementById('ptCoverageDisable')?.checked;
+      if (badge && isEnabled) {
+        badge.innerText = savedPtState === 'AP_TS' ? 'Active (AP/TS)' : (savedPtState === 'KA' ? 'Active (KA)' : (savedPtState === 'MH' ? 'Active (MH)' : 'Active (Custom)'));
       }
     }
   }
@@ -576,67 +690,28 @@ function loadSharedProfile(explicitMap = null) {
     dateFormatSelect.value = getActiveDateFormat();
   }
 
-  const hasSeparateMonthly = !!document.getElementById('customBenefit1Monthly');
-  const autoMap = {
-    empPrefix: ['empPrefix', 'salutationPrefix', 'prefix'],
-    empName: ['empName', 'employeeName'],
-    empId: ['empId', 'employeeId'],
-    designation: ['designation'],
-    department: ['department'],
-    address: ['employeeAddress', 'candidateAddress', 'address'],
-    location: ['location', 'workLocation'],
-    docDate: ['offerDate', 'letterDate', 'expDate', 'fnfDate', 'terminationDate', 'docDate'],
-    doj: ['doj', 'dateOfJoining'],
-    dol: ['dol', 'relievingDate', 'dateOfLeaving', 'relieveDate', 'effectiveDate'],
-    companyName: ['companyName'],
-    sigName: ['sigName', 'signatoryName'],
-    sigDesig: ['sigDesig', 'signatoryDesignation'],
-    bankName: ['bankName'],
-    bankAcc: ['bankAcc'],
-    panNo: ['panNo'],
-    pfNo: ['pfNo'],
-    uanNo: ['uanNo'],
-    esiNo: ['esiNo'],
-    paymentMode: ['paymentMode', 'payMode'],
-    annualCTC: ['annualCTC', 'annualCtc', 'ctc', 'totalCtc', 'currentCtcAnnual'],
-    monthlyGrossSalary: ['totalGrossSalary', 'monthlyGrossSalary', 'currentCtcMonthly']
-  };
-
-  Object.keys(autoMap).forEach(key => {
-    const savedVal = localStorage.getItem(SHARED_KEYS[key]);
-    if (savedVal) {
-      autoMap[key].forEach(elemId => {
-        const inputElem = document.getElementById(elemId);
-        if (inputElem) {
-          if (inputElem.tagName === 'SELECT') {
-            let matched = false;
-            for (let i = 0; i < inputElem.options.length; i++) {
-              const optVal = inputElem.options[i].value.toLowerCase();
-              const sVal = savedVal.toLowerCase();
-              if (optVal === sVal || optVal.includes(sVal) || sVal.includes(optVal)) {
-                inputElem.selectedIndex = i;
-                matched = true;
-                break;
-              }
-            }
-            if (!matched) inputElem.value = savedVal;
-          } else {
-            inputElem.value = savedVal;
-          }
-        }
-      });
+  // Recalculate derived salary/payslip figures if page has calculation logic
+  if (typeof autoCalculatePayslip === 'function') {
+    const annualCTCVal = localStorage.getItem(SHARED_KEYS.annualCTC);
+    if (annualCTCVal) {
+      autoCalculatePayslip('ctc');
+    } else {
+      autoCalculatePayslip();
     }
-  });
-
-  if (explicitMap && typeof explicitMap === 'object') {
-    Object.keys(explicitMap).forEach(elemId => {
-      const key = explicitMap[elemId];
-      const savedVal = localStorage.getItem(SHARED_KEYS[key]);
-      const inputElem = document.getElementById(elemId);
-      if (savedVal && inputElem) {
-        inputElem.value = savedVal;
-      }
-    });
+  }
+  if (typeof autoCalculateSalary === 'function') {
+    const annualCTCVal = localStorage.getItem(SHARED_KEYS.annualCTC);
+    if (annualCTCVal) {
+      autoCalculateSalary('ctc');
+    } else {
+      autoCalculateSalary('gross');
+    }
+  }
+  if (typeof onAttendanceOrCtcChange === 'function') {
+    onAttendanceOrCtcChange();
+  }
+  if (typeof recalcHike === 'function') {
+    recalcHike();
   }
 
   syncRolePresetWithDesignation();
@@ -966,9 +1041,20 @@ function renderCentralHeader() {
     document.body.insertAdjacentHTML('afterbegin', headerHTML);
   }
 
-  document.querySelectorAll('input, select').forEach(el => {
+  document.querySelectorAll('input, select, textarea').forEach(el => {
     el.addEventListener('input', debouncedSaveSharedProfile);
     el.addEventListener('change', saveSharedProfile);
+  });
+}
+
+if (typeof window !== 'undefined' && typeof window.addEventListener === 'function' && !window._hrStorageListenerAttached) {
+  window._hrStorageListenerAttached = true;
+  window.addEventListener('storage', (e) => {
+    if (e.key && (e.key.startsWith('shared_') || e.key.startsWith('hr_doc_'))) {
+      if (typeof loadSharedProfile === 'function') {
+        loadSharedProfile();
+      }
+    }
   });
 }
 
