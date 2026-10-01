@@ -28,13 +28,13 @@
     /* Payslip-Specific Sheet Padding Overrides */
     .a4-page {
       padding: 18mm 18mm 18mm 18mm;
-      font-size: 11pt;
+      font-size: 10pt;
       line-height: 1.4;
     }
 
     body.mode-letter .a4-page {
       padding: 16mm 18mm 16mm 18mm;
-      font-size: 10.5pt;
+      font-size: 9.5pt;
       line-height: 1.35;
     }
   </style>
@@ -293,6 +293,31 @@
           </div>
         </div>
 
+        <!-- PF Wage Ceiling Setting in Payslip -->
+        <div class="form-group full-width" style="margin-top: 8px; margin-bottom: 8px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <label style="font-weight: 600; font-size: 11.5px; color: #334155; margin: 0;">PF Wage Ceiling (Cap)</label>
+            <span id="pfCapBadgeStatus" style="font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 12px; background: #ecfdf5; color: #047857; transition: all 0.2s;">₹15,000 Cap</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 4px;">
+            <label style="display: inline-flex; align-items: center; gap: 5px; cursor: pointer; font-size: 11px; font-weight: 500; margin: 0; color: #1e293b;">
+              <input type="radio" name="pfWageCap" id="pfCap_15000" value="15000" checked onchange="togglePfCap('15000')" style="width: auto; margin: 0; cursor: pointer;">
+              <span>₹15k Cap (₹1,800/mo)</span>
+            </label>
+            <label style="display: inline-flex; align-items: center; gap: 5px; cursor: pointer; font-size: 11px; font-weight: 500; margin: 0; color: #1e293b;">
+              <input type="radio" name="pfWageCap" id="pfCap_25000" value="25000" onchange="togglePfCap('25000')" style="width: auto; margin: 0; cursor: pointer;">
+              <span>₹25k Cap (₹3,000/mo)</span>
+            </label>
+            <label style="display: inline-flex; align-items: center; gap: 5px; cursor: pointer; font-size: 11px; font-weight: 500; margin: 0; color: #1e293b;">
+              <input type="radio" name="pfWageCap" id="pfCap_none" value="none" onchange="togglePfCap('none')" style="width: auto; margin: 0; cursor: pointer;">
+              <span>Uncapped (Full Basic)</span>
+            </label>
+          </div>
+          <div style="font-size: 9.5px; color: #64748b; margin-top: 5px; line-height: 1.35;" id="pfCapHintText">
+            Statutory standard: PF capped at 12% of ₹15,000 (max ₹1,800/mo per employee &amp; employer).
+          </div>
+        </div>
+
         <div class="form-grid" style="margin-top: 10px;">
           <div class="form-group">
             <label for="earnBasic">BASIC</label>
@@ -407,10 +432,10 @@
             <!-- 1. Employee Information Table (Top Section) -->
             <table class="employee-info-box">
               <colgroup>
-                <col style="width: 20%;">
-                <col style="width: 30%;">
-                <col style="width: 20%;">
-                <col style="width: 30%;">
+                <col style="width: 17%;">
+                <col style="width: 33%;">
+                <col style="width: 17%;">
+                <col style="width: 33%;">
               </colgroup>
               <tr>
                 <td class="label-col">Name:</td>
@@ -513,9 +538,9 @@
                 (Rupees Fourteen Thousand Two Hundred Twenty Seven Only)
               </div>
               <div
-                style="margin-top: 8px; font-size: 10pt; color: #334155; border-top: 1px dashed #cbd5e1; padding-top: 6px; display: flex; justify-content: space-between; align-items: center;">
+                style="margin-top: 8px; font-size: 9.5pt; color: #334155; border-top: 1px dashed #cbd5e1; padding-top: 6px; display: flex; justify-content: space-between; align-items: center;">
                 <div><strong>Payment Date:</strong> <span id="prev_paymentDate">30 Sep 2025</span></div>
-                <div style="font-size: 8.5pt; color: #64748b; font-style: italic;">This is a computer-generated payslip.
+                <div style="font-size: 8pt; color: #64748b; font-style: italic;">This is a computer-generated payslip.
                 </div>
               </div>
             </div>
@@ -574,27 +599,7 @@
       setTimeout(() => toast.classList.remove('show'), 3500);
     }
 
-    function toggleBackground() {
-      const isChecked = document.getElementById('bgToggle').checked;
-      if (isChecked) {
-        document.body.classList.add('show-letterhead-bg');
-        showToast('Letterhead background enabled');
-      } else {
-        document.body.classList.remove('show-letterhead-bg');
-        showToast('Letterhead background disabled');
-      }
-    }
 
-    function changePageSize() {
-      const pageSize = document.getElementById('pageSizeSelect').value;
-      if (pageSize === 'letter') {
-        document.body.classList.add('mode-letter');
-        showToast('Page mode changed to US Letter');
-      } else {
-        document.body.classList.remove('mode-letter');
-        showToast('Page mode changed to A4');
-      }
-    }
 
     function fmt(val) {
       const rounded = Math.round(parseFloat(val) || 0);
@@ -620,6 +625,7 @@
       const basicPercent = is55 ? 0.55 : 0.50;
       const hraPercent = is55 ? 0.45 : 0.40;
       const pfFactor = 0.12 * basicPercent; // 0.06 in 50/40/10, 0.066 in 55/45
+      const capWage = typeof getActivePfCap === 'function' ? getActivePfCap() : 15000;
 
       let monthlyGross = 15256;
       let annualCTC = 200000;
@@ -629,11 +635,25 @@
         const rawCTC = annualEl ? annualEl.value.replace(/[^0-9.]/g, '') : '200000';
         annualCTC = Math.round(parseFloat(rawCTC) || 200000);
         const effectiveCTC = Math.max(0, annualCTC - customBenefitsAnnual);
-        const testGross = (effectiveCTC / 12) / (1 + pfFactor + 0.0325);
-        const isEsiApplicable = isEsiEnabled && (testGross <= 21000);
-        const grossDivisor = 1 + pfFactor + (isEsiApplicable ? 0.0325 : 0);
-        const annualGross = Math.round(effectiveCTC / grossDivisor);
-        monthlyGross = Math.round(annualGross / 12);
+
+        let thresholdCTC = Infinity;
+        let maxAnnualPF = 0;
+        if (capWage !== Infinity) {
+          const thresholdAnnualGross = (capWage / basicPercent) * 12;
+          maxAnnualPF = Math.round(capWage * 0.12 * 12);
+          thresholdCTC = thresholdAnnualGross + maxAnnualPF;
+        }
+
+        if (effectiveCTC > thresholdCTC && capWage !== Infinity) {
+          annualGross = Math.round(effectiveCTC - maxAnnualPF);
+          monthlyGross = Math.round(annualGross / 12);
+        } else {
+          const testGross = (effectiveCTC / 12) / (1 + pfFactor + 0.0325);
+          const isEsiApplicable = isEsiEnabled && (testGross <= 21000);
+          const grossDivisor = 1 + pfFactor + (isEsiApplicable ? 0.0325 : 0);
+          annualGross = Math.round(effectiveCTC / grossDivisor);
+          monthlyGross = Math.round(annualGross / 12);
+        }
 
         const grossEl = document.getElementById('totalGrossSalary');
         if (grossEl) grossEl.value = monthlyGross.toLocaleString('en-IN');
@@ -644,7 +664,8 @@
 
         const isEsiApplicable = isEsiEnabled && (monthlyGross <= 21000);
         const basic_m = Math.round(monthlyGross * basicPercent);
-        const epf_m = Math.round(basic_m * 0.12);
+        const pfWage = capWage !== Infinity ? Math.min(basic_m, capWage) : basic_m;
+        const epf_m = Math.round(pfWage * 0.12);
         const eesi_m = isEsiApplicable ? Math.round(monthlyGross * 0.0325) : 0;
         annualCTC = (monthlyGross * 12) + (epf_m * 12) + (eesi_m * 12) + customBenefitsAnnual;
 
@@ -670,7 +691,8 @@
       const special_m = Math.round(full_special_m * prorateRatio);
       const earnedGross = basic_m + hra_m + special_m;
 
-      const pf_m = Math.round(basic_m * 0.12);
+      const cappedFullBasic = capWage !== Infinity ? Math.min(full_basic_m, capWage) : full_basic_m;
+      const pf_m = Math.round(cappedFullBasic * prorateRatio * 0.12);
       const esi_m = isEsiApplicable ? Math.round(earnedGross * 0.0075) : 0;
 
       // Professional Tax (PT)
@@ -928,6 +950,61 @@
       }
     }
 
+    function getActivePfCap() {
+      if (document.getElementById('pfCap_25000')?.checked) return 25000;
+      if (document.getElementById('pfCap_none')?.checked) return Infinity;
+      return 15000; // default 15k
+    }
+
+    function togglePfCap(capVal) {
+      updatePfCapUI(capVal);
+      autoCalculatePayslip('gross');
+      if (typeof saveSharedProfile === 'function') {
+        saveSharedProfile();
+      }
+      showToast(capVal === '25000' ? 'PF Wage Ceiling set to ₹25,000 (Max ₹3,000/mo)' : (capVal === 'none' ? 'PF Uncapped (12% of Full Basic)' : 'PF Wage Ceiling set to ₹15,000 (Max ₹1,800/mo)'));
+    }
+
+    function updatePfCapUI(capVal) {
+      const is25 = capVal === '25000';
+      const isNone = capVal === 'none';
+      const is15 = !is25 && !isNone;
+
+      const r15 = document.getElementById('pfCap_15000');
+      const r25 = document.getElementById('pfCap_25000');
+      const rNone = document.getElementById('pfCap_none');
+      if (r15) r15.checked = is15;
+      if (r25) r25.checked = is25;
+      if (rNone) rNone.checked = isNone;
+
+      const badge = document.getElementById('pfCapBadgeStatus');
+      const hint = document.getElementById('pfCapHintText');
+      if (badge) {
+        if (is25) {
+          badge.innerText = '₹25,000 Cap';
+          badge.style.background = '#e0e7ff';
+          badge.style.color = '#3730a3';
+        } else if (isNone) {
+          badge.innerText = 'Uncapped';
+          badge.style.background = '#fef3c7';
+          badge.style.color = '#92400e';
+        } else {
+          badge.innerText = '₹15,000 Cap';
+          badge.style.background = '#ecfdf5';
+          badge.style.color = '#047857';
+        }
+      }
+      if (hint) {
+        if (is25) {
+          hint.innerText = 'EPF contribution capped at 12% of ₹25,000 (max ₹3,000/mo per employee & employer).';
+        } else if (isNone) {
+          hint.innerText = 'EPF contributed at 12% of full Basic Salary without wage ceiling.';
+        } else {
+          hint.innerText = 'Statutory standard: PF capped at 12% of ₹15,000 (max ₹1,800/mo per employee & employer).';
+        }
+      }
+    }
+
     function toggleEsiCoverage(isEnabled) {
       updateEsiCoverageUI(isEnabled);
       autoCalculatePayslip();
@@ -1085,6 +1162,10 @@
       if (savedRatio) {
         updateSalaryRatioUI(savedRatio);
       }
+
+      // Check saved PF Wage Cap setting (defaults to 15000)
+      const savedPfCap = localStorage.getItem(typeof SHARED_KEYS !== 'undefined' ? SHARED_KEYS.pfWageCap : 'shared_pfWageCap') || '15000';
+      updatePfCapUI(savedPfCap);
 
       autoCalculatePayslip();
       onDateSelectionChange();

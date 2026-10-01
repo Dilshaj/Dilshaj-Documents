@@ -475,6 +475,31 @@
           </div>
         </div>
 
+        <!-- PF Wage Ceiling Setting in F&F -->
+        <div class="form-group full-width" style="margin-top: 6px; margin-bottom: 8px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <label style="font-weight: 600; font-size: 11.5px; color: #334155; margin: 0;">PF Wage Ceiling (Cap)</label>
+            <span id="pfCapBadgeStatus" style="font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 12px; background: #ecfdf5; color: #047857; transition: all 0.2s;">₹15,000 Cap</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 4px;">
+            <label style="display: inline-flex; align-items: center; gap: 5px; cursor: pointer; font-size: 11px; font-weight: 500; margin: 0; color: #1e293b;">
+              <input type="radio" name="pfWageCap" id="pfCap_15000" value="15000" checked onchange="togglePfCap('15000')" style="width: auto; margin: 0; cursor: pointer;">
+              <span>₹15k Cap (₹1,800/mo)</span>
+            </label>
+            <label style="display: inline-flex; align-items: center; gap: 5px; cursor: pointer; font-size: 11px; font-weight: 500; margin: 0; color: #1e293b;">
+              <input type="radio" name="pfWageCap" id="pfCap_25000" value="25000" onchange="togglePfCap('25000')" style="width: auto; margin: 0; cursor: pointer;">
+              <span>₹25k Cap (₹3,000/mo)</span>
+            </label>
+            <label style="display: inline-flex; align-items: center; gap: 5px; cursor: pointer; font-size: 11px; font-weight: 500; margin: 0; color: #1e293b;">
+              <input type="radio" name="pfWageCap" id="pfCap_none" value="none" onchange="togglePfCap('none')" style="width: auto; margin: 0; cursor: pointer;">
+              <span>Uncapped (Full Basic)</span>
+            </label>
+          </div>
+          <div style="font-size: 9.5px; color: #64748b; margin-top: 5px; line-height: 1.35;" id="pfCapHintText">
+            Statutory standard: PF capped at 12% of ₹15,000 (max ₹1,800/mo per employee &amp; employer).
+          </div>
+        </div>
+
         <div class="form-grid">
           <div class="form-group">
             <label for="earnBasic">Earned Basic Salary</label>
@@ -988,6 +1013,62 @@
       }
     }
 
+    function getActivePfCap() {
+      if (document.getElementById('pfCap_25000')?.checked) return 25000;
+      if (document.getElementById('pfCap_none')?.checked) return Infinity;
+      return 15000; // default 15k
+    }
+
+    function togglePfCap(capVal) {
+      updatePfCapUI(capVal);
+      localStorage.setItem('shared_pfWageCap', capVal);
+      onAttendanceOrCtcChange('gross');
+      if (typeof saveSharedProfile === 'function') {
+        saveSharedProfile();
+      }
+      showToast(capVal === '25000' ? 'PF Wage Ceiling set to ₹25,000 (Max ₹3,000/mo)' : (capVal === 'none' ? 'PF Uncapped (12% of Full Basic)' : 'PF Wage Ceiling set to ₹15,000 (Max ₹1,800/mo)'));
+    }
+
+    function updatePfCapUI(capVal) {
+      const is25 = capVal === '25000';
+      const isNone = capVal === 'none';
+      const is15 = !is25 && !isNone;
+
+      const r15 = document.getElementById('pfCap_15000');
+      const r25 = document.getElementById('pfCap_25000');
+      const rNone = document.getElementById('pfCap_none');
+      if (r15) r15.checked = is15;
+      if (r25) r25.checked = is25;
+      if (rNone) rNone.checked = isNone;
+
+      const badge = document.getElementById('pfCapBadgeStatus');
+      const hint = document.getElementById('pfCapHintText');
+      if (badge) {
+        if (is25) {
+          badge.innerText = '₹25,000 Cap';
+          badge.style.background = '#e0e7ff';
+          badge.style.color = '#3730a3';
+        } else if (isNone) {
+          badge.innerText = 'Uncapped';
+          badge.style.background = '#fef3c7';
+          badge.style.color = '#92400e';
+        } else {
+          badge.innerText = '₹15,000 Cap';
+          badge.style.background = '#ecfdf5';
+          badge.style.color = '#047857';
+        }
+      }
+      if (hint) {
+        if (is25) {
+          hint.innerText = 'EPF contribution capped at 12% of ₹25,000 (max ₹3,000/mo per employee & employer).';
+        } else if (isNone) {
+          hint.innerText = 'EPF contributed at 12% of full Basic Salary without wage ceiling.';
+        } else {
+          hint.innerText = 'Statutory standard: PF capped at 12% of ₹15,000 (max ₹1,800/mo per employee & employer).';
+        }
+      }
+    }
+
     function onAttendanceOrCtcChange(source = 'ctc') {
       const stdDays = Math.max(1, parseFloat(document.getElementById('stdDays').value) || 30);
       const workDays = Math.max(0, parseFloat(document.getElementById('workDays').value) || 0);
@@ -1005,6 +1086,7 @@
       const basicPercent = is55 ? 0.55 : 0.50;
       const hraPercent = is55 ? 0.45 : 0.40;
       const pfFactor = 0.12 * basicPercent; // 0.06 in 50/40/10, 0.066 in 55/45
+      const capWage = typeof getActivePfCap === 'function' ? getActivePfCap() : 15000;
 
       let annualCTC = 200000;
       let monthlyGross = 15256;
@@ -1016,7 +1098,8 @@
         annualGross = monthlyGross * 12;
         const isEsiApplicable = isEsiEnabled && (monthlyGross <= 21000);
         const basic_m = Math.round(monthlyGross * basicPercent);
-        const epf_m = Math.round(basic_m * 0.12);
+        const pfWage = capWage !== Infinity ? Math.min(basic_m, capWage) : basic_m;
+        const epf_m = Math.round(pfWage * 0.12);
         const eesi_m = isEsiApplicable ? Math.round(monthlyGross * 0.0325) : 0;
         annualCTC = annualGross + (epf_m * 12) + (eesi_m * 12) + customBenefitsAnnual;
 
@@ -1026,11 +1109,25 @@
         const rawCTC = document.getElementById('annualCtc').value.replace(/[^0-9.]/g, '');
         annualCTC = Math.round(parseFloat(rawCTC) || 0);
         const effectiveCTC = Math.max(0, annualCTC - customBenefitsAnnual);
-        const testGross = (effectiveCTC / 12) / (1 + pfFactor + 0.0325);
-        const isEsiApplicable = isEsiEnabled && (testGross <= 21000);
-        const grossDivisor = 1 + pfFactor + (isEsiApplicable ? 0.0325 : 0);
-        annualGross = Math.round(effectiveCTC / grossDivisor);
-        monthlyGross = Math.round(annualGross / 12);
+
+        let thresholdCTC = Infinity;
+        let maxAnnualPF = 0;
+        if (capWage !== Infinity) {
+          const thresholdAnnualGross = (capWage / basicPercent) * 12;
+          maxAnnualPF = Math.round(capWage * 0.12 * 12);
+          thresholdCTC = thresholdAnnualGross + maxAnnualPF;
+        }
+
+        if (effectiveCTC > thresholdCTC && capWage !== Infinity) {
+          annualGross = Math.round(effectiveCTC - maxAnnualPF);
+          monthlyGross = Math.round(annualGross / 12);
+        } else {
+          const testGross = (effectiveCTC / 12) / (1 + pfFactor + 0.0325);
+          const isEsiApplicable = isEsiEnabled && (testGross <= 21000);
+          const grossDivisor = 1 + pfFactor + (isEsiApplicable ? 0.0325 : 0);
+          annualGross = Math.round(effectiveCTC / grossDivisor);
+          monthlyGross = Math.round(annualGross / 12);
+        }
 
         const grossInput = document.getElementById('totalGrossSalary');
         if (grossInput) grossInput.value = monthlyGross.toLocaleString('en-IN');
@@ -1042,7 +1139,8 @@
         const hra_m = Math.round(monthlyGross * hraPercent);
         const sa_m = is55 ? 0 : Math.max(0, monthlyGross - basic_m - hra_m);
 
-        const employeePF_m = Math.round(basic_m * 0.12);
+        const pfWage = capWage !== Infinity ? Math.min(basic_m, capWage) : basic_m;
+        const employeePF_m = Math.round(pfWage * 0.12);
         const employeeESI_m = isEsiApplicable ? Math.round(monthlyGross * 0.0075) : 0;
 
         // Prorated Earned Figures for FnF Exit Month based on Worked Days
@@ -1282,6 +1380,9 @@
       if (savedRatio) {
         updateSalaryRatioUI(savedRatio);
       }
+
+      const savedPfCap = localStorage.getItem('shared_pfWageCap') || '15000';
+      updatePfCapUI(savedPfCap);
 
       onAttendanceOrCtcChange('ctc');
     });

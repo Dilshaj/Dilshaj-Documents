@@ -434,8 +434,6 @@
       setEl('prev_prefixName', `${prefix} ${name}`);
       setEl('prev_empId', empId);
       setEl('prev_desigHeader', desig);
-      setEl('prev_deptHeader', dept);
-      setEl('prev_locHeader', location);
       setEl('prev_salutationName', name);
 
       setEl('prev_resignationDate', resignDate);
@@ -460,6 +458,7 @@
       setEl('prev_ackEmpName', name);
 
       if (window.refreshHiddenFields) refreshHiddenFields();
+      if (typeof saveSharedProfile === 'function') saveSharedProfile();
     }
 
     window.addEventListener('DOMContentLoaded', () => {

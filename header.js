@@ -111,6 +111,7 @@ const SHARED_KEYS = {
   esiNo: 'shared_esiNo',
   esiEnabled: 'shared_esiEnabled',
   salaryRatio: 'shared_salaryRatio',
+  pfWageCap: 'shared_pfWageCap',
   ptEnabled: 'shared_ptEnabled',
   ptState: 'shared_ptState',
   ptCustomAmount: 'shared_ptCustomAmount',
@@ -234,6 +235,13 @@ function isCurrentRolePreview() {
     (document.body && document.body.classList.contains('mode-preview'));
 }
 
+function isPayslipPage() {
+  const currentPath = (window.location.pathname.split(/[/\\]/).pop() || '').toLowerCase();
+  if (currentPath === 'payslip.html' || currentPath === 'stipend_payslip.html') return true;
+  if (currentPath.includes('payslip')) return true;
+  return !!(document.querySelector('.payslip-unified-box') || document.querySelector('.payslip-period-title'));
+}
+
 function initSignaturesAndStamps() {
   if (isCurrentRolePreview()) {
     document.querySelectorAll('.sig-seal-wrap, img[data-admin-src], img.doc-signature-img, img.doc-stamp-img').forEach(el => el.remove());
@@ -260,11 +268,15 @@ function toggleBackground() {
   const isChecked = bgToggle.checked;
   if (isChecked) {
     document.body.classList.add('show-letterhead-bg');
-    localStorage.setItem('hr_doc_showBg', 'true');
+    if (!isPayslipPage()) {
+      localStorage.setItem('hr_doc_showBg', 'true');
+    }
     showToast('Letterhead background enabled');
   } else {
     document.body.classList.remove('show-letterhead-bg');
-    localStorage.setItem('hr_doc_showBg', 'false');
+    if (!isPayslipPage()) {
+      localStorage.setItem('hr_doc_showBg', 'false');
+    }
     showToast('Letterhead background disabled');
   }
 }
@@ -413,7 +425,7 @@ function saveSharedProfile() {
   const bgToggle = document.getElementById('bgToggle');
   const dateFormatSelect = document.getElementById('dateFormatSelect');
   if (pageSizeSelect) localStorage.setItem('hr_doc_pageSize', pageSizeSelect.value);
-  if (bgToggle) localStorage.setItem('hr_doc_showBg', bgToggle.checked ? 'true' : 'false');
+  if (bgToggle && !isPayslipPage()) localStorage.setItem('hr_doc_showBg', bgToggle.checked ? 'true' : 'false');
   if (dateFormatSelect) localStorage.setItem(DATE_FORMAT_KEY, dateFormatSelect.value);
 
   const esiDisableEl = document.getElementById('esiCoverageDisable');
@@ -428,6 +440,16 @@ function saveSharedProfile() {
   if (ratio55El || ratio50El) {
     const activeRatio = (ratio55El && ratio55El.checked) ? '55_45' : '50_40_10';
     localStorage.setItem(SHARED_KEYS.salaryRatio, activeRatio);
+  }
+
+  const pfCap15El = document.getElementById('pfCap_15000');
+  const pfCap25El = document.getElementById('pfCap_25000');
+  const pfCapNoneEl = document.getElementById('pfCap_none');
+  if (pfCap15El || pfCap25El || pfCapNoneEl) {
+    let activePfCap = '15000';
+    if (pfCap25El && pfCap25El.checked) activePfCap = '25000';
+    else if (pfCapNoneEl && pfCapNoneEl.checked) activePfCap = 'none';
+    localStorage.setItem(SHARED_KEYS.pfWageCap, activePfCap);
   }
 
   const ptDisableEl = document.getElementById('ptCoverageDisable');
@@ -477,6 +499,10 @@ function loadSharedProfile(explicitMap = null) {
   if (isCurrentRolePreview()) {
     document.body.classList.remove('show-letterhead-bg');
     if (bgToggle) bgToggle.checked = false;
+  } else if (isPayslipPage()) {
+    // Monthly and Stipend payslips: Letterhead BG toggle must always be disabled by default on visit
+    if (bgToggle) bgToggle.checked = false;
+    document.body.classList.remove('show-letterhead-bg');
   } else if (savedBg !== 'false') {
     if (bgToggle) bgToggle.checked = true;
     document.body.classList.add('show-letterhead-bg');
@@ -509,6 +535,11 @@ function loadSharedProfile(explicitMap = null) {
     if (typeof updateSalaryRatioUI === 'function') {
       updateSalaryRatioUI(savedRatio);
     }
+  }
+
+  const savedPfCap = localStorage.getItem(SHARED_KEYS.pfWageCap) || '15000';
+  if (typeof updatePfCapUI === 'function') {
+    updatePfCapUI(savedPfCap);
   }
 
   const savedPt = localStorage.getItem(SHARED_KEYS.ptEnabled);
